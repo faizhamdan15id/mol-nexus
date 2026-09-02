@@ -57,111 +57,122 @@
     </section>
 
 
-    <!-- PLAYER SLOTS -->
-    <section class="players-panel">
+    <!-- ===================================================== -->
+<!-- PLAYER SLOTS -->
+<!-- ===================================================== -->
 
-        <div class="section-title">
-            <span>CONNECTED PLAYERS</span>
-            <span class="live-text">● LIVE</span>
+<section class="players-panel">
+
+    <div class="section-title">
+        <span>CONNECTED PLAYERS</span>
+        <span class="live-text">● LIVE</span>
+    </div>
+
+
+    <!-- PLAYER 1 -->
+    <div class="player-card active-player" data-slot="1">
+
+        <div class="player-avatar cyan">
+            01
         </div>
 
+        <div class="player-info">
 
-        <!-- PLAYER 1 -->
-        <div class="player-card active-player">
+            <strong class="slot-player-name">
+                WAITING FOR PLAYER
+            </strong>
 
-            <div class="player-avatar cyan">
-                01
-            </div>
-
-            <div class="player-info">
-                <strong id="playerName">
-                    PLAYER 1
-                </strong>
-
-                <small>
-                    NEXUS EXPLORER
-                </small>
-            </div>
-
-            <div class="player-state ready">
-                READY
-            </div>
-
-        </div>
-
-
-        <!-- PLAYER 2 -->
-        <div class="player-card empty">
-
-            <div class="player-avatar purple">
-                02
-            </div>
-
-            <div class="player-info">
-                <strong>
-                    WAITING FOR PLAYER
-                </strong>
-
-                <small>
-                    SLOT AVAILABLE
-                </small>
-            </div>
-
-            <div class="player-state waiting">
-                WAITING
-            </div>
+            <small class="slot-player-subtitle">
+                SLOT AVAILABLE
+            </small>
 
         </div>
 
+        <div class="player-state waiting slot-status">
+            WAITING
+        </div>
 
-        <!-- PLAYER 3 -->
-        <div class="player-card empty">
+    </div>
 
-            <div class="player-avatar green">
-                03
-            </div>
 
-            <div class="player-info">
-                <strong>
-                    WAITING FOR PLAYER
-                </strong>
+    <!-- PLAYER 2 -->
+    <div class="player-card empty" data-slot="2">
 
-                <small>
-                    SLOT AVAILABLE
-                </small>
-            </div>
+        <div class="player-avatar purple">
+            02
+        </div>
 
-            <div class="player-state waiting">
-                WAITING
-            </div>
+        <div class="player-info">
+
+            <strong class="slot-player-name">
+                WAITING FOR PLAYER
+            </strong>
+
+            <small class="slot-player-subtitle">
+                SLOT AVAILABLE
+            </small>
 
         </div>
 
+        <div class="player-state waiting slot-status">
+            WAITING
+        </div>
 
-        <!-- PLAYER 4 -->
-        <div class="player-card empty">
+    </div>
 
-            <div class="player-avatar orange">
-                04
-            </div>
 
-            <div class="player-info">
-                <strong>
-                    WAITING FOR PLAYER
-                </strong>
+    <!-- PLAYER 3 -->
+    <div class="player-card empty" data-slot="3">
 
-                <small>
-                    SLOT AVAILABLE
-                </small>
-            </div>
+        <div class="player-avatar green">
+            03
+        </div>
 
-            <div class="player-state waiting">
-                WAITING
-            </div>
+        <div class="player-info">
+
+            <strong class="slot-player-name">
+                WAITING FOR PLAYER
+            </strong>
+
+            <small class="slot-player-subtitle">
+                SLOT AVAILABLE
+            </small>
 
         </div>
 
-    </section>
+        <div class="player-state waiting slot-status">
+            WAITING
+        </div>
+
+    </div>
+
+
+    <!-- PLAYER 4 -->
+    <div class="player-card empty" data-slot="4">
+
+        <div class="player-avatar orange">
+            04
+        </div>
+
+        <div class="player-info">
+
+            <strong class="slot-player-name">
+                WAITING FOR PLAYER
+            </strong>
+
+            <small class="slot-player-subtitle">
+                SLOT AVAILABLE
+            </small>
+
+        </div>
+
+        <div class="player-state waiting slot-status">
+            WAITING
+        </div>
+
+    </div>
+
+</section>
 
 
     <!-- CRYSTAL STATUS -->
