@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOL-NEXUS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="background-grid"></div>
+
+<main class="app">
+
+    <section class="brand">
+
+        <div class="atom-logo">
+            <div class="nucleus"></div>
+            <div class="orbit orbit-1"></div>
+            <div class="orbit orbit-2"></div>
+            <div class="orbit orbit-3"></div>
+        </div>
+
+        <p class="system-label">
+            STOICHIOMETRY LEARNING SYSTEM
+        </p>
+
+        <h1>MOL<span>-NEXUS</span></h1>
+
+        <p class="tagline">
+            MASTER STOICHIOMETRY.<br>
+            CONNECT KNOWLEDGE.
+        </p>
+
+    </section>
+
+    <section class="login-card">
+
+        <div class="card-top">
+            <span class="status-dot"></span>
+            <span>NEXUS ACCESS TERMINAL</span>
+        </div>
+
+        <h2>ENTER THE NEXUS</h2>
+
+        <p class="description">
+            Masukkan identitas pemain dan kode room
+            untuk bergabung ke permainan.
+        </p>
+
+        <div class="input-group">
+
+            <label for="studentName">
+                NAMA / KODE SISWA
+            </label>
+
+            <div class="input-box">
+
+                <span class="icon">◉</span>
+
+                <input
+                    id="studentName"
+                    type="text"
+                    placeholder="Contoh: Ahmad / S001"
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+        <div class="input-group">
+
+            <label for="roomCode">
+                ROOM CODE
+            </label>
+
+            <div class="input-box">
+
+                <span class="icon">◈</span>
+
+                <input
+                    id="roomCode"
+                    type="text"
+                    placeholder="Contoh: NEXUS01"
+                    maxlength="20"
+                    autocomplete="off"
+                >
+
+            </div>
+
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <button id="joinButton" class="join-button">
+            <span>JOIN NEXUS</span>
+            <span class="arrow">→</span>
+        </button>
+
+        <div class="system-status">
+
+            <div>
+                <span class="status-dot"></span>
+                SYSTEM ONLINE
+            </div>
+
+            <div>v1.0</div>
+
+        </div>
+
+    </section>
+
+    <section class="nexus-info">
+
+        <div class="nexus-item mass">
+            <span>⚖</span>
+            MASS
+        </div>
+
+        <div class="nexus-item particle">
+            <span>⚛</span>
+            PARTICLE
+        </div>
+
+        <div class="nexus-item gas">
+            <span>◌</span>
+            GAS
+        </div>
+
+        <div class="nexus-item solution">
+            <span>⚗</span>
+            SOLUTION
+        </div>
+
+    </section>
+
+    <footer>
+        MOL-NEXUS RESEARCH PROTOTYPE
+    </footer>
+
+</main>
+
+<script src="app.js"></script>
+
+</body>
+</html>
