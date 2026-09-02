@@ -66,7 +66,7 @@ if (!student || !room) {
 
 }
 
-playerName.textContent = student || "PLAYER";
+
 roomDisplay.textContent = room || "-----";
 
 
