@@ -137,8 +137,8 @@ function joinNexus() {
             "<span>NEXUS CONNECTED ✓</span>";
 
 
-        // Untuk tahap berikutnya:
-        // window.location.href = "lobby.html";
+        // Masuk ke Multiplayer Lobby
+window.location.href = "lobby.html";
 
 
         setTimeout(function () {
