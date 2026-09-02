@@ -33,11 +33,32 @@ const statusText = document.getElementById("statusText");
 // 3. LOAD LOGIN DATA
 // ============================================================
 
+// Ambil data dari URL jika tersedia
+const urlParams = new URLSearchParams(window.location.search);
+
+const studentFromURL = urlParams.get("student");
+const roomFromURL = urlParams.get("room");
+
+// Prioritaskan URL, fallback ke localStorage
 const student =
+    studentFromURL ||
     localStorage.getItem("molNexusStudent");
 
 const room =
+    roomFromURL ||
     localStorage.getItem("molNexusRoom");
+
+// Simpan kembali agar tetap tersedia setelah refresh
+if (student) {
+    localStorage.setItem("molNexusStudent", student);
+}
+
+if (room) {
+    localStorage.setItem("molNexusRoom", room);
+}
+
+console.log("LOBBY STUDENT:", student);
+console.log("LOBBY ROOM:", room);
 
 if (!student || !room) {
 
