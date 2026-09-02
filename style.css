@@ -1,0 +1,339 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #050b18;
+    --cyan: #26e6ff;
+    --purple: #a36cff;
+    --green: #38e89a;
+    --orange: #ffad52;
+    --white: #f5fbff;
+    --muted: #8496ad;
+    --border: rgba(77, 180, 255, 0.25);
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top, #10264c 0%, #071326 35%, #030711 80%);
+    color: var(--white);
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
+}
+
+.background-grid {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .15;
+    background-image:
+        linear-gradient(rgba(54,189,255,.2) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(54,189,255,.2) 1px, transparent 1px);
+    background-size: 45px 45px;
+}
+
+.app {
+    position: relative;
+    width: min(92%, 480px);
+    margin: auto;
+    padding: 55px 0 30px;
+}
+
+.brand {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.system-label {
+    margin-top: 15px;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+}
+
+.brand h1 {
+    margin-top: 6px;
+    font-size: clamp(38px, 11vw, 58px);
+    letter-spacing: -2px;
+    text-shadow: 0 0 30px rgba(38,230,255,.25);
+}
+
+.brand h1 span {
+    color: var(--cyan);
+}
+
+.tagline {
+    margin-top: 7px;
+    color: #8fa7bd;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    line-height: 1.7;
+}
+
+.atom-logo {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    margin: auto;
+}
+
+.nucleus {
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--cyan);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px var(--cyan);
+}
+
+.orbit {
+    position: absolute;
+    width: 68px;
+    height: 28px;
+    border: 1.5px solid rgba(38,230,255,.8);
+    border-radius: 50%;
+    top: 24px;
+    left: 4px;
+}
+
+.orbit-1 { transform: rotate(0deg); }
+.orbit-2 { transform: rotate(60deg); }
+.orbit-3 { transform: rotate(-60deg); }
+
+.login-card {
+    position: relative;
+    padding: 28px 24px 20px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background:
+        linear-gradient(145deg, rgba(15,34,61,.97), rgba(5,15,31,.97));
+    box-shadow:
+        0 30px 70px rgba(0,0,0,.45),
+        inset 0 0 40px rgba(38,230,255,.025);
+}
+
+.login-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 25%;
+    width: 50%;
+    height: 1px;
+    background:
+        linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+
+.card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cyan);
+    font-size: 9px;
+    letter-spacing: 2px;
+    margin-bottom: 19px;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #36ee9b;
+    box-shadow: 0 0 8px #36ee9b;
+}
+
+.login-card h2 {
+    font-size: 25px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.description {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.55;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    margin-bottom: 18px;
+}
+
+.input-group label {
+    display: block;
+    color: #a9bdd0;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+
+.input-box {
+    display: flex;
+    align-items: center;
+    height: 53px;
+    border: 1px solid rgba(99,150,195,.25);
+    border-radius: 10px;
+    background: rgba(2,9,20,.65);
+    transition: .2s;
+}
+
+.input-box:focus-within {
+    border-color: var(--cyan);
+    box-shadow:
+        0 0 0 2px rgba(38,230,255,.08),
+        0 0 20px rgba(38,230,255,.08);
+}
+
+.icon {
+    width: 48px;
+    text-align: center;
+    color: var(--cyan);
+    font-size: 17px;
+}
+
+input {
+    flex: 1;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: white;
+    font-size: 15px;
+    padding-right: 15px;
+}
+
+input::placeholder {
+    color: #52677d;
+}
+
+.message {
+    display: none;
+    margin-bottom: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.message.error {
+    display: block;
+    color: #ff9d9d;
+    background: rgba(255,70,70,.08);
+    border: 1px solid rgba(255,70,70,.2);
+}
+
+.message.success {
+    display: block;
+    color: #73f5bd;
+    background: rgba(55,230,155,.08);
+    border: 1px solid rgba(55,230,155,.2);
+}
+
+.join-button {
+    width: 100%;
+    height: 56px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 13px;
+    margin-top: 8px;
+    color: #00101b;
+    font-weight: 900;
+    letter-spacing: 1.3px;
+    background:
+        linear-gradient(90deg, #23d9ff, #45f0ca);
+    box-shadow: 0 10px 30px rgba(38,230,255,.18);
+}
+
+.join-button:active {
+    transform: scale(.98);
+}
+
+.join-button:disabled {
+    opacity: .7;
+}
+
+.arrow {
+    font-size: 21px;
+}
+
+.system-status {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    color: #526a82;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.system-status div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.nexus-info {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.nexus-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 64px;
+    border-radius: 10px;
+    background: rgba(10,22,40,.7);
+    border: 1px solid rgba(255,255,255,.06);
+    font-size: 8px;
+    letter-spacing: .7px;
+    color: #71859a;
+}
+
+.nexus-item span {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.mass span { color: var(--cyan); }
+.particle span { color: var(--purple); }
+.gas span { color: var(--green); }
+.solution span { color: var(--orange); }
+
+footer {
+    text-align: center;
+    margin-top: 28px;
+    color: #394c60;
+    font-size: 8px;
+    letter-spacing: 2px;
+}
+
+@media (max-width: 420px) {
+    .app {
+        width: 92%;
+        padding-top: 35px;
+    }
+
+    .login-card {
+        padding: 24px 18px 18px;
+    }
+
+    .brand h1 {
+        font-size: 41px;
+    }
+  }
