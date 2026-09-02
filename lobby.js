@@ -589,14 +589,64 @@ const lobbyChannel =
 
             },
 
-            function () {
+            async function () {
 
-                renderPlayers();
+    await renderPlayers();
+    await checkAllPlayersReady();
 
             }
         )
         .subscribe();
+// ==========================================================
+// 10B. CHECK ALL PLAYERS READY
+// ==========================================================
 
+async function checkAllPlayersReady() {
+
+    const { data: players, error } =
+        await supabaseClient
+            .from("room_players")
+            .select("id, is_ready")
+            .eq("room_code", room);
+
+    if (error) {
+        console.error("CHECK READY ERROR:", error);
+        return;
+    }
+
+    // Game hanya mulai jika tepat 4 pemain sudah masuk
+    if (!players || players.length !== 4) {
+        return;
+    }
+
+    const allReady =
+        players.every(player => player.is_ready === true);
+
+    if (!allReady) {
+        return;
+    }
+
+    console.log("ALL PLAYERS READY");
+
+    statusText.textContent =
+        "ALL PLAYERS READY — INITIALIZING NEXUS...";
+
+    const { error: updateError } =
+        await supabaseClient
+            .from("game_rooms")
+            .update({
+                status: "PLAYING"
+            })
+            .eq("room_code", room)
+            .eq("status", "WAITING");
+
+    if (updateError) {
+        console.error(
+            "START GAME ERROR:",
+            updateError
+        );
+    }
+}
 
 // ============================================================
 // 11. START LOBBY
