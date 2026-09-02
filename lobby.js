@@ -647,7 +647,39 @@ async function checkAllPlayersReady() {
         );
     }
 }
+// ======================================================
+// 10C. LISTEN GAME STATUS
+// ======================================================
 
+const gameStatusChannel =
+    supabaseClient
+        .channel("mol-nexus-game-status-" + room)
+        .on(
+            "postgres_changes",
+            {
+                event: "UPDATE",
+                schema: "public",
+                table: "game_rooms",
+                filter: "room_code=eq." + room
+            },
+            function (payload) {
+
+                console.log(
+                    "GAME STATUS CHANGED:",
+                    payload.new.status
+                );
+
+                if (payload.new.status === "PLAYING") {
+
+                    window.location.href =
+                        "game.html?student=" +
+                        encodeURIComponent(student) +
+                        "&room=" +
+                        encodeURIComponent(room);
+                }
+            }
+        )
+        .subscribe();
 // ============================================================
 // 11. START LOBBY
 // ============================================================
