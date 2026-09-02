@@ -1,21 +1,763 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
 
-    <title>MOL-NEXUS | Game Board</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-    <link rel="stylesheet" href="style.css">
+  <title>MOL-NEXUS | Game Board</title>
+
+  <!-- GLOBAL STYLE -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- GAME STYLE -->
+  <link rel="stylesheet" href="game.css">
 </head>
 
-<body>
 
-    <h1>MOL-NEXUS GAME BOARD</h1>
+<body class="game-body">
 
-    <p>NEXUS SYSTEM CONNECTED</p>
+  <div class="game-background-grid"></div>
+
+
+  <!-- ===================================================== -->
+  <!-- MOL-NEXUS GAME APP                                    -->
+  <!-- ===================================================== -->
+
+  <main class="game-app">
+
+
+    <!-- =================================================== -->
+    <!-- HEADER                                              -->
+    <!-- =================================================== -->
+
+    <header class="game-header">
+
+      <div class="game-logo">
+        MOL-<span>NEXUS</span>
+      </div>
+
+      <div class="game-network-status">
+        <span class="network-dot"></span>
+        NEXUS SYSTEM CONNECTED
+      </div>
+
+    </header>
+
+
+    <!-- =================================================== -->
+    <!-- ROOM BAR                                            -->
+    <!-- =================================================== -->
+
+    <section class="game-room-bar">
+
+      <div>
+        <small>ROOM</small>
+        <strong id="gameRoom">
+          ----
+        </strong>
+      </div>
+
+      <div>
+        <small>PLAYER</small>
+        <strong id="gameStudent">
+          PLAYER
+        </strong>
+      </div>
+
+      <div>
+        <small>NEXUS ENERGY</small>
+        <strong id="gameEnergy">
+          0
+        </strong>
+      </div>
+
+      <div>
+        <small>CRYSTALS</small>
+        <strong>
+          <span id="crystalCount">0</span>/4
+        </strong>
+      </div>
+
+    </section>
+
+
+    <!-- =================================================== -->
+    <!-- MAIN GAME LAYOUT                                    -->
+    <!-- =================================================== -->
+
+    <section class="game-layout">
+
+
+      <!-- ================================================= -->
+      <!-- LEFT PANEL — PLAYERS                              -->
+      <!-- ================================================= -->
+
+      <aside class="game-panel players-game-panel">
+
+        <div class="game-panel-title">
+          CONNECTED PLAYERS
+          <span class="live-label">
+            ● LIVE
+          </span>
+        </div>
+
+
+        <div id="gamePlayersList" class="game-player-list">
+
+          <div class="game-player-card">
+            <div class="game-player-avatar cyan">
+              01
+            </div>
+
+            <div class="game-player-info">
+              <strong>WAITING...</strong>
+              <small>NEXUS EXPLORER</small>
+            </div>
+          </div>
+
+
+          <div class="game-player-card">
+            <div class="game-player-avatar purple">
+              02
+            </div>
+
+            <div class="game-player-info">
+              <strong>WAITING...</strong>
+              <small>NEXUS EXPLORER</small>
+            </div>
+          </div>
+
+
+          <div class="game-player-card">
+            <div class="game-player-avatar green">
+              03
+            </div>
+
+            <div class="game-player-info">
+              <strong>WAITING...</strong>
+              <small>NEXUS EXPLORER</small>
+            </div>
+          </div>
+
+
+          <div class="game-player-card">
+            <div class="game-player-avatar orange">
+              04
+            </div>
+
+            <div class="game-player-info">
+              <strong>WAITING...</strong>
+              <small>NEXUS EXPLORER</small>
+            </div>
+          </div>
+
+        </div>
+
+      </aside>
+
+
+      <!-- ================================================= -->
+      <!-- CENTER — NEXUS BOARD                              -->
+      <!-- ================================================= -->
+
+      <section class="nexus-board-panel">
+
+        <div class="board-top-label">
+          STOICHIOMETRY NEXUS NETWORK
+        </div>
+
+
+        <div class="nexus-board">
+
+
+          <!-- MASS NEXUS -->
+
+          <button
+            class="nexus-zone mass-zone"
+            data-zone="MASS"
+            type="button"
+          >
+            <span class="zone-icon">
+              ⚖
+            </span>
+
+            <strong>
+              MASS
+            </strong>
+
+            <small>
+              MASS ↔ MOL
+            </small>
+          </button>
+
+
+          <!-- PARTICLE NEXUS -->
+
+          <button
+            class="nexus-zone particle-zone"
+            data-zone="PARTICLE"
+            type="button"
+          >
+            <span class="zone-icon">
+              ⚛
+            </span>
+
+            <strong>
+              PARTICLE
+            </strong>
+
+            <small>
+              PARTICLE ↔ MOL
+            </small>
+          </button>
+
+
+          <!-- GAS NEXUS -->
+
+          <button
+            class="nexus-zone gas-zone"
+            data-zone="GAS"
+            type="button"
+          >
+            <span class="zone-icon">
+              ◌
+            </span>
+
+            <strong>
+              GAS
+            </strong>
+
+            <small>
+              GAS ↔ MOL
+            </small>
+          </button>
+
+
+          <!-- SOLUTION NEXUS -->
+
+          <button
+            class="nexus-zone solution-zone"
+            data-zone="SOLUTION"
+            type="button"
+          >
+            <span class="zone-icon">
+              ⚗
+            </span>
+
+            <strong>
+              SOLUTION
+            </strong>
+
+            <small>
+              MOLARITY ↔ MOL
+            </small>
+          </button>
+
+
+          <!-- CONNECTION LINES -->
+
+          <div class="nexus-line line-top"></div>
+          <div class="nexus-line line-left"></div>
+          <div class="nexus-line line-right"></div>
+          <div class="nexus-line line-bottom"></div>
+
+
+          <!-- CORE -->
+
+          <div class="nexus-core">
+
+            <div class="core-ring ring-1"></div>
+            <div class="core-ring ring-2"></div>
+
+            <div class="core-content">
+
+              <small>
+                CENTRAL
+              </small>
+
+              <strong>
+                MOL
+              </strong>
+
+              <span>
+                NEXUS CORE
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- BOARD NODES -->
+
+          <button
+            class="board-node node-case node-1"
+            type="button"
+          >
+            CASE
+          </button>
+
+          <button
+            class="board-node node-energy node-2"
+            type="button"
+          >
+            +E
+          </button>
+
+          <button
+            class="board-node node-event node-3"
+            type="button"
+          >
+            EVENT
+          </button>
+
+          <button
+            class="board-node node-duel node-4"
+            type="button"
+          >
+            DUEL
+          </button>
+
+
+        </div>
+
+      </section>
+
+
+      <!-- ================================================= -->
+      <!-- RIGHT PANEL                                       -->
+      <!-- ================================================= -->
+
+      <aside class="game-panel game-status-panel">
+
+        <div class="game-panel-title">
+          PLAYER STATUS
+        </div>
+
+
+        <div class="current-player-box">
+
+          <small>
+            CURRENT PLAYER
+          </small>
+
+          <strong id="currentPlayerName">
+            WAITING...
+          </strong>
+
+          <span id="turnStatus">
+            INITIALIZING NEXUS
+          </span>
+
+        </div>
+
+
+        <!-- ENERGY -->
+
+        <div class="status-block">
+
+          <small>
+            NEXUS ENERGY
+          </small>
+
+          <div class="energy-display">
+            ⚡
+            <strong id="sideEnergy">
+              0
+            </strong>
+          </div>
+
+        </div>
+
+
+        <!-- CRYSTALS -->
+
+        <div class="status-block">
+
+          <small>
+            NEXUS CRYSTALS
+          </small>
+
+          <div class="crystal-grid">
+
+            <div
+              class="game-crystal mass"
+              id="massCrystal"
+            >
+              ◆
+              <span>MASS</span>
+            </div>
+
+            <div
+              class="game-crystal particle"
+              id="particleCrystal"
+            >
+              ◆
+              <span>PARTICLE</span>
+            </div>
+
+            <div
+              class="game-crystal gas"
+              id="gasCrystal"
+            >
+              ◆
+              <span>GAS</span>
+            </div>
+
+            <div
+              class="game-crystal solution"
+              id="solutionCrystal"
+            >
+              ◆
+              <span>SOLUTION</span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- MESSAGE -->
+
+        <div class="nexus-message">
+
+          <small>
+            NEXUS MESSAGE
+          </small>
+
+          <p id="gameMessage">
+            Synchronizing multiplayer game...
+          </p>
+
+        </div>
+
+      </aside>
+
+    </section>
+
+
+    <!-- =================================================== -->
+    <!-- CASE PANEL                                          -->
+    <!-- =================================================== -->
+
+    <section class="case-panel">
+
+      <div class="case-header">
+
+        <div>
+
+          <small id="caseZone">
+            NEXUS CASE
+          </small>
+
+          <h2 id="caseTitle">
+            WAITING FOR CHALLENGE
+          </h2>
+
+        </div>
+
+
+        <div
+          id="caseDifficulty"
+          class="difficulty-badge"
+        >
+          EXPLORER
+        </div>
+
+      </div>
+
+
+      <p
+        id="caseQuestion"
+        class="case-question"
+      >
+        Permainan sedang menyiapkan tantangan stoikiometri.
+      </p>
+
+
+      <!-- PATH BUILDER -->
+
+      <div class="diagnostic-stage">
+
+        <div class="stage-title">
+
+          <span>01</span>
+
+          <div>
+            <strong>NEXUS PATH BUILDER</strong>
+            <small>
+              Tentukan jalur penyelesaian
+            </small>
+          </div>
+
+        </div>
+
+
+        <div
+          id="pathBuilder"
+          class="path-builder"
+        >
+
+          <button
+            class="path-block"
+            data-path="MASS"
+            type="button"
+          >
+            MASSA
+          </button>
+
+          <button
+            class="path-block"
+            data-path="MOL"
+            type="button"
+          >
+            MOL
+          </button>
+
+          <button
+            class="path-block"
+            data-path="PARTICLE"
+            type="button"
+          >
+            PARTIKEL
+          </button>
+
+          <button
+            class="path-block"
+            data-path="GAS"
+            type="button"
+          >
+            GAS
+          </button>
+
+          <button
+            class="path-block"
+            data-path="SOLUTION"
+            type="button"
+          >
+            LARUTAN
+          </button>
+
+        </div>
+
+
+        <div
+          id="selectedPath"
+          class="selected-path"
+        >
+          PATH: —
+        </div>
+
+      </div>
+
+
+      <!-- FORMULA BUILDER -->
+
+      <div class="diagnostic-stage">
+
+        <div class="stage-title">
+
+          <span>02</span>
+
+          <div>
+            <strong>FORMULA BUILDER</strong>
+            <small>
+              Pilih hubungan matematis
+            </small>
+          </div>
+
+        </div>
+
+
+        <div
+          id="formulaBuilder"
+          class="formula-builder"
+        >
+
+          <button
+            class="formula-block"
+            data-formula="mass/mr"
+            type="button"
+          >
+            n = m / Mr
+          </button>
+
+          <button
+            class="formula-block"
+            data-formula="mol*mr"
+            type="button"
+          >
+            m = n × Mr
+          </button>
+
+          <button
+            class="formula-block"
+            data-formula="mol*na"
+            type="button"
+          >
+            N = n × NA
+          </button>
+
+          <button
+            class="formula-block"
+            data-formula="volume/22.4"
+            type="button"
+          >
+            n = V / 22.4
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- CALCULATION -->
+
+      <div class="diagnostic-stage">
+
+        <div class="stage-title">
+
+          <span>03</span>
+
+          <div>
+            <strong>CALCULATION</strong>
+            <small>
+              Masukkan hasil perhitungan
+            </small>
+          </div>
+
+        </div>
+
+
+        <div class="calculation-row">
+
+          <input
+            id="calculationAnswer"
+            type="number"
+            step="any"
+            inputmode="decimal"
+            placeholder="Jawaban"
+          >
+
+
+          <select id="unitAnswer">
+
+            <option value="">
+              UNIT
+            </option>
+
+            <option value="mol">
+              mol
+            </option>
+
+            <option value="g">
+              g
+            </option>
+
+            <option value="L">
+              L
+            </option>
+
+            <option value="particle">
+              partikel
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <!-- ACTIONS -->
+
+      <div class="case-actions">
+
+        <button
+          id="hintButton"
+          class="game-action secondary"
+          type="button"
+        >
+          HINT
+        </button>
+
+        <button
+          id="submitCaseButton"
+          class="game-action primary"
+          type="button"
+        >
+          LOCK ANSWER
+        </button>
+
+      </div>
+
+
+      <div
+        id="caseFeedback"
+        class="case-feedback"
+      >
+      </div>
+
+    </section>
+
+
+    <!-- =================================================== -->
+    <!-- GAME ACTION BAR                                     -->
+    <!-- =================================================== -->
+
+    <nav class="game-action-bar">
+
+      <button type="button">
+        EVENT
+      </button>
+
+      <button type="button">
+        DUEL
+      </button>
+
+      <button type="button">
+        MAP
+      </button>
+
+      <button type="button">
+        HELP
+      </button>
+
+    </nav>
+
+
+    <!-- =================================================== -->
+    <!-- FOOTER                                              -->
+    <!-- =================================================== -->
+
+    <footer class="game-footer">
+
+      MOL-NEXUS MULTIPLAYER DIAGNOSTIC SYSTEM • v1.2
+
+    </footer>
+
+  </main>
+
+
+  <!-- ===================================================== -->
+  <!-- SUPABASE                                              -->
+  <!-- ===================================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+  </script>
+
+
+  <!-- ===================================================== -->
+  <!-- GAME CONTROLLER                                       -->
+  <!-- ===================================================== -->
+
+  <script src="game.js"></script>
+
 
 </body>
-
-</html>
+    </html>
