@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MOL-NEXUS | Multiplayer Lobby</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="lobby.css">
+</head>
+
+<body class="lobby-body">
+
+<div class="background-grid"></div>
+
+<main class="lobby-app">
+
+    <!-- HEADER -->
+    <header class="lobby-header">
+
+        <div class="mini-logo">
+            MOL<span>-NEXUS</span>
+        </div>
+
+        <div class="connection-status">
+            <span class="status-dot"></span>
+            NEXUS NETWORK ONLINE
+        </div>
+
+    </header>
+
+
+    <!-- ROOM INFORMATION -->
+    <section class="room-panel">
+
+        <p class="panel-label">
+            MULTIPLAYER NEXUS LOBBY
+        </p>
+
+        <h1>ROOM <span id="roomDisplay">----</span></h1>
+
+        <div class="room-meta">
+
+            <div>
+                <small>MODE</small>
+                <strong>STANDARD NEXUS</strong>
+            </div>
+
+            <div>
+                <small>PLAYERS</small>
+                <strong id="playerCount">1 / 4</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PLAYER SLOTS -->
+    <section class="players-panel">
+
+        <div class="section-title">
+            <span>CONNECTED PLAYERS</span>
+            <span class="live-text">● LIVE</span>
+        </div>
+
+
+        <!-- PLAYER 1 -->
+        <div class="player-card active-player">
+
+            <div class="player-avatar cyan">
+                01
+            </div>
+
+            <div class="player-info">
+                <strong id="playerName">
+                    PLAYER 1
+                </strong>
+
+                <small>
+                    NEXUS EXPLORER
+                </small>
+            </div>
+
+            <div class="player-state ready">
+                READY
+            </div>
+
+        </div>
+
+
+        <!-- PLAYER 2 -->
+        <div class="player-card empty">
+
+            <div class="player-avatar purple">
+                02
+            </div>
+
+            <div class="player-info">
+                <strong>
+                    WAITING FOR PLAYER
+                </strong>
+
+                <small>
+                    SLOT AVAILABLE
+                </small>
+            </div>
+
+            <div class="player-state waiting">
+                WAITING
+            </div>
+
+        </div>
+
+
+        <!-- PLAYER 3 -->
+        <div class="player-card empty">
+
+            <div class="player-avatar green">
+                03
+            </div>
+
+            <div class="player-info">
+                <strong>
+                    WAITING FOR PLAYER
+                </strong>
+
+                <small>
+                    SLOT AVAILABLE
+                </small>
+            </div>
+
+            <div class="player-state waiting">
+                WAITING
+            </div>
+
+        </div>
+
+
+        <!-- PLAYER 4 -->
+        <div class="player-card empty">
+
+            <div class="player-avatar orange">
+                04
+            </div>
+
+            <div class="player-info">
+                <strong>
+                    WAITING FOR PLAYER
+                </strong>
+
+                <small>
+                    SLOT AVAILABLE
+                </small>
+            </div>
+
+            <div class="player-state waiting">
+                WAITING
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CRYSTAL STATUS -->
+    <section class="crystal-panel">
+
+        <div class="crystal-header">
+
+            <div>
+                <small>NEXUS OBJECTIVE</small>
+                <strong>COLLECT ALL CRYSTALS</strong>
+            </div>
+
+            <div class="crystal-score">
+                0 / 4
+            </div>
+
+        </div>
+
+
+        <div class="crystals">
+
+            <div class="crystal mass-crystal">
+                <span>◆</span>
+                <small>MASS</small>
+            </div>
+
+            <div class="crystal particle-crystal">
+                <span>◆</span>
+                <small>PARTICLE</small>
+            </div>
+
+            <div class="crystal gas-crystal">
+                <span>◆</span>
+                <small>GAS</small>
+            </div>
+
+            <div class="crystal solution-crystal">
+                <span>◆</span>
+                <small>SOLUTION</small>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- GAME STATUS -->
+    <section class="game-status">
+
+        <div class="pulse-ring"></div>
+
+        <div>
+            <small>NEXUS STATUS</small>
+
+            <strong id="statusText">
+                WAITING FOR OTHER PLAYERS
+            </strong>
+        </div>
+
+    </section>
+
+
+    <!-- BUTTONS -->
+    <section class="lobby-actions">
+
+        <button id="readyButton" class="ready-button">
+            ✓ READY
+        </button>
+
+        <button id="leaveButton" class="leave-button">
+            LEAVE ROOM
+        </button>
+
+    </section>
+
+
+    <p class="lobby-note">
+        Permainan dapat dimulai setelah pemain siap.
+    </p>
+
+
+    <footer>
+        MOL-NEXUS MULTIPLAYER SYSTEM • v1.0
+    </footer>
+
+</main>
+
+
+<script src="lobby.js"></script>
+
+</body>
+</html>
