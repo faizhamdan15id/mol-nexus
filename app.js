@@ -112,49 +112,25 @@ function joinNexus() {
         "<span>CONNECTING TO NEXUS...</span>";
 
 
-    // SIMULASI KONEKSI
-    setTimeout(function () {
+    // SIMPAN DATA LOGIN
+localStorage.setItem("molNexusStudent", student);
+localStorage.setItem("molNexusRoom", room);
 
-        // SIMPAN SEMENTARA DI BROWSER
-        localStorage.setItem(
-            "molNexusStudent",
-            student
-        );
+console.log("Student saved:", localStorage.getItem("molNexusStudent"));
+console.log("Room saved:", localStorage.getItem("molNexusRoom"));
 
-        localStorage.setItem(
-            "molNexusRoom",
-            room
-        );
+showMessage(
+    "Nexus ditemukan. Menyiapkan Multiplayer Lobby...",
+    "success"
+);
 
+joinButton.innerHTML =
+    "<span>NEXUS CONNECTED ✓</span>";
 
-        showMessage(
-            "Nexus ditemukan. Menyiapkan Multiplayer Lobby...",
-            "success"
-        );
-
-
-        joinButton.innerHTML =
-            "<span>NEXUS CONNECTED ✓</span>";
-
-
-        // Masuk ke Multiplayer Lobby
-window.location.href = "lobby.html";
-
-
-        setTimeout(function () {
-
-            joinButton.disabled = false;
-
-            joinButton.innerHTML =
-                `
-                <span>JOIN NEXUS</span>
-                <span class="arrow">→</span>
-                `;
-
-        }, 1800);
-
-
-    }, 700);
+// MASUK KE MULTIPLAYER LOBBY
+setTimeout(function () {
+    window.location.href = "lobby.html";
+}, 700);
 
 }
 
