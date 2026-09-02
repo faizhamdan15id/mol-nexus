@@ -129,15 +129,11 @@ joinButton.innerHTML =
 
 // MASUK KE MULTIPLAYER LOBBY
 setTimeout(function () {
-
-    const params = new URLSearchParams({
-        student: student,
-        room: room
-    });
-
     window.location.href =
-        "lobby.html?" + params.toString();
-
+        "lobby.html?student=" +
+        encodeURIComponent(student) +
+        "&room=" +
+        encodeURIComponent(room);
 }, 700);
 
 }
