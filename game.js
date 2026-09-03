@@ -384,7 +384,99 @@ function findCurrentPlayer(players) {
 
   renderCurrentPlayer();
 }
+async function ensureStudentRecord() {
+  if (!currentPlayer) {
+    console.warn("STUDENT RECORD: currentPlayer belum tersedia.");
+    return null;
+  }
 
+  const playerId =
+    currentPlayer.id ??
+    currentPlayer.player_slot;
+
+  if (playerId === null || playerId === undefined) {
+    console.error("STUDENT RECORD: ID pemain tidak ditemukan.");
+    return null;
+  }
+
+  const displayName =
+    getPlayerName(currentPlayer) ||
+    student ||
+    `PLAYER ${playerId}`;
+
+  const studentCode =
+    `${String(room).trim().toUpperCase()}-P${playerId}`;
+
+  try {
+    // Cari dulu berdasarkan student_code
+    const { data: existingStudent, error: findError } =
+      await supabaseClient
+        .from("students")
+        .select("student_id, student_code, display_name")
+        .eq("student_code", studentCode)
+        .maybeSingle();
+
+    if (findError) {
+      console.error(
+        "FIND STUDENT ERROR:",
+        findError
+      );
+      return null;
+    }
+
+    if (existingStudent) {
+      currentStudentId =
+        existingStudent.student_id;
+
+      console.log(
+        "STUDENT FOUND:",
+        existingStudent
+      );
+
+      return existingStudent;
+    }
+
+    // Belum ada → buat student baru
+    const { data: newStudent, error: insertError } =
+      await supabaseClient
+        .from("students")
+        .insert({
+          student_code: studentCode,
+          display_name: displayName,
+          username: displayName
+        })
+        .select(
+          "student_id, student_code, display_name"
+        )
+        .single();
+
+    if (insertError) {
+      console.error(
+        "CREATE STUDENT ERROR:",
+        insertError
+      );
+      return null;
+    }
+
+    currentStudentId =
+      newStudent.student_id;
+
+    console.log(
+      "STUDENT CREATED:",
+      newStudent
+    );
+
+    return newStudent;
+
+  } catch (error) {
+    console.error(
+      "ENSURE STUDENT RECORD ERROR:",
+      error
+    );
+
+    return null;
+  }
+  }
 
 function renderCurrentPlayer() {
 
