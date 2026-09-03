@@ -2040,15 +2040,96 @@ async function submitCurrentCase() {
   }
 
 
-  /*
-     BELUM MENULIS KE case_attempts.
+  /* =====================================================
+   SAVE DIAGNOSTIC ATTEMPT
+   ===================================================== */
 
-     Ini disengaja.
+if (
+  !currentStudentId ||
+  !currentSessionId ||
+  !currentQuestion?.question_id
+) {
+  console.error(
+    "CASE ATTEMPT NOT SAVED: missing required ID",
+    {
+      student_id: currentStudentId,
+      session_id: currentSessionId,
+      question_id: currentQuestion?.question_id
+    }
+  );
 
-     Setelah v2.1 lolos uji Explorer
-     dan Connector, baru kita hubungkan
-     ke tabel diagnostik.
-  */
+  showFeedback(
+    "Jawaban telah diperiksa, tetapi data diagnostik gagal disimpan."
+  );
+
+  return;
+}
+
+const attemptData = {
+  student_id: currentStudentId,
+  session_id: currentSessionId,
+  question_id: currentQuestion.question_id,
+
+  selected_path: JSON.stringify(selectedPath),
+  path_correct: pathCorrect,
+
+  selected_formula: selectedFormulas
+    .map(formulaId => formulaIdToLabel(formulaId))
+    .join("; "),
+
+  formula_correct: formulaCorrect,
+
+  student_answer:
+    Number(calculationAnswer.value),
+
+  calculation_correct:
+    calculationCorrect,
+
+  selected_unit:
+    unitAnswer.value,
+
+  unit_correct:
+    unitCorrect,
+
+  final_correct:
+    finalCorrect,
+
+  total_response_time_ms:
+    responseTimeMs,
+
+  hint_count:
+    hintCount,
+
+  first_failure_point:
+    errorType,
+
+  error_type:
+    errorType
+};
+
+const {
+  error: attemptInsertError
+} = await supabaseClient
+  .from("case_attempts")
+  .insert(attemptData);
+
+if (attemptInsertError) {
+  console.error(
+    "CASE ATTEMPT INSERT ERROR:",
+    attemptInsertError
+  );
+
+  showFeedback(
+    "Jawaban telah diperiksa, tetapi data diagnostik gagal disimpan."
+  );
+
+  return;
+}
+
+console.log(
+  "CASE ATTEMPT SAVED:",
+  attemptData
+);
 }
 
 
