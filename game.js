@@ -477,7 +477,92 @@ async function ensureStudentRecord() {
     return null;
   }
   }
+/* =========================================================
+   GAME SESSION
+   Memastikan setiap room memiliki session aktif
+========================================================= */
 
+async function ensureGameSession() {
+  if (!room) {
+    console.warn("GAME SESSION: room belum tersedia.");
+    return null;
+  }
+
+  try {
+    // Cari session aktif untuk room ini
+    const { data: existingSessions, error: findError } =
+      await supabaseClient
+        .from("game_sessions")
+        .select("session_id, room_code, status, created_at")
+        .eq("room_code", room)
+        .in("status", ["WAITING", "PLAYING"])
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+    if (findError) {
+      console.error(
+        "FIND GAME SESSION ERROR:",
+        findError
+      );
+      return null;
+    }
+
+    if (
+      Array.isArray(existingSessions) &&
+      existingSessions.length > 0
+    ) {
+      currentSessionId =
+        existingSessions[0].session_id;
+
+      console.log(
+        "GAME SESSION FOUND:",
+        existingSessions[0]
+      );
+
+      return existingSessions[0];
+    }
+
+    // Belum ada session → buat session baru
+    const { data: newSession, error: insertError } =
+      await supabaseClient
+        .from("game_sessions")
+        .insert({
+          room_code: room,
+          status: "PLAYING",
+          started_at: new Date().toISOString()
+        })
+        .select(
+          "session_id, room_code, status, created_at"
+        )
+        .single();
+
+    if (insertError) {
+      console.error(
+        "CREATE GAME SESSION ERROR:",
+        insertError
+      );
+      return null;
+    }
+
+    currentSessionId =
+      newSession.session_id;
+
+    console.log(
+      "GAME SESSION CREATED:",
+      newSession
+    );
+
+    return newSession;
+
+  } catch (error) {
+    console.error(
+      "ENSURE GAME SESSION ERROR:",
+      error
+    );
+
+    return null;
+  }
+}
 function renderCurrentPlayer() {
 
   if (!currentPlayer) return;
