@@ -103,6 +103,12 @@ const caseFeedback =
 let currentPlayer = null;
 let currentQuestion = null;
 
+// =============================================
+// RESEARCH / DIAGNOSTIC IDENTIFIERS
+// =============================================
+
+let currentStudentId = null;
+let currentSessionId = null;
 let selectedPath = [];
 let selectedFormulas = [];
 
