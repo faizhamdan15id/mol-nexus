@@ -527,10 +527,9 @@ async function ensureGameSession() {
       await supabaseClient
         .from("game_sessions")
         .insert({
-          room_code: room,
-          status: "PLAYING",
-          started_at: new Date().toISOString()
-        })
+  room_code: room,
+  status: "WAITING"
+})
         .select(
           "session_id, room_code, status, created_at"
         )
