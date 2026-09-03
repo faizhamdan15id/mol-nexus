@@ -1433,3 +1433,332 @@ body {
     opacity: 1;
 
    
+/* =========================================================
+   MOL-NEXUS
+   MOBILE RESPONSIVE PATCH v1.2
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  /* ---------- PAGE ---------- */
+
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .game-app {
+    width: 100%;
+    max-width: 100%;
+    padding: 14px;
+  }
+
+
+  /* ---------- HEADER ---------- */
+
+  .game-header {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .game-logo {
+    font-size: 26px;
+  }
+
+  .network-status {
+    font-size: 10px;
+  }
+
+
+  /* ---------- TOP STATUS ---------- */
+
+  .game-status-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .status-card {
+    min-width: 0;
+    padding: 12px;
+  }
+
+  .status-card span {
+    font-size: 8px;
+  }
+
+  .status-card strong {
+    font-size: 15px;
+  }
+
+
+  /* ---------- MAIN LAYOUT ---------- */
+
+  .game-layout {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .left-panel,
+  .center-panel,
+  .right-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+
+  /* ---------- BOARD FIRST ---------- */
+
+  .center-panel {
+    order: 1;
+  }
+
+  .left-panel {
+    order: 2;
+  }
+
+  .right-panel {
+    order: 3;
+  }
+
+
+  /* ---------- NEXUS BOARD ---------- */
+
+  .board-panel {
+    width: 100%;
+    padding: 14px 8px;
+    overflow: hidden;
+  }
+
+  .nexus-board {
+    width: min(92vw, 390px);
+    height: min(92vw, 390px);
+    max-width: 100%;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .nexus-core {
+    width: 105px;
+    height: 105px;
+  }
+
+  .nexus-core strong {
+    font-size: 14px;
+  }
+
+  .nexus-core small {
+    font-size: 7px;
+  }
+
+  .nexus-zone {
+    width: 100px;
+    min-height: 64px;
+    padding: 8px 5px;
+    font-size: 9px;
+  }
+
+  .nexus-zone strong {
+    font-size: 11px;
+  }
+
+  .board-node {
+    width: 32px;
+    height: 32px;
+    font-size: 7px;
+  }
+
+
+  /* ---------- CONNECTED PLAYERS ---------- */
+
+  .players-panel {
+    width: 100%;
+  }
+
+  .player-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+  }
+
+  .player-item {
+    min-width: 0;
+    padding: 11px;
+  }
+
+  .player-slot {
+    width: 42px;
+    height: 42px;
+  }
+
+  .slot-player-name {
+    font-size: 12px;
+  }
+
+  .slot-player-subtitle {
+    font-size: 7px;
+  }
+
+
+  /* ---------- PLAYER STATUS ---------- */
+
+  .player-status-panel {
+    width: 100%;
+  }
+
+  .energy-display {
+    font-size: 20px;
+  }
+
+  .crystal-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .game-crystal {
+    min-height: 60px;
+  }
+
+
+  /* ---------- CASE / CHALLENGE ---------- */
+
+  .case-panel {
+    width: 100%;
+    padding: 16px;
+    margin-top: 4px;
+  }
+
+  .case-panel h2,
+  .case-panel h3 {
+    line-height: 1.25;
+  }
+
+
+  /* ---------- PATH BUILDER ---------- */
+
+  .path-builder,
+  .formula-builder,
+  .calculation-builder {
+    width: 100%;
+  }
+
+  .path-options,
+  .formula-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .path-options button,
+  .formula-options button {
+    min-height: 42px;
+    padding: 9px 12px;
+    font-size: 12px;
+    border-radius: 9px;
+  }
+
+
+  /* ---------- INPUT ---------- */
+
+  input,
+  select {
+    min-height: 44px;
+    font-size: 16px;
+    border-radius: 9px;
+  }
+
+  .calculation-builder input {
+    width: 65%;
+  }
+
+  .calculation-builder select {
+    width: 32%;
+  }
+
+
+  /* ---------- ACTION BUTTONS ---------- */
+
+  .case-actions,
+  .game-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 9px;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .case-actions button,
+  .game-actions button {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+
+  /* ---------- REMOVE DESKTOP EMPTY SPACE ---------- */
+
+  .game-main,
+  .game-layout,
+  .center-panel,
+  .case-panel {
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+}
+
+
+/* =========================================================
+   EXTRA SMALL PHONE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .game-app {
+    padding: 10px;
+  }
+
+  .game-logo {
+    font-size: 23px;
+  }
+
+  .nexus-board {
+    width: 94vw;
+    height: 94vw;
+  }
+
+  .nexus-zone {
+    width: 88px;
+    min-height: 56px;
+  }
+
+  .nexus-core {
+    width: 92px;
+    height: 92px;
+  }
+
+  .player-list {
+    grid-template-columns: 1fr;
+  }
+
+  .crystal-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
