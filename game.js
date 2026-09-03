@@ -2307,7 +2307,7 @@ async function startMolNexusGame() {
   await loadGameRoom();
 
   await loadGamePlayers();
-
+await ensureStudentRecord();
 
   subscribePlayers();
 
