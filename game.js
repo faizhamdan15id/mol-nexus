@@ -537,11 +537,18 @@ async function ensureGameSession() {
         .single();
 
     if (insertError) {
-      console.error(
-        "CREATE GAME SESSION ERROR:",
-        insertError
-      );
-      return null;
+  console.error(
+    "CREATE GAME SESSION ERROR:",
+    insertError
+  );
+
+  if (gameMessage) {
+    gameMessage.textContent =
+      "SESSION ERROR: " +
+      (insertError.message || JSON.stringify(insertError));
+  }
+
+  return null;
     }
 
     currentSessionId =
