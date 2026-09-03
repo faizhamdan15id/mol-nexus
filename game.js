@@ -3438,15 +3438,12 @@ async function saveCaseAttempt(
 
 
   const {
-    data,
-    error
-  } = await supabaseClient
-    .from("case_attempts")
-    .insert(
-      attemptData
-    )
-    .select("attempt_id")
-    .single();
+  error
+} = await supabaseClient
+  .from("case_attempts")
+  .insert(
+    attemptData
+  );
 
 
   if (error) {
