@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    MOL-NEXUS | Smart Analytics Dashboard
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="dashboard.css"
+  >
+</head>
+
+<body>
+
+  <header class="topbar">
+
+    <div>
+      <p class="eyebrow">
+        MOL-NEXUS
+      </p>
+
+      <h1>
+        Smart Analytics Dashboard
+      </h1>
+
+      <p class="subtitle">
+        Cognitive & Numeracy Diagnostic System
+      </p>
+    </div>
+
+    <div class="system-status">
+      <span class="status-dot"></span>
+      ANALYTICS ONLINE
+    </div>
+
+  </header>
+
+
+  <main class="dashboard">
+
+    <!-- RINGKASAN KELAS -->
+
+    <section class="summary-grid">
+
+      <article class="summary-card">
+        <span>Total Siswa</span>
+        <strong id="totalStudents">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Total Attempt</span>
+        <strong id="totalAttempts">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Akurasi Kelas</span>
+        <strong id="classAccuracy">0%</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Perlu Intervensi</span>
+        <strong id="needIntervention">0</strong>
+      </article>
+
+    </section>
+
+
+    <!-- PROFIL SISWA -->
+
+    <section class="panel">
+
+      <div class="panel-heading">
+
+        <div>
+          <p class="section-label">
+            COGNITIVE MAPPING
+          </p>
+
+          <h2>
+            Profil Diagnostik Siswa
+          </h2>
+        </div>
+
+        <button
+          id="refreshDashboard"
+          type="button"
+        >
+          Refresh Data
+        </button>
+
+      </div>
+
+
+      <div
+        id="loadingState"
+        class="state-message"
+      >
+        Memuat data MOL-NEXUS...
+      </div>
+
+
+      <div
+        id="errorState"
+        class="state-message error-message"
+        hidden
+      ></div>
+
+
+      <div
+        id="studentCards"
+        class="student-grid"
+      ></div>
+
+    </section>
+
+
+    <!-- DETAIL DIAGNOSTIK -->
+
+    <section
+      id="diagnosticPanel"
+      class="panel"
+    >
+
+      <div class="panel-heading">
+
+        <div>
+          <p class="section-label">
+            DIAGNOSTIC ENGINE
+          </p>
+
+          <h2>
+            Detail Analitik
+          </h2>
+        </div>
+
+      </div>
+
+
+      <div class="diagnostic-placeholder">
+
+        Pilih salah satu siswa untuk melihat
+        analisis Path, Formula, Calculation,
+        Unit, Nexus, dan Numerasi.
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    MOL-NEXUS • Multiplayer Chemistry
+    Learning Analytics System
+
+  </footer>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="dashboard.js"></script>
+
+</body>
+</html>
