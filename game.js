@@ -276,59 +276,75 @@ function setSubmitDisabled(
    ============================================================ */
 
 function applyTurnState(roomData) {
-
-  if (!roomData || !currentPlayer) {
-    return;
-  }
-
-  currentTurn =
-    Number(roomData.current_turn || 1);
-
-  const mySlot =
-    Number(currentPlayer.player_slot);
-
-  isMyTurn =
-    mySlot === currentTurn;
-
-
-  if (isMyTurn) {
-
-    if (turnStatus) {
-      turnStatus.textContent =
-        "YOUR TURN • PLAYER " + mySlot;
+    if (!roomData || !currentPlayer) {
+        return;
     }
 
-    if (gameMessage) {
-      gameMessage.textContent =
-        "Giliran Anda. Pilih Nexus dan selesaikan challenge.";
+    currentTurn = Number(roomData.current_turn || 1);
+
+    const mySlot = Number(currentPlayer.player_slot);
+
+    isMyTurn = mySlot === currentTurn;
+
+    /*
+     * CURRENT PLAYER harus menunjukkan
+     * pemain yang BENAR-BENAR sedang mendapat giliran,
+     * bukan pemilik browser/tab.
+     */
+    const activePlayer =
+        Array.isArray(currentPlayers)
+            ? currentPlayers.find(
+                player =>
+                    Number(player.player_slot) === currentTurn
+              )
+            : null;
+
+    if (currentPlayerName) {
+        currentPlayerName.textContent =
+            activePlayer
+                ? getPlayerName(activePlayer).toUpperCase()
+                : "PLAYER " + currentTurn;
     }
 
-    setSubmitDisabled(false);
+    if (isMyTurn) {
+        if (turnStatus) {
+            turnStatus.textContent =
+                "YOUR TURN • PLAYER " + mySlot;
+        }
 
-  } else {
+        if (gameMessage) {
+            gameMessage.textContent =
+                "Giliran Anda. Pilih Nexus dan selesaikan challenge.";
+        }
 
-    if (turnStatus) {
-      turnStatus.textContent =
-        "PLAYER " + currentTurn + " TURN";
+        setSubmitDisabled(false);
+
+    } else {
+        if (turnStatus) {
+            turnStatus.textContent =
+                "PLAYER " + currentTurn + " TURN";
+        }
+
+        if (gameMessage) {
+            gameMessage.textContent =
+                "Menunggu giliran Player " + currentTurn + ".";
+        }
+
+        setSubmitDisabled(true);
     }
 
-    if (gameMessage) {
-      gameMessage.textContent =
-        "Menunggu giliran Player " + currentTurn + ".";
-    }
-
-    setSubmitDisabled(true);
-  }
-
-
-  console.log(
-    "TURN STATE:",
-    {
-      current_turn: currentTurn,
-      my_slot: mySlot,
-      is_my_turn: isMyTurn
-    }
-  );
+    console.log(
+        "TURN STATE:",
+        {
+            current_turn: currentTurn,
+            my_slot: mySlot,
+            active_player:
+                activePlayer
+                    ? getPlayerName(activePlayer)
+                    : null,
+            is_my_turn: isMyTurn
+        }
+    );
 }
 /* ============================================================
    6. BASIC DATA
