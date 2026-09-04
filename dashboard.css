@@ -1,3 +1,9 @@
+/* =========================================================
+   MOL-NEXUS
+   SMART ANALYTICS DASHBOARD
+   Dashboard CSS v1.1
+========================================================= */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,18 +11,36 @@
 }
 
 :root {
-  --bg: #07111f;
-  --panel: #0d1b2a;
-  --panel-2: #102438;
-  --border: rgba(255,255,255,.08);
+  --bg: #03111f;
+  --bg-soft: #071a2b;
+  --panel: rgba(9, 29, 47, 0.92);
+  --panel-2: rgba(12, 37, 58, 0.92);
 
-  --text: #f5f8fc;
-  --muted: #8ea3b7;
+  --border: rgba(82, 203, 255, 0.14);
+  --border-strong: rgba(29, 218, 255, 0.32);
 
-  --cyan: #27e1ff;
-  --green: #35e89a;
+  --cyan: #22dcff;
+  --cyan-soft: rgba(34, 220, 255, 0.12);
+
+  --green: #36e8a1;
   --yellow: #ffd166;
-  --red: #ff667d;
+  --orange: #ff9f43;
+  --red: #ff6577;
+  --purple: #b48cff;
+
+  --text: #f4f8fc;
+  --muted: #91a3b6;
+  --muted-2: #71859a;
+
+  --radius: 22px;
+  --radius-small: 14px;
+
+  --shadow:
+    0 18px 45px rgba(0, 0, 0, 0.24);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -24,10 +48,14 @@ body {
   background:
     radial-gradient(
       circle at top right,
-      rgba(39,225,255,.10),
-      transparent 35%
+      rgba(0, 199, 255, 0.08),
+      transparent 30%
     ),
-    var(--bg);
+    linear-gradient(
+      180deg,
+      #03111f 0%,
+      #041321 100%
+    );
 
   color: var(--text);
 
@@ -38,106 +66,113 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
+  line-height: 1.5;
 }
 
 
-/* =========================
+/* =========================================================
    TOP BAR
-   ========================= */
+========================================================= */
 
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 28px;
 
-  padding: 28px 5%;
+  padding:
+    38px
+    max(5vw, 24px);
 
-  border-bottom: 1px solid var(--border);
+  border-bottom:
+    1px solid var(--border);
 
   background:
-    rgba(7,17,31,.85);
-
-  backdrop-filter: blur(12px);
-
-  position: sticky;
-  top: 0;
-  z-index: 20;
+    rgba(3, 17, 31, 0.88);
 }
 
 .eyebrow,
 .section-label {
   color: var(--cyan);
 
-  font-size: 12px;
+  font-size: 0.82rem;
   font-weight: 800;
 
-  letter-spacing: 2px;
+  letter-spacing: 0.19em;
 }
 
 .topbar h1 {
-  margin-top: 4px;
+  margin-top: 6px;
 
-  font-size: clamp(
-    24px,
-    4vw,
-    38px
-  );
+  font-size:
+    clamp(
+      2rem,
+      4vw,
+      3.25rem
+    );
+
+  line-height: 1.08;
+
+  letter-spacing: -0.035em;
 }
 
 .subtitle {
-  margin-top: 6px;
+  margin-top: 8px;
 
   color: var(--muted);
 
-  font-size: 14px;
+  font-size: 1rem;
 }
 
 .system-status {
+  flex-shrink: 0;
+
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 
   color: var(--green);
 
-  font-size: 12px;
+  font-size: 0.78rem;
   font-weight: 800;
 
-  letter-spacing: 1px;
-
-  white-space: nowrap;
+  letter-spacing: 0.13em;
 }
 
 .status-dot {
-  width: 9px;
-  height: 9px;
+  width: 12px;
+  height: 12px;
 
   border-radius: 50%;
 
   background: var(--green);
 
   box-shadow:
-    0 0 14px var(--green);
+    0 0 18px
+    rgba(54, 232, 161, 0.85);
 }
 
 
-/* =========================
+/* =========================================================
    DASHBOARD
-   ========================= */
+========================================================= */
 
 .dashboard {
-  width: min(
-    1200px,
-    92%
-  );
+  width: min(1400px, 100%);
 
-  margin: 32px auto 60px;
+  margin: 0 auto;
+
+  padding:
+    34px
+    max(3vw, 20px)
+    70px;
 }
 
 
-/* =========================
+/* =========================================================
    SUMMARY
-   ========================= */
+========================================================= */
 
 .summary-grid {
   display: grid;
@@ -145,54 +180,202 @@ body {
   grid-template-columns:
     repeat(4, 1fr);
 
-  gap: 16px;
+  gap: 18px;
 
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .summary-card {
-  padding: 22px;
+  min-height: 145px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 28px;
 
   border:
     1px solid var(--border);
 
-  border-radius: 18px;
+  border-radius: var(--radius);
 
   background:
     linear-gradient(
       145deg,
-      rgba(16,36,56,.95),
-      rgba(10,25,40,.95)
+      rgba(11, 37, 59, 0.96),
+      rgba(6, 25, 42, 0.96)
     );
 
-  box-shadow:
-    0 12px 35px
-    rgba(0,0,0,.18);
+  box-shadow: var(--shadow);
 }
 
 .summary-card span {
-  display: block;
-
-  margin-bottom: 8px;
-
   color: var(--muted);
 
-  font-size: 13px;
+  font-size: 0.93rem;
 }
 
 .summary-card strong {
+  margin-top: 8px;
+
   color: var(--cyan);
 
-  font-size: 30px;
+  font-size: 2.4rem;
+
+  line-height: 1;
 }
 
 
-/* =========================
-   PANEL
-   ========================= */
+/* =========================================================
+   PANELS
+========================================================= */
 
 .panel {
-  margin-top: 22px;
+  margin-top: 28px;
+
+  padding: 30px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    calc(var(--radius) + 4px);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(8, 29, 47, 0.96),
+      rgba(5, 22, 37, 0.96)
+    );
+
+  box-shadow: var(--shadow);
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 20px;
+
+  margin-bottom: 28px;
+}
+
+.panel-heading h2 {
+  margin-top: 5px;
+
+  font-size:
+    clamp(
+      1.5rem,
+      3vw,
+      2rem
+    );
+
+  letter-spacing: -0.025em;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+button {
+  font: inherit;
+}
+
+#refreshDashboard,
+.detail-button {
+  border:
+    1px solid
+    rgba(34, 220, 255, 0.35);
+
+  border-radius: 13px;
+
+  background:
+    rgba(34, 220, 255, 0.08);
+
+  color: var(--cyan);
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+#refreshDashboard {
+  padding: 12px 18px;
+}
+
+.detail-button {
+  width: 100%;
+
+  margin-top: 20px;
+
+  padding: 12px 16px;
+}
+
+#refreshDashboard:hover,
+.detail-button:hover {
+  transform: translateY(-1px);
+
+  background:
+    rgba(34, 220, 255, 0.15);
+
+  border-color:
+    rgba(34, 220, 255, 0.65);
+}
+
+
+/* =========================================================
+   STATES
+========================================================= */
+
+.state-message {
+  padding: 42px 20px;
+
+  color: var(--muted);
+
+  text-align: center;
+}
+
+.error-message {
+  color: var(--red);
+
+  border:
+    1px solid
+    rgba(255, 101, 119, 0.25);
+
+  border-radius: var(--radius-small);
+
+  background:
+    rgba(255, 101, 119, 0.07);
+}
+
+
+/* =========================================================
+   STUDENT GRID
+========================================================= */
+
+.student-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(280px, 1fr)
+    );
+
+  gap: 20px;
+}
+
+.student-card {
+  position: relative;
+
+  overflow: hidden;
 
   padding: 24px;
 
@@ -202,74 +385,374 @@ body {
   border-radius: 20px;
 
   background:
-    rgba(13,27,42,.88);
+    linear-gradient(
+      145deg,
+      rgba(12, 39, 61, 0.96),
+      rgba(7, 27, 45, 0.96)
+    );
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.student-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--cyan),
+      transparent
+    );
+
+  opacity: 0.7;
+}
+
+.student-card:hover {
+  transform: translateY(-3px);
+
+  border-color:
+    var(--border-strong);
 
   box-shadow:
-    0 15px 45px
-    rgba(0,0,0,.20);
+    0 15px 35px
+    rgba(0, 0, 0, 0.22);
 }
 
-.panel-heading {
+.student-card-top {
   display: flex;
+
   justify-content: space-between;
-  align-items: center;
+
+  align-items: flex-start;
+
   gap: 15px;
-
-  margin-bottom: 22px;
 }
 
-.panel-heading h2 {
-  margin-top: 5px;
+.student-code {
+  display: block;
 
-  font-size: 21px;
+  margin-bottom: 5px;
+
+  color: var(--muted);
+
+  font-size: 0.76rem;
+
+  letter-spacing: 0.08em;
+}
+
+.student-card h3 {
+  font-size: 1.3rem;
+
+  line-height: 1.2;
+}
+
+.profile-name {
+  min-height: 48px;
+
+  margin-top: 14px;
+
+  color: var(--muted);
+
+  font-size: 0.9rem;
 }
 
 
-/* =========================
-   BUTTON
-   ========================= */
+/* =========================================================
+   PROFILE BADGES
+========================================================= */
 
-#refreshDashboard {
-  border: 1px solid
-    rgba(39,225,255,.30);
+.profile-badge {
+  display: inline-flex;
 
-  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
 
-  padding: 10px 16px;
+  min-width: 48px;
+
+  padding: 7px 11px;
+
+  border-radius: 999px;
+
+  font-size: 0.78rem;
+  font-weight: 900;
+
+  letter-spacing: 0.05em;
+}
+
+.profile-P0 {
+  color: #c6d2de;
 
   background:
-    rgba(39,225,255,.08);
+    rgba(145, 163, 182, 0.14);
 
-  color: var(--cyan);
-
-  font-weight: 700;
-
-  cursor: pointer;
+  border:
+    1px solid
+    rgba(145, 163, 182, 0.28);
 }
 
-#refreshDashboard:hover {
+.profile-P1 {
+  color: var(--red);
+
   background:
-    rgba(39,225,255,.16);
+    rgba(255, 101, 119, 0.12);
+
+  border:
+    1px solid
+    rgba(255, 101, 119, 0.32);
+}
+
+.profile-P2 {
+  color: var(--orange);
+
+  background:
+    rgba(255, 159, 67, 0.12);
+
+  border:
+    1px solid
+    rgba(255, 159, 67, 0.32);
+}
+
+.profile-P3 {
+  color: var(--yellow);
+
+  background:
+    rgba(255, 209, 102, 0.12);
+
+  border:
+    1px solid
+    rgba(255, 209, 102, 0.32);
+}
+
+.profile-P4 {
+  color: var(--purple);
+
+  background:
+    rgba(180, 140, 255, 0.12);
+
+  border:
+    1px solid
+    rgba(180, 140, 255, 0.32);
+}
+
+.profile-P5 {
+  color: var(--green);
+
+  background:
+    rgba(54, 232, 161, 0.12);
+
+  border:
+    1px solid
+    rgba(54, 232, 161, 0.32);
 }
 
 
-/* =========================
-   STUDENT CARDS
-   ========================= */
+/* =========================================================
+   STUDENT STATS
+========================================================= */
 
-.student-grid {
+.student-stats {
   display: grid;
 
   grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(250px,1fr)
-    );
+    repeat(3, 1fr);
 
-  gap: 15px;
+  gap: 9px;
+
+  margin-top: 20px;
 }
 
-.student-card {
+.student-stats div {
+  min-width: 0;
+
+  padding: 12px 8px;
+
+  border-radius: 12px;
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  text-align: center;
+}
+
+.student-stats span {
+  display: block;
+
+  color: var(--muted-2);
+
+  font-size: 0.68rem;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.05em;
+}
+
+.student-stats strong {
+  display: block;
+
+  overflow: hidden;
+
+  margin-top: 5px;
+
+  color: var(--text);
+
+  font-size: 0.92rem;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   DIAGNOSTIC PLACEHOLDER
+========================================================= */
+
+.diagnostic-placeholder {
+  padding: 55px 25px;
+
+  border:
+    1px dashed
+    rgba(145, 163, 182, 0.2);
+
+  border-radius: 18px;
+
+  color: var(--muted);
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   DIAGNOSTIC SUMMARY
+========================================================= */
+
+.diagnostic-summary {
+  margin-bottom: 24px;
+
+  padding: 20px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 16px;
+
+  background:
+    rgba(34, 220, 255, 0.045);
+}
+
+.diagnostic-summary h3 {
+  font-size: 1.2rem;
+}
+
+.diagnostic-summary p {
+  margin-top: 6px;
+
+  color: var(--muted);
+}
+
+
+/* =========================================================
+   ACCURACY GRID
+========================================================= */
+
+.accuracy-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 14px;
+
+  margin-bottom: 24px;
+}
+
+.accuracy-card {
+  padding: 18px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 16px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.accuracy-card span {
+  color: var(--muted);
+
+  font-size: 0.8rem;
+}
+
+.accuracy-card strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--cyan);
+
+  font-size: 1.5rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 7px;
+
+  overflow: hidden;
+
+  margin-top: 12px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+}
+
+.progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #00a8d6,
+      #22dcff,
+      #36e8a1
+    );
+
+  box-shadow:
+    0 0 10px
+    rgba(34, 220, 255, 0.35);
+}
+
+
+/* =========================================================
+   DIAGNOSTIC INFO
+========================================================= */
+
+.diagnostic-info-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 14px;
+
+  margin-bottom: 24px;
+}
+
+.diagnostic-info {
   padding: 18px;
 
   border:
@@ -278,272 +761,288 @@ body {
   border-radius: 15px;
 
   background:
-    var(--panel-2);
-
-  cursor: pointer;
-
-  transition:
-    transform .2s ease,
-    border-color .2s ease;
+    rgba(255, 255, 255, 0.025);
 }
 
-.student-card:hover {
-  transform:
-    translateY(-3px);
+.diagnostic-info span {
+  display: block;
 
-  border-color:
-    rgba(39,225,255,.40);
-}
-
-.student-card h3 {
-  margin-bottom: 6px;
-
-  font-size: 17px;
-}
-
-.student-meta {
   color: var(--muted);
 
-  font-size: 12px;
+  font-size: 0.75rem;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.06em;
+}
+
+.diagnostic-info strong {
+  display: block;
+
+  margin-top: 7px;
+
+  font-size: 0.96rem;
+
+  word-break: break-word;
 }
 
 
-/* =========================
-   PROFILE BADGES
-   ========================= */
+/* =========================================================
+   RECOMMENDATION
+========================================================= */
 
-.badge {
-  display: inline-block;
+.recommendation-box {
+  margin-top: 20px;
 
-  margin-top: 12px;
-  margin-right: 6px;
-
-  padding: 5px 9px;
-
-  border-radius: 999px;
-
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.profile-P0 {
-  background:
-    rgba(142,163,183,.15);
-
-  color: #c0cfdb;
-}
-
-.profile-P1,
-.profile-P2,
-.profile-P3 {
-  background:
-    rgba(255,209,102,.13);
-
-  color: var(--yellow);
-}
-
-.profile-P4 {
-  background:
-    rgba(255,102,125,.14);
-
-  color: var(--red);
-}
-
-.profile-P5 {
-  background:
-    rgba(53,232,154,.13);
-
-  color: var(--green);
-}
-
-.evidence-LIMITED {
-  color: var(--red);
-}
-
-.evidence-MODERATE {
-  color: var(--yellow);
-}
-
-.evidence-STRONG {
-  color: var(--green);
-}
-
-
-/* =========================
-   DIAGNOSTIC
-   ========================= */
-
-.diagnostic-placeholder {
-  min-height: 150px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  padding: 25px;
+  padding: 24px;
 
   border:
-    1px dashed
-    rgba(255,255,255,.12);
+    1px solid
+    rgba(54, 232, 161, 0.24);
 
-  border-radius: 14px;
-
-  color: var(--muted);
-
-  text-align: center;
-}
-
-
-/* Progress bars */
-
-.metric {
-  margin-bottom: 17px;
-}
-
-.metric-header {
-  display: flex;
-  justify-content: space-between;
-
-  margin-bottom: 7px;
-
-  font-size: 13px;
-}
-
-.metric-track {
-  height: 8px;
-
-  overflow: hidden;
-
-  border-radius: 999px;
-
-  background:
-    rgba(255,255,255,.07);
-}
-
-.metric-fill {
-  height: 100%;
-
-  border-radius: 999px;
+  border-radius: 18px;
 
   background:
     linear-gradient(
-      90deg,
-      var(--cyan),
-      var(--green)
+      145deg,
+      rgba(54, 232, 161, 0.07),
+      rgba(34, 220, 255, 0.035)
     );
 }
 
+.recommendation-box h3 {
+  margin-top: 6px;
 
-/* =========================
-   STATES
-   ========================= */
+  font-size: 1.2rem;
+}
 
-.state-message {
+.recommendation-box p:last-child {
+  margin-top: 10px;
+
+  color: #c6d4df;
+
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   DECISION TREE TRACE
+========================================================= */
+
+.decision-box {
+  margin-top: 20px;
+
   padding: 24px;
 
-  color: var(--muted);
+  border:
+    1px solid var(--border);
 
-  text-align: center;
+  border-radius: 18px;
+
+  background:
+    rgba(0, 0, 0, 0.14);
 }
 
-.error-message {
-  color: var(--red);
+.decision-box pre {
+  overflow-x: auto;
+
+  margin-top: 14px;
+
+  padding: 16px;
+
+  border-radius: 12px;
+
+  background:
+    rgba(0, 0, 0, 0.22);
+
+  color: #b9eefa;
+
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+
+  font-size: 0.78rem;
+
+  line-height: 1.6;
+
+  white-space: pre-wrap;
+
+  word-break: break-word;
 }
 
 
-/* =========================
+/* =========================================================
    FOOTER
-   ========================= */
+========================================================= */
 
 footer {
-  padding: 25px;
+  padding: 28px 20px 40px;
 
   border-top:
     1px solid var(--border);
 
-  color: var(--muted);
+  color: var(--muted-2);
 
   text-align: center;
 
-  font-size: 11px;
+  font-size: 0.78rem;
 
-  letter-spacing: 1px;
+  letter-spacing: 0.04em;
 }
 
 
-/* =========================
-   MOBILE
-   ========================= */
+/* =========================================================
+   TABLET
+========================================================= */
 
-@media (
-  max-width: 760px
-) {
-
-  .topbar {
-    align-items:
-      flex-start;
-
-    padding:
-      20px 5%;
-  }
-
-  .system-status {
-    font-size: 9px;
-  }
+@media (max-width: 900px) {
 
   .summary-grid {
     grid-template-columns:
-      repeat(2,1fr);
+      repeat(2, 1fr);
   }
 
-  .summary-card {
-    padding: 17px;
+  .accuracy-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
   }
 
-  .summary-card strong {
-    font-size: 25px;
+  .diagnostic-info-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
   }
-
-  .panel {
-    padding: 18px;
-  }
-
-  .panel-heading {
-    align-items:
-      flex-start;
-
-    flex-direction:
-      column;
-  }
-
 }
 
 
-/* =========================
-   SMALL PHONE
-   ========================= */
+/* =========================================================
+   MOBILE
+========================================================= */
 
-@media (
-  max-width: 430px
-) {
+@media (max-width: 600px) {
 
   .topbar {
-    flex-direction:
-      column;
+    display: block;
+
+    padding:
+      32px 20px;
   }
 
-  .summary-grid {
-    gap: 10px;
+  .topbar h1 {
+    font-size: 2rem;
   }
 
-  .summary-card {
-    border-radius: 14px;
+  .subtitle {
+    font-size: 0.92rem;
+  }
+
+  .system-status {
+    margin-top: 25px;
   }
 
   .dashboard {
-    width: 94%;
-
-    margin-top: 18px;
+    padding:
+      22px
+      14px
+      55px;
   }
 
-      }
+  .summary-grid {
+    gap: 12px;
+  }
+
+  .summary-card {
+    min-height: 120px;
+
+    padding: 20px;
+  }
+
+  .summary-card span {
+    font-size: 0.82rem;
+  }
+
+  .summary-card strong {
+    font-size: 2rem;
+  }
+
+  .panel {
+    margin-top: 20px;
+
+    padding: 20px;
+
+    border-radius: 22px;
+  }
+
+  .panel-heading {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    margin-bottom: 22px;
+  }
+
+  #refreshDashboard {
+    width: 100%;
+  }
+
+  .student-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-card {
+    padding: 20px;
+  }
+
+  .student-stats {
+    gap: 7px;
+  }
+
+  .student-stats div {
+    padding:
+      11px
+      5px;
+  }
+
+  .student-stats strong {
+    font-size: 0.8rem;
+  }
+
+  .accuracy-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    gap: 10px;
+  }
+
+  .accuracy-card {
+    padding: 15px;
+  }
+
+  .diagnostic-info-grid {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .recommendation-box,
+  .decision-box {
+    padding: 19px;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .accuracy-grid {
+    grid-template-columns: 1fr;
+  }
+  }
