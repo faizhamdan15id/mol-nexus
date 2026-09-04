@@ -670,7 +670,6 @@ async function ensureStudentRecord() {
 
 
   const playerId =
-    currentPlayer.id ??
     currentPlayer.player_slot;
 
 
