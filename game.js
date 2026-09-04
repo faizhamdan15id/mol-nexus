@@ -505,14 +505,15 @@ async function loadGamePlayers() {
   const safePlayers =
     players || [];
 
+currentPlayers = safePlayers;
 
-  renderPlayers(
+renderPlayers(
     safePlayers
-  );
+);
 
-  findCurrentPlayer(
+findCurrentPlayer(
     safePlayers
-  );
+);
 
 const roomData = await loadGameRoom();
 
