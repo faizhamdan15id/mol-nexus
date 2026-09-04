@@ -271,7 +271,65 @@ function setSubmitDisabled(
     disabled;
 }
 
+/* ============================================================
+   MULTIPLAYER TURN CONTROL
+   ============================================================ */
 
+function applyTurnState(roomData) {
+
+  if (!roomData || !currentPlayer) {
+    return;
+  }
+
+  currentTurn =
+    Number(roomData.current_turn || 1);
+
+  const mySlot =
+    Number(currentPlayer.player_slot);
+
+  isMyTurn =
+    mySlot === currentTurn;
+
+
+  if (isMyTurn) {
+
+    if (turnStatus) {
+      turnStatus.textContent =
+        "YOUR TURN • PLAYER " + mySlot;
+    }
+
+    if (gameMessage) {
+      gameMessage.textContent =
+        "Giliran Anda. Pilih Nexus dan selesaikan challenge.";
+    }
+
+    setSubmitDisabled(false);
+
+  } else {
+
+    if (turnStatus) {
+      turnStatus.textContent =
+        "PLAYER " + currentTurn + " TURN";
+    }
+
+    if (gameMessage) {
+      gameMessage.textContent =
+        "Menunggu giliran Player " + currentTurn + ".";
+    }
+
+    setSubmitDisabled(true);
+  }
+
+
+  console.log(
+    "TURN STATE:",
+    {
+      current_turn: currentTurn,
+      my_slot: mySlot,
+      is_my_turn: isMyTurn
+    }
+  );
+}
 /* ============================================================
    6. BASIC DATA
    ============================================================ */
