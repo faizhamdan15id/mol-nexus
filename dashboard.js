@@ -892,7 +892,144 @@ function formatDecisionTrace(trace) {
   }
 }
 
+function generateTeacherRecommendation(student) {
+  const attempts = Number(student.total_attempts || 0);
+  const coverage = Number(student.nexus_coverage || 0);
 
+  const profile = student.predicted_profile || "P0";
+
+  const path = Number(student.path_accuracy || 0);
+  const formula = Number(student.formula_accuracy || 0);
+  const calculation = Number(student.calculation_accuracy || 0);
+  const unit = Number(student.unit_accuracy || 0);
+
+  // =====================================================
+  // EVIDENCE GATE
+  // Jangan membuat diagnosis kuat jika data belum cukup
+  // =====================================================
+
+  if (attempts < 5 || coverage < 3) {
+
+    const components = [
+      { name: "Path", value: path },
+      { name: "Formula", value: formula },
+      { name: "Calculation", value: calculation },
+      { name: "Unit", value: unit }
+    ];
+
+    const weakest = components.reduce(
+      (a, b) => a.value <= b.value ? a : b
+    );
+
+    if (weakest.value < 0.8) {
+      return `
+        Bukti diagnostik belum mencukupi untuk menetapkan
+        profil kognitif final. Namun, respons awal menunjukkan
+        kelemahan relatif pada tahap <strong>${weakest.name}</strong>
+        (${Math.round(weakest.value * 100)}%).
+        Berikan latihan terarah pada komponen tersebut dan
+        kumpulkan respons tambahan pada beberapa Nexus sebelum
+        menetapkan profil siswa.
+      `;
+    }
+
+    return `
+      Performa awal menunjukkan penguasaan Path, Formula,
+      Calculation, dan Unit yang baik. Namun, jumlah attempt
+      dan cakupan Nexus belum mencukupi untuk menetapkan profil
+      penguasaan final. Lanjutkan pengumpulan bukti pada beberapa
+      Nexus dan tingkat kesulitan yang berbeda.
+    `;
+  }
+
+
+  // =====================================================
+  // P1 — INDIKASI HAMBATAN KONSEPTUAL
+  // =====================================================
+
+  if (profile === "P1") {
+    return `
+      Terdapat indikasi hambatan konseptual pada pemilihan
+      jalur penyelesaian stoikiometri. Guru disarankan
+      memberikan latihan pemetaan hubungan antarbesaran
+      kimia menggunakan skema
+      <strong>besaran awal → mol → besaran target</strong>
+      sebelum melanjutkan ke perhitungan kompleks.
+    `;
+  }
+
+
+  // =====================================================
+  // P2 — HAMBATAN PROSEDURAL / FORMULA
+  // =====================================================
+
+  if (profile === "P2") {
+    return `
+      Siswa mampu mengenali jalur konsep, tetapi masih
+      mengalami hambatan dalam memilih atau menyusun formula.
+      Berikan latihan Formula Builder bertahap dan minta siswa
+      menjelaskan alasan pemilihan setiap persamaan sebelum
+      melakukan substitusi angka.
+    `;
+  }
+
+
+  // =====================================================
+  // P3 — HAMBATAN NUMERASI
+  // =====================================================
+
+  if (profile === "P3") {
+    return `
+      Jalur konsep dan formula relatif telah dikuasai,
+      tetapi ditemukan indikasi hambatan numerasi.
+      Fokuskan intervensi pada operasi hitung, konversi satuan,
+      rasio, desimal, dan notasi ilmiah sesuai pola kesalahan
+      yang paling sering muncul.
+    `;
+  }
+
+
+  // =====================================================
+  // P4 — POLA RESPONS GUESSING
+  // =====================================================
+
+  if (profile === "P4") {
+    return `
+      Sistem mendeteksi pola respons cepat-salah yang
+      konsisten dengan indikasi guessing. Guru disarankan
+      meminta siswa menuliskan atau menjelaskan alasan
+      pemilihan Path dan Formula serta menggunakan soal
+      verifikasi sebelum menyimpulkan tingkat penguasaan.
+    `;
+  }
+
+
+  // =====================================================
+  // P5 — PENGUASAAN OPTIMAL
+  // =====================================================
+
+  if (profile === "P5") {
+    return `
+      Siswa menunjukkan penguasaan yang kuat pada Path,
+      Formula, Calculation, dan Unit dengan bukti diagnostik
+      yang memadai. Berikan tantangan stoikiometri multistep,
+      soal kontekstual, dan aktivitas transfer konsep untuk
+      mempertahankan serta memperluas penguasaan.
+    `;
+  }
+
+
+  // =====================================================
+  // P0 — MIXED / UNCERTAIN
+  // =====================================================
+
+  return `
+    Pola respons masih campuran atau belum menunjukkan
+    kecenderungan diagnostik yang cukup kuat. Tambahkan
+    beberapa kasus dari Nexus dan tingkat kesulitan berbeda
+    sebelum menentukan bentuk intervensi khusus.
+  `;
+}
 /* =========================================================
    14. STATES
 ========================================================= */
