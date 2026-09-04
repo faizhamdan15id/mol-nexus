@@ -497,7 +497,11 @@ async function loadGamePlayers() {
     safePlayers
   );
 
+const roomData = await loadGameRoom();
 
+if (roomData) {
+  applyTurnState(roomData);
+}
   return safePlayers;
 }
 
