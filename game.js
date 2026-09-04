@@ -3489,8 +3489,6 @@ async function saveCaseAttempt(
   console.log(
     "CASE ATTEMPT SAVED:",
     {
-      attempt_id:
-        data?.attempt_id,
 
       attempt_sequence:
         attemptData.attempt_sequence,
