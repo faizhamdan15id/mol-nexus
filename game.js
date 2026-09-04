@@ -3508,9 +3508,8 @@ async function saveCaseAttempt(
 
 
   return {
-    success: true,
-    data: data
-  };
+  success: true
+};
 }
 
 
