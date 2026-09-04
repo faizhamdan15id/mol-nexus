@@ -781,7 +781,7 @@ function showStudentDetail(row) {
       </h3>
 
       <p>
-        ${teacherRecommendation(row)}
+       ${generateTeacherRecommendation(row)}
       </p>
 
     </div>
