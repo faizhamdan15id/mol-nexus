@@ -3982,7 +3982,61 @@ async function submitCurrentCase() {
   }
 }
 
+/* ============================================================
+   MULTIPLAYER — ADVANCE TURN
+   ============================================================ */
 
+async function advanceTurn() {
+
+  if (!room) {
+    console.warn("ADVANCE TURN: room tidak tersedia.");
+    return false;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "next_turn",
+      {
+        p_room_code: room
+      }
+    );
+
+    if (error) {
+
+      console.error(
+        "ADVANCE TURN ERROR:",
+        error
+      );
+
+      return false;
+    }
+
+    currentTurn = Number(data || 1);
+
+    console.log(
+      "TURN ADVANCED:",
+      {
+        room: room,
+        current_turn: currentTurn
+      }
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "ADVANCE TURN EXCEPTION:",
+      error
+    );
+
+    return false;
+  }
+}
 /* ============================================================
    41. WAIT UTILITY
    ============================================================ */
