@@ -435,7 +435,7 @@ async function loadGameRoom() {
     }
   }
 
-
+applyTurnState(data);
   return data;
 }
 
