@@ -903,23 +903,27 @@ function generateTeacherRecommendation(student) {
   const calculation = Number(student.calculation_accuracy || 0);
   const unit = Number(student.unit_accuracy || 0);
 
-  // =====================================================
-  // EVIDENCE GATE
-  // Jangan membuat diagnosis kuat jika data belum cukup
-  // =====================================================
+  // ======================================================
+// EVIDENCE GATE
+// Hanya berlaku jika profil masih P0.
+// Jika Diagnostic Engine sudah menetapkan P1–P5,
+// rekomendasi harus mengikuti profil hasil klasifikasi.
+// ======================================================
+
+if (profile === "P0") {
+
+  const components = [
+    { name: "Path", value: path },
+    { name: "Formula", value: formula },
+    { name: "Calculation", value: calculation },
+    { name: "Unit", value: unit }
+  ];
+
+  const weakest = components.reduce(
+    (a, b) => a.value <= b.value ? a : b
+  );
 
   if (attempts < 5 || coverage < 3) {
-
-    const components = [
-      { name: "Path", value: path },
-      { name: "Formula", value: formula },
-      { name: "Calculation", value: calculation },
-      { name: "Unit", value: unit }
-    ];
-
-    const weakest = components.reduce(
-      (a, b) => a.value <= b.value ? a : b
-    );
 
     if (weakest.value < 0.8) {
       return `
@@ -941,6 +945,13 @@ function generateTeacherRecommendation(student) {
       Nexus dan tingkat kesulitan yang berbeda.
     `;
   }
+
+  return `
+    Data menunjukkan pola kemampuan yang belum cukup konsisten
+    untuk dimasukkan ke profil P1–P5. Lanjutkan pengumpulan
+    respons dan evaluasi pola kesalahan siswa pada beberapa Nexus.
+  `;
+}
 
 
   // =====================================================
