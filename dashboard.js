@@ -10,10 +10,10 @@
 ========================================================= */
 
 const SUPABASE_URL =
-  "PASTE_SUPABASE_URL_DARI_GAME_JS";
+  "https://snlpdwqdjfnborsorspd.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  "PASTE_SUPABASE_ANON_KEY_DARI_GAME_JS";
+  "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
 
 
 const supabaseClient =
