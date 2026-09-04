@@ -199,6 +199,7 @@ let lastQuestionId = null;
 
 let currentTurn = 1;
 let isMyTurn = false;
+let currentPlayers = [];
 /* ============================================================
    5. UTILITIES
    ============================================================ */
