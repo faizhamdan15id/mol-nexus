@@ -3888,14 +3888,23 @@ async function submitCurrentCase() {
       */
 
       await wait(
-        1400
-      );
+  1400
+);
 
+const turnAdvanced =
+  await advanceTurn();
 
-      await loadQuestion();
+if (turnAdvanced) {
 
+  const updatedRoom =
+    await loadGameRoom();
 
-      return;
+  if (updatedRoom) {
+    applyTurnState(updatedRoom);
+  }
+}
+
+return;
     }
 
 
