@@ -763,7 +763,13 @@ function goToGame() {
 
     gameRedirectStarted =
         true;
-
+   alert(
+  "DEBUG BEFORE GAME\n" +
+  "TOKEN: " + (sessionStorage.getItem("mol_nexus_session_token") ? "ADA" : "KOSONG") +
+  "\nROOM: " + sessionStorage.getItem("mol_nexus_room") +
+  "\nNAME: " + sessionStorage.getItem("mol_nexus_display_name") +
+  "\nSLOT: " + sessionStorage.getItem("mol_nexus_player_slot")
+); 
 
     /*
     Tidak lagi mengirim:
