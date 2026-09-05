@@ -31,31 +31,33 @@ const urlParams =
     window.location.search
   );
 
+const sessionToken =
+  sessionStorage.getItem(
+    "mol_nexus_session_token"
+  );
+
 const student =
-  urlParams.get("student") ||
-  localStorage.getItem(
-    "molNexusStudent"
-  ) ||
-  "";
+  sessionStorage.getItem(
+    "mol_nexus_display_name"
+  ) || "";
 
 const room =
-  urlParams.get("room") ||
-  localStorage.getItem(
-    "molNexusRoom"
-  ) ||
-  "";
+  sessionStorage.getItem(
+    "mol_nexus_room"
+  ) || "";
 
-if (student) {
-  localStorage.setItem(
-    "molNexusStudent",
-    student
+if (!sessionToken || !student || !room) {
+  console.error(
+    "SECURE GAME CONTEXT MISSING",
+    {
+      token: !!sessionToken,
+      student: student,
+      room: room
+    }
   );
-}
 
-if (room) {
-  localStorage.setItem(
-    "molNexusRoom",
-    room
+  window.location.replace(
+    "student-login.html"
   );
 }
 
