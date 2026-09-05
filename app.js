@@ -307,8 +307,13 @@ async function joinNexus() {
 
 
         if (error) {
-            throw error;
-        }
+  alert(
+    "DEBUG JOIN ERROR:\n" +
+    JSON.stringify(error, null, 2)
+  );
+
+  throw error;
+}
 
 
         if (!data || data.length === 0) {
