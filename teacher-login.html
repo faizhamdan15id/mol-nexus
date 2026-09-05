@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>MOL-NEXUS | Teacher Access</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top, #0c2742 0%, #061725 40%, #020b14 100%);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .brand {
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 38px;
+      letter-spacing: 2px;
+    }
+
+    .brand h1 span {
+      color: #16d9f5;
+    }
+
+    .brand p {
+      color: #8296a9;
+      letter-spacing: 3px;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #38e7b0;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin-top: 12px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #38e7b0;
+      box-shadow: 0 0 12px #38e7b0;
+    }
+
+    .card {
+      background: rgba(7, 27, 44, 0.96);
+      border: 1px solid #123b55;
+      border-radius: 24px;
+      padding: 32px 26px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.45);
+    }
+
+    .eyebrow {
+      color: #16d9f5;
+      letter-spacing: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .card h2 {
+      margin: 12px 0 8px;
+      font-size: 28px;
+    }
+
+    .description {
+      color: #8799aa;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      color: #a8b8c7;
+      font-size: 12px;
+      letter-spacing: 2px;
+      margin: 18px 0 8px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #174661;
+      background: #041321;
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: #16d9f5;
+      box-shadow: 0 0 0 2px rgba(22,217,245,.12);
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      margin-top: 24px;
+      padding: 17px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #18c9f3, #3ee5bd);
+      color: #02111c;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    #message {
+      min-height: 22px;
+      margin-top: 18px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .error {
+      color: #ff7d8d;
+    }
+
+    .success {
+      color: #38e7b0;
+    }
+
+    .security-note {
+      border-top: 1px solid #123247;
+      margin-top: 25px;
+      padding-top: 20px;
+      color: #657c90;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="login-container">
+
+    <header class="brand">
+      <h1>MOL-<span>NEXUS</span></h1>
+      <p>SMART ANALYTICS SYSTEM</p>
+
+      <div class="status">
+        <span class="status-dot"></span>
+        SECURE TEACHER ACCESS
+      </div>
+    </header>
+
+    <section class="card">
+
+      <div class="eyebrow">AUTHENTICATION</div>
+
+      <h2>Teacher Login</h2>
+
+      <p class="description">
+        Masuk menggunakan akun guru untuk mengakses
+        Smart Analytics Dashboard MOL-NEXUS.
+      </p>
+
+      <form id="loginForm">
+
+        <label for="email">EMAIL</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="username"
+          placeholder="Email guru"
+          required
+        >
+
+        <label for="password">PASSWORD</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Password"
+          required
+        >
+
+        <button id="loginButton" type="submit">
+          ACCESS SMART ANALYTICS →
+        </button>
+
+      </form>
+
+      <div id="message"></div>
+
+      <div class="security-note">
+        🔒 Smart Analytics merupakan area terbatas.
+        Data diagnostik siswa hanya diperuntukkan bagi pengguna yang memiliki otorisasi.
+      </div>
+
+    </section>
+
+  </main>
+
+<script>
+  /*
+   * MOL-NEXUS Teacher Authentication
+   * Gunakan publishable key yang sama dengan frontend MOL-NEXUS.
+   */
+
+  const SUPABASE_URL =
+    "https://snlpdwqdjfnborsorspd.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
+
+  const molNexusAuth =
+    supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loginForm = document.getElementById("loginForm");
+  const loginButton = document.getElementById("loginButton");
+  const message = document.getElementById("message");
+
+  async function checkExistingSession() {
+
+    const {
+      data: { session }
+    } = await molNexusAuth.auth.getSession();
+
+    if (session) {
+      window.location.replace("dashboard.html");
+    }
+  }
+
+  checkExistingSession();
+
+  loginForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    message.textContent = "";
+    message.className = "";
+
+    loginButton.disabled = true;
+    loginButton.textContent = "AUTHENTICATING...";
+
+    const email =
+      document.getElementById("email").value.trim();
+
+    const password =
+      document.getElementById("password").value;
+
+    try {
+
+      const { data, error } =
+        await molNexusAuth.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data.session) {
+        throw new Error("Sesi autentikasi tidak berhasil dibuat.");
+      }
+
+      message.textContent =
+        "✓ Authentication successful. Opening Smart Analytics...";
+
+      message.className = "success";
+
+      setTimeout(() => {
+        window.location.replace("dashboard.html");
+      }, 600);
+
+    } catch (error) {
+
+      console.error("Teacher authentication failed.");
+
+      message.textContent =
+        "Akses ditolak. Periksa kembali email dan password.";
+
+      message.className = "error";
+
+      loginButton.disabled = false;
+      loginButton.textContent =
+        "ACCESS SMART ANALYTICS →";
+    }
+
+  });
+</script>
+
+</body>
+          </html>
