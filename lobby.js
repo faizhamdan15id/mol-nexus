@@ -834,22 +834,19 @@ async function startLobby() {
     }
 
 
-    const roomValid =
-        await loadRoom();
-
-
-    if (!roomValid) {
-        return;
-    }
-
-
     const playerValid =
-        await loadCurrentPlayer();
+  await loadCurrentPlayer();
 
+if (!playerValid) {
+  return;
+}
 
-    if (!playerValid) {
-        return;
-    }
+const roomValid =
+  await loadRoom();
+
+if (!roomValid) {
+  return;
+}
 
 
     await renderPlayers();
