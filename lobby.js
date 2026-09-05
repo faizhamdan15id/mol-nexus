@@ -80,9 +80,14 @@ if (!sessionToken) {
 
 if (!room) {
 
-    window.location.replace(
-        "index.html"
+    alert(
+        "DEBUG ROOM KOSONG\n" +
+        "TOKEN: " + (sessionToken ? "ADA" : "TIDAK ADA") +
+        "\nROOM: " + room
     );
+
+    // DEBUG: jangan redirect dulu
+    // window.location.replace("index.html");
 
 }
 
