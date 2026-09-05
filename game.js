@@ -4136,17 +4136,16 @@ async function addEnergy(amount) {
 
 
   const {
+    data: updatedEnergy,
     error
-  } = await supabaseClient
-    .from("room_players")
-    .update({
-      nexus_energy:
-        newEnergy
-    })
-    .eq(
-      "id",
-      currentPlayer.id
-    );
+} = await supabaseClient.rpc(
+    "add_student_energy",
+    {
+        p_session_token: sessionToken,
+        p_room_code: room,
+        p_amount: Number(amount || 0)
+    }
+);
 
 
   if (error) {
@@ -4161,7 +4160,7 @@ async function addEnergy(amount) {
 
 
   currentPlayer.nexus_energy =
-    newEnergy;
+    Number(updatedEnergy);
 
 
   renderCurrentPlayer();
@@ -4178,8 +4177,8 @@ async function addEnergy(amount) {
           amount || 0
         ),
 
-      new_energy:
-        newEnergy
+     new_energy:
+    Number(updatedEnergy) 
     }
   );
 
