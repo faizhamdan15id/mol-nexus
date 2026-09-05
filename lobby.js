@@ -525,8 +525,8 @@ readyButton.addEventListener(
                     p_room_code:
                         room,
 
-                    p_is_ready:
-                        newReadyState
+                   p_ready:
+    newReadyState 
                 }
             );
 
