@@ -3472,96 +3472,86 @@ function buildAttemptData(
 /* ============================================================
    38. SAVE CASE ATTEMPT
    ============================================================ */
+async function saveCaseAttempt(attemptData) {
+  const sessionToken =
+    sessionStorage.getItem("mol_nexus_session_token");
 
-async function saveCaseAttempt(
-  attemptData
-) {
-
-  /*
-     Tiga ID ini wajib tersedia agar
-     attempt dapat dihubungkan dengan:
-
-     siswa
-     sesi permainan
-     soal
-  */
+  const room =
+    sessionStorage.getItem("room") ||
+    new URLSearchParams(window.location.search).get("room");
 
   if (
-    !currentStudentId ||
-    !currentSessionId ||
+    !sessionToken ||
+    !room ||
     !currentQuestion?.question_id
   ) {
-
     console.error(
-      "CASE ATTEMPT NOT SAVED: missing required ID",
+      "SECURE CASE ATTEMPT NOT SAVED: missing required data",
       {
-        student_id:
-          currentStudentId,
-
-        session_id:
-          currentSessionId,
-
-        question_id:
-          currentQuestion?.question_id
+        token: !!sessionToken,
+        room: room,
+        question_id: currentQuestion?.question_id
       }
     );
-
 
     return {
       success: false,
-      error:
-        "MISSING_REQUIRED_ID"
+      error: "MISSING_REQUIRED_DATA"
     };
   }
 
-
   console.log(
-    "SAVING CASE ATTEMPT:",
-    attemptData
+    "SAVING SECURE CASE ATTEMPT..."
   );
 
-
-  const {
-  error
-} = await supabaseClient
-  .from("case_attempts")
-  .insert(
-    attemptData
-  );
-
-
-  if (error) {
-
-    console.error(
-      "CASE ATTEMPT INSERT ERROR:",
-      error
-    );
-
-
-    /*
-       Detail error juga ditampilkan
-       di console agar mudah diperiksa
-       apabila constraint Supabase
-       menolak suatu nilai.
-    */
-
-    console.error(
-      "CASE ATTEMPT ERROR DETAIL:",
+  const { data, error } =
+    await supabaseClient.rpc(
+      "save_student_attempt",
       {
-        message:
-          error.message,
+        p_session_token: sessionToken,
+        p_room_code: room,
+        p_question_id: currentQuestion.question_id,
 
-        details:
-          error.details,
+        p_attempt_sequence:
+          attemptData.attempt_sequence,
 
-        hint:
-          error.hint,
+        p_selected_path:
+          attemptData.selected_path,
 
-        code:
-          error.code
+        p_selected_formula:
+          attemptData.selected_formula,
+
+        p_student_answer:
+          attemptData.student_answer,
+
+        p_selected_unit:
+          attemptData.selected_unit,
+
+        p_path_time_ms:
+          attemptData.path_time_ms,
+
+        p_formula_time_ms:
+          attemptData.formula_time_ms,
+
+        p_calculation_time_ms:
+          attemptData.calculation_time_ms,
+
+        p_total_response_time_ms:
+          attemptData.total_response_time_ms,
+
+        p_hint_count:
+          attemptData.hint_count,
+
+        p_retry_count:
+          attemptData.retry_count
       }
     );
 
+  if (error) {
+    console.error(
+      "SECURE CASE ATTEMPT RPC ERROR:",
+      error
+    );
 
     return {
       success: false,
@@ -3569,30 +3559,57 @@ async function saveCaseAttempt(
     };
   }
 
+  const result =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+  if (!result) {
+    console.error(
+      "SECURE CASE ATTEMPT: empty server response"
+    );
+
+    return {
+      success: false,
+      error: "EMPTY_SERVER_RESPONSE"
+    };
+  }
 
   console.log(
-    "CASE ATTEMPT SAVED:",
+    "SECURE CASE ATTEMPT SAVED:",
     {
+      attempt_id:
+        result.saved_attempt_id,
 
-      attempt_sequence:
-        attemptData.attempt_sequence,
+      path_correct:
+        result.path_correct,
 
-      first_failure_point:
-        attemptData.first_failure_point,
+      formula_correct:
+        result.formula_correct,
 
-      error_type:
-        attemptData.error_type,
+      calculation_correct:
+        result.calculation_correct,
+
+      unit_correct:
+        result.unit_correct,
 
       final_correct:
-        attemptData.final_correct
+        result.final_correct,
+
+      first_failure_point:
+        result.first_failure_point,
+
+      error_type:
+        result.error_type
     }
   );
 
-
   return {
-  success: true
-};
+    success: true,
+    result: result
+  };
 }
+
 
 
 /* ============================================================
