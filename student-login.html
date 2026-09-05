@@ -358,7 +358,28 @@
       SUPABASE_KEY
     );
 
+/*
+=========================================================
+STUDENT ACCESS ISOLATION
+Pastikan halaman siswa tidak menggunakan
+session Supabase Auth milik Teacher.
+=========================================================
+*/
 
+async function clearTeacherSession() {
+
+  const { data } =
+    await supabaseClient.auth.getSession();
+
+  if (data?.session) {
+
+    await supabaseClient.auth.signOut();
+
+  }
+
+}
+
+clearTeacherSession();
   /*
   =========================================================
   ELEMENTS
