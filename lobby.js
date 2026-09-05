@@ -266,6 +266,10 @@ async function loadCurrentPlayer() {
   room
 );
     sessionStorage.setItem(
+  "mol_nexus_display_name",
+  currentStudent.display_name
+);
+    sessionStorage.setItem(
         "mol_nexus_player_slot",
         String(currentPlayerSlot)
     );
