@@ -569,7 +569,13 @@ clearTeacherSession();
           "mol_nexus_session_expires",
           student.expires_at
         );
-
+         alert(
+    "SESSION TEST\n" +
+    "TOKEN: " +
+    (sessionStorage.getItem("mol_nexus_session_token") ? "ADA" : "KOSONG") +
+    "\nNAMA: " +
+    sessionStorage.getItem("mol_nexus_display_name")
+);
 
         /*
         Hapus NISN dari field secepatnya.
