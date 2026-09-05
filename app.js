@@ -1,83 +1,246 @@
-// ==============================================
-// MOL-NEXUS v1.0
-// STUDENT ACCESS CONTROLLER
-// ==============================================
-
-const studentName = document.getElementById("studentName");
-const roomCode = document.getElementById("roomCode");
-const joinButton = document.getElementById("joinButton");
-const message = document.getElementById("message");
+// ============================================================
+// MOL-NEXUS v2.0
+// SECURE STUDENT ACCESS + ROOM JOIN
+// ============================================================
 
 
-// ==============================================
-// ROOM CODE AUTO UPPERCASE
-// ==============================================
+// ============================================================
+// 1. SUPABASE CONFIG
+// ============================================================
 
-roomCode.addEventListener("input", function () {
+const SUPABASE_URL =
+    "https://snlpdwqdjfnborsorspd.supabase.co";
 
-    this.value = this.value
-        .toUpperCase()
-        .replace(/\s/g, "");
+const SUPABASE_KEY =
+    "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
 
-});
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
-// ==============================================
-// ENTER KEY
-// ==============================================
+// ============================================================
+// 2. ELEMENTS
+// ============================================================
 
-studentName.addEventListener("keydown", function (event) {
+const studentName =
+    document.getElementById("studentName");
 
-    if (event.key === "Enter") {
-        roomCode.focus();
+const roomCode =
+    document.getElementById("roomCode");
+
+const joinButton =
+    document.getElementById("joinButton");
+
+const message =
+    document.getElementById("message");
+
+
+// ============================================================
+// 3. STUDENT SESSION
+// ============================================================
+
+let currentStudent = null;
+
+const sessionToken =
+    sessionStorage.getItem(
+        "mol_nexus_session_token"
+    );
+
+
+// ============================================================
+// 4. VALIDATE STUDENT SESSION
+// ============================================================
+
+async function validateStudentAccess() {
+
+    /*
+    Jika tidak punya token Student Login,
+    jangan izinkan masuk melalui index.html langsung.
+    */
+
+    if (!sessionToken) {
+
+        window.location.replace(
+            "student-login.html"
+        );
+
+        return false;
     }
 
-});
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.rpc(
+                "validate_student_session",
+                {
+                    p_session_token:
+                        sessionToken
+                }
+            );
 
 
-roomCode.addEventListener("keydown", function (event) {
+        if (error) {
+            throw error;
+        }
 
-    if (event.key === "Enter") {
-        joinNexus();
+
+        if (!data || data.length === 0) {
+
+            clearStudentSession();
+
+            window.location.replace(
+                "student-login.html"
+            );
+
+            return false;
+        }
+
+
+        currentStudent =
+            data[0];
+
+
+        /*
+        Nama berasal dari DATABASE,
+        bukan input siswa.
+        */
+
+        studentName.value =
+            currentStudent.display_name;
+
+
+        /*
+        Kunci kolom identitas.
+        */
+
+        studentName.readOnly = true;
+
+        studentName.setAttribute(
+            "aria-readonly",
+            "true"
+        );
+
+
+        /*
+        Hapus identitas lama sistem v1.0
+        */
+
+        localStorage.removeItem(
+            "molNexusStudent"
+        );
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "SESSION VALIDATION ERROR:",
+            error
+        );
+
+
+        clearStudentSession();
+
+
+        window.location.replace(
+            "student-login.html"
+        );
+
+
+        return false;
     }
-
-});
-
-
-// ==============================================
-// JOIN BUTTON
-// ==============================================
-
-joinButton.addEventListener("click", joinNexus);
+}
 
 
-// ==============================================
-// JOIN NEXUS
-// ==============================================
+// ============================================================
+// 5. ROOM CODE AUTO UPPERCASE
+// ============================================================
 
-function joinNexus() {
+roomCode.addEventListener(
+    "input",
+    function () {
 
-    const student = studentName.value.trim();
-    const room = roomCode.value.trim();
+        this.value =
+            this.value
+                .toUpperCase()
+                .replace(/\s/g, "");
+
+    }
+);
+
+
+// ============================================================
+// 6. ENTER KEY
+// ============================================================
+
+roomCode.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (event.key === "Enter") {
+
+            joinNexus();
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// 7. JOIN BUTTON
+// ============================================================
+
+joinButton.addEventListener(
+    "click",
+    joinNexus
+);
+
+
+// ============================================================
+// 8. JOIN NEXUS
+// ============================================================
+
+async function joinNexus() {
+
+    const room =
+        roomCode.value
+            .trim()
+            .toUpperCase();
+
 
     clearMessage();
 
 
-    // VALIDASI NAMA
-    if (!student) {
+    /*
+    ============================================
+    Pastikan session masih tersedia
+    ============================================
+    */
+
+    if (!sessionToken || !currentStudent) {
 
         showMessage(
-            "Masukkan nama atau kode siswa.",
+            "Session siswa tidak valid. Silakan login kembali.",
             "error"
         );
-
-        studentName.focus();
 
         return;
     }
 
 
-    // VALIDASI ROOM
+    /*
+    ============================================
+    Validasi Room Code
+    ============================================
+    */
+
     if (!room) {
 
         showMessage(
@@ -91,7 +254,6 @@ function joinNexus() {
     }
 
 
-    // MINIMUM ROOM CODE
     if (room.length < 4) {
 
         showMessage(
@@ -105,47 +267,200 @@ function joinNexus() {
     }
 
 
-    // LOADING STATE
+    /*
+    ============================================
+    Loading
+    ============================================
+    */
+
     joinButton.disabled = true;
 
     joinButton.innerHTML =
         "<span>CONNECTING TO NEXUS...</span>";
 
 
-    // SIMPAN DATA LOGIN
-localStorage.setItem("molNexusStudent", student);
-localStorage.setItem("molNexusRoom", room);
+    try {
 
-console.log("Student saved:", localStorage.getItem("molNexusStudent"));
-console.log("Room saved:", localStorage.getItem("molNexusRoom"));
+        /*
+        ============================================
+        SECURE JOIN
 
-showMessage(
-    "Nexus ditemukan. Menyiapkan Multiplayer Lobby...",
-    "success"
-);
+        Browser hanya mengirim:
+        - session token
+        - room code
 
-joinButton.innerHTML =
-    "<span>NEXUS CONNECTED ✓</span>";
+        Nama, student_id, dan slot ditentukan DB.
+        ============================================
+        */
 
-// MASUK KE MULTIPLAYER LOBBY
-setTimeout(function () {
-    window.location.href =
-        "lobby.html?student=" +
-        encodeURIComponent(student) +
-        "&room=" +
-        encodeURIComponent(room);
-}, 700);
+        const { data, error } =
+            await supabaseClient.rpc(
+                "join_student_room",
+                {
+                    p_session_token:
+                        sessionToken,
 
+                    p_room_code:
+                        room
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (!data || data.length === 0) {
+
+            throw new Error(
+                "Room tidak dapat diakses."
+            );
+
+        }
+
+
+        const player =
+            data[0];
+
+
+        /*
+        ============================================
+        Simpan hanya konteks permainan.
+
+        NISN tidak disimpan.
+        ============================================
+        */
+
+        sessionStorage.setItem(
+            "mol_nexus_room",
+            player.room_code
+        );
+
+        sessionStorage.setItem(
+            "mol_nexus_player_slot",
+            String(player.player_slot)
+        );
+
+
+        /*
+        Bersihkan data room sistem lama.
+        */
+
+        localStorage.removeItem(
+            "molNexusRoom"
+        );
+
+
+        showMessage(
+            "Nexus ditemukan. Menyiapkan Multiplayer Lobby...",
+            "success"
+        );
+
+
+        joinButton.innerHTML =
+            "<span>NEXUS CONNECTED ✓</span>";
+
+
+        /*
+        ============================================
+        Masuk Lobby
+
+        Tidak ada:
+        ?student=
+        ?room=
+        ?nisn=
+        ============================================
+        */
+
+        setTimeout(
+            function () {
+
+                window.location.href =
+                    "lobby.html";
+
+            },
+            700
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "JOIN NEXUS ERROR:",
+            error
+        );
+
+
+        /*
+        Pesan aman untuk siswa.
+        */
+
+        let safeMessage =
+            "Tidak dapat bergabung ke room.";
+
+
+        if (
+            error?.message
+                ?.toLowerCase()
+                .includes("room tidak ditemukan")
+        ) {
+
+            safeMessage =
+                "Room Code tidak ditemukan.";
+
+        } else if (
+            error?.message
+                ?.toLowerCase()
+                .includes("room sudah penuh")
+        ) {
+
+            safeMessage =
+                "Room sudah penuh.";
+
+        } else if (
+            error?.message
+                ?.toLowerCase()
+                .includes("memulai permainan")
+        ) {
+
+            safeMessage =
+                "Permainan pada room ini sudah dimulai.";
+
+        } else if (
+            error?.message
+                ?.toLowerCase()
+                .includes("session")
+        ) {
+
+            safeMessage =
+                "Session siswa telah berakhir. Silakan login kembali.";
+
+        }
+
+
+        showMessage(
+            safeMessage,
+            "error"
+        );
+
+
+        joinButton.disabled = false;
+
+        joinButton.innerHTML =
+            "<span>JOIN NEXUS →</span>";
+    }
 }
 
 
-// ==============================================
-// SHOW MESSAGE
-// ==============================================
+// ============================================================
+// 9. SHOW MESSAGE
+// ============================================================
 
 function showMessage(text, type) {
 
-    message.textContent = text;
+    message.textContent =
+        text;
 
     message.className =
         "message " + type;
@@ -153,39 +468,95 @@ function showMessage(text, type) {
 }
 
 
-// ==============================================
-// CLEAR MESSAGE
-// ==============================================
+// ============================================================
+// 10. CLEAR MESSAGE
+// ============================================================
 
 function clearMessage() {
 
-    message.textContent = "";
+    message.textContent =
+        "";
 
-    message.className = "message";
+    message.className =
+        "message";
 
 }
 
 
-// ==============================================
-// RESTORE PREVIOUS DATA
-// ==============================================
+// ============================================================
+// 11. CLEAR STUDENT SESSION
+// ============================================================
 
-window.addEventListener("DOMContentLoaded", function () {
+function clearStudentSession() {
 
-    const savedStudent =
-        localStorage.getItem("molNexusStudent");
+    sessionStorage.removeItem(
+        "mol_nexus_session_token"
+    );
 
-    const savedRoom =
-        localStorage.getItem("molNexusRoom");
+    sessionStorage.removeItem(
+        "mol_nexus_student_id"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_student_code"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_display_name"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_session_expires"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_room"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_player_slot"
+    );
+}
 
 
-    if (savedStudent) {
-        studentName.value = savedStudent;
+// ============================================================
+// 12. START STUDENT ACCESS
+// ============================================================
+
+window.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+
+        /*
+        Jangan restore nama dari localStorage lagi.
+        */
+
+        studentName.value = "";
+
+        roomCode.value = "";
+
+
+        joinButton.disabled = true;
+
+
+        const valid =
+            await validateStudentAccess();
+
+
+        if (!valid) {
+            return;
+        }
+
+
+        joinButton.disabled = false;
+
+        roomCode.focus();
+
     }
+);
 
 
-    if (savedRoom) {
-        roomCode.value = savedRoom;
-    }
-
-});
+// ============================================================
+// MOL-NEXUS
+// END SECURE STUDENT ACCESS CONTROLLER
+// ============================================================
