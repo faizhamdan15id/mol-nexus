@@ -1,99 +1,183 @@
 // ============================================================
-// MOL-NEXUS v1.1
-// MULTIPLAYER LOBBY + SUPABASE
+// MOL-NEXUS v2.0
+// SECURE MULTIPLAYER LOBBY
 // ============================================================
+
 
 // ============================================================
 // 1. SUPABASE CONFIG
 // ============================================================
 
-const SUPABASE_URL = "https://snlpdwqdjfnborsorspd.supabase.co";
-const SUPABASE_KEY = "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
+const SUPABASE_URL =
+    "https://snlpdwqdjfnborsorspd.supabase.co";
 
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
+const SUPABASE_KEY =
+    "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
+
+const supabaseClient =
+    window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
 
 
 // ============================================================
 // 2. ELEMENTS
 // ============================================================
 
-const roomDisplay = document.getElementById("roomDisplay");
-const playerName = document.getElementById("playerName");
-const playerCount = document.getElementById("playerCount");
+const roomDisplay =
+    document.getElementById("roomDisplay");
 
-const readyButton = document.getElementById("readyButton");
-const leaveButton = document.getElementById("leaveButton");
-const statusText = document.getElementById("statusText");
+const playerCount =
+    document.getElementById("playerCount");
+
+const readyButton =
+    document.getElementById("readyButton");
+
+const leaveButton =
+    document.getElementById("leaveButton");
+
+const statusText =
+    document.getElementById("statusText");
 
 
 // ============================================================
-// 3. LOAD LOGIN DATA
+// 3. SECURE SESSION CONTEXT
 // ============================================================
 
-// Ambil data dari URL jika tersedia
-const urlParams = new URLSearchParams(window.location.search);
-
-const studentFromURL = urlParams.get("student");
-const roomFromURL = urlParams.get("room");
-
-// Prioritaskan URL, fallback ke localStorage
-const student =
-    studentFromURL ||
-    localStorage.getItem("molNexusStudent");
+const sessionToken =
+    sessionStorage.getItem(
+        "mol_nexus_session_token"
+    );
 
 const room =
-    roomFromURL ||
-    localStorage.getItem("molNexusRoom");
+    sessionStorage.getItem(
+        "mol_nexus_room"
+    );
 
-// Simpan kembali agar tetap tersedia setelah refresh
-if (student) {
-    localStorage.setItem("molNexusStudent", student);
-}
+let currentStudent = null;
 
-if (room) {
-    localStorage.setItem("molNexusRoom", room);
-}
-
-console.log("LOBBY STUDENT:", student);
-console.log("LOBBY ROOM:", room);
-
-if (!student || !room) {
-
-    window.location.href = "index.html";
-
-}
-
-
-roomDisplay.textContent = room || "-----";
-
-
-// ============================================================
-// 4. PLAYER STATE
-// ============================================================
-
-let currentPlayerId = null;
 let currentPlayerSlot = null;
+
 let isReady = false;
 
+let roomMaxPlayers = 4;
+
+let gameRedirectStarted = false;
+
 
 // ============================================================
-// 5. LOAD ROOM
+// 4. INITIAL GUARD
+// ============================================================
+
+if (!sessionToken) {
+
+    window.location.replace(
+        "student-login.html"
+    );
+
+}
+
+if (!room) {
+
+    window.location.replace(
+        "index.html"
+    );
+
+}
+
+
+roomDisplay.textContent =
+    room || "-----";
+
+
+// ============================================================
+// 5. VALIDATE SESSION
+// ============================================================
+
+async function validateSession() {
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.rpc(
+                "validate_student_session",
+                {
+                    p_session_token:
+                        sessionToken
+                }
+            );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (!data || data.length === 0) {
+
+            clearStudentSession();
+
+            window.location.replace(
+                "student-login.html"
+            );
+
+            return false;
+        }
+
+
+        currentStudent =
+            data[0];
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "SESSION VALIDATION ERROR:",
+            error
+        );
+
+
+        clearStudentSession();
+
+        window.location.replace(
+            "student-login.html"
+        );
+
+
+        return false;
+    }
+}
+
+
+// ============================================================
+// 6. LOAD ROOM
 // ============================================================
 
 async function loadRoom() {
 
-    const { data, error } = await supabaseClient
-        .from("game_rooms")
-        .select("*")
-        .eq("room_code", room)
-        .single();
+    const { data, error } =
+        await supabaseClient
+            .from("game_rooms")
+            .select(
+                "room_code, game_mode, status, max_players"
+            )
+            .eq(
+                "room_code",
+                room
+            )
+            .single();
 
-    if (error) {
 
-        console.error("ROOM ERROR:", error);
+    if (error || !data) {
+
+        console.error(
+            "ROOM ERROR:",
+            error
+        );
 
         statusText.textContent =
             "ROOM TIDAK DITEMUKAN";
@@ -101,165 +185,90 @@ async function loadRoom() {
         return false;
     }
 
+
+    roomMaxPlayers =
+        data.max_players || 4;
+
+
+    if (data.status === "PLAYING") {
+
+        goToGame();
+
+        return true;
+    }
+
+
     return true;
 }
 
 
 // ============================================================
-// 6. JOIN PLAYER
+// 7. FIND CURRENT PLAYER
 // ============================================================
 
-async function joinPlayer() {
+async function loadCurrentPlayer() {
 
-    const { data: existingPlayers, error: readError } =
-        await supabaseClient
-            .from("room_players")
-            .select("*")
-            .eq("room_code", room)
-            .order("player_slot", {
-                ascending: true
-            });
-
-    if (readError) {
-
-        console.error(
-            "READ PLAYER ERROR:",
-            readError
-        );
-
-        statusText.textContent =
-            "GAGAL MEMBACA PLAYER";
-
-        return;
+    if (!currentStudent) {
+        return false;
     }
 
-
-    // --------------------------------------------------------
-    // Cek apakah nama pemain sudah ada
-    // --------------------------------------------------------
-
-    const existingPlayer =
-        existingPlayers.find(
-            player =>
-                player.player_name === student
-        );
-
-
-    if (existingPlayer) {
-
-        currentPlayerId =
-            existingPlayer.id;
-
-        currentPlayerSlot =
-            existingPlayer.player_slot;
-
-        isReady =
-            existingPlayer.is_ready;
-
-        await renderPlayers();
-
-        return;
-    }
-
-
-    // --------------------------------------------------------
-    // Cari slot kosong 1 - 4
-    // --------------------------------------------------------
-
-    const usedSlots =
-        existingPlayers.map(
-            player => player.player_slot
-        );
-
-    let availableSlot = null;
-
-    for (let slot = 1; slot <= 4; slot++) {
-
-        if (!usedSlots.includes(slot)) {
-
-            availableSlot = slot;
-
-            break;
-        }
-    }
-
-
-    if (!availableSlot) {
-
-        statusText.textContent =
-            "ROOM SUDAH PENUH";
-
-        return;
-    }
-
-
-    // --------------------------------------------------------
-    // Insert pemain
-    // --------------------------------------------------------
 
     const { data, error } =
         await supabaseClient
             .from("room_players")
-            .insert({
-
-                room_code: room,
-
-                player_name: student,
-
-                player_slot: availableSlot,
-
-                is_ready: false,
-
-                nexus_energy: 0,
-
-                mass_crystal: false,
-
-                particle_crystal: false,
-
-                gas_crystal: false,
-
-                solution_crystal: false
-
-            })
-            .select()
-            .single();
+            .select(
+                "player_slot, is_ready"
+            )
+            .eq(
+                "room_code",
+                room
+            )
+            .eq(
+                "student_id",
+                currentStudent.student_id
+            )
+            .maybeSingle();
 
 
     if (error) {
 
         console.error(
-            "JOIN ERROR:",
+            "CURRENT PLAYER ERROR:",
             error
         );
 
-        statusText.textContent =
-            "GAGAL MASUK ROOM";
-
-        return;
+        return false;
     }
 
 
-    currentPlayerId =
-        data.id;
+    if (!data) {
+
+        statusText.textContent =
+            "PLAYER TIDAK TERDAFTAR DI ROOM";
+
+        return false;
+    }
+
 
     currentPlayerSlot =
         data.player_slot;
 
-    isReady = false;
+    isReady =
+        data.is_ready;
 
 
-    console.log(
-        "PLAYER JOINED:",
-        data
+    sessionStorage.setItem(
+        "mol_nexus_player_slot",
+        String(currentPlayerSlot)
     );
 
 
-    await renderPlayers();
+    return true;
 }
 
 
 // ============================================================
-// 7. RENDER PLAYERS
+// 8. RENDER PLAYERS
 // ============================================================
 
 async function renderPlayers() {
@@ -267,8 +276,13 @@ async function renderPlayers() {
     const { data: players, error } =
         await supabaseClient
             .from("room_players")
-            .select("*")
-            .eq("room_code", room)
+            .select(
+                "player_name, player_slot, is_ready"
+            )
+            .eq(
+                "room_code",
+                room
+            )
             .order(
                 "player_slot",
                 {
@@ -284,26 +298,31 @@ async function renderPlayers() {
             error
         );
 
+        statusText.textContent =
+            "GAGAL MEMBACA LOBBY";
+
         return;
     }
 
 
-    // --------------------------------------------------------
-    // Update player count
-    // --------------------------------------------------------
+    const safePlayers =
+        players || [];
+
 
     playerCount.textContent =
-        players.length + " / 4";
+        safePlayers.length +
+        " / " +
+        roomMaxPlayers;
 
 
-    // --------------------------------------------------------
-    // Update setiap slot
-    // --------------------------------------------------------
-
-    for (let slot = 1; slot <= 4; slot++) {
+    for (
+        let slot = 1;
+        slot <= roomMaxPlayers;
+        slot++
+    ) {
 
         const player =
-            players.find(
+            safePlayers.find(
                 item =>
                     item.player_slot === slot
             );
@@ -342,6 +361,7 @@ async function renderPlayers() {
 
                 nameElement.textContent =
                     player.player_name;
+
             }
 
 
@@ -349,6 +369,7 @@ async function renderPlayers() {
 
                 subtitleElement.textContent =
                     "NEXUS EXPLORER";
+
             }
 
 
@@ -371,7 +392,9 @@ async function renderPlayers() {
                     statusElement.classList.remove(
                         "is-ready"
                     );
+
                 }
+
             }
 
         } else {
@@ -380,6 +403,7 @@ async function renderPlayers() {
 
                 nameElement.textContent =
                     "WAITING FOR PLAYER";
+
             }
 
 
@@ -387,6 +411,7 @@ async function renderPlayers() {
 
                 subtitleElement.textContent =
                     "SLOT AVAILABLE";
+
             }
 
 
@@ -398,65 +423,81 @@ async function renderPlayers() {
                 statusElement.classList.remove(
                     "is-ready"
                 );
+
             }
+
         }
+
     }
 
 
     // --------------------------------------------------------
-    // Update tombol ready pemain sendiri
+    // STATUS PEMAIN SENDIRI
     // --------------------------------------------------------
 
     const me =
-        players.find(
+        safePlayers.find(
             player =>
-                player.id === currentPlayerId
+                player.player_slot ===
+                currentPlayerSlot
         );
 
 
-    if (me) {
-
-        isReady =
-            me.is_ready;
-
-
-        if (isReady) {
-
-            readyButton.textContent =
-                "✓ YOU ARE READY";
-
-            readyButton.classList.add(
-                "is-ready"
-            );
-
-            statusText.textContent =
-                "READY — WAITING FOR OTHER PLAYERS";
-
-        } else {
-
-            readyButton.textContent =
-                "✓ READY";
-
-            readyButton.classList.remove(
-                "is-ready"
-            );
-
-            statusText.textContent =
-                "WAITING FOR OTHER PLAYERS";
-        }
+    if (!me) {
+        return;
     }
+
+
+    isReady =
+        me.is_ready;
+
+
+    if (isReady) {
+
+        readyButton.textContent =
+            "✓ YOU ARE READY";
+
+        readyButton.classList.add(
+            "is-ready"
+        );
+
+        statusText.textContent =
+            "READY — WAITING FOR OTHER PLAYERS";
+
+    } else {
+
+        readyButton.textContent =
+            "✓ READY";
+
+        readyButton.classList.remove(
+            "is-ready"
+        );
+
+        statusText.textContent =
+            "WAITING FOR OTHER PLAYERS";
+
+    }
+
+
+    // Setelah render, cek apakah game bisa dimulai.
+    await tryStartGame();
 }
 
 
 // ============================================================
-// 8. READY BUTTON
+// 9. READY BUTTON — SECURE RPC
 // ============================================================
 
 readyButton.addEventListener(
     "click",
     async function () {
 
-        if (!currentPlayerId) {
+        if (
+            !sessionToken ||
+            !room ||
+            currentPlayerSlot === null
+        ) {
+
             return;
         }
 
@@ -465,25 +506,28 @@ readyButton.addEventListener(
             !isReady;
 
 
-        readyButton.disabled = true;
+        readyButton.disabled =
+            true;
 
 
         const { error } =
-            await supabaseClient
-                .from("room_players")
-                .update({
+            await supabaseClient.rpc(
+                "set_student_ready",
+                {
+                    p_session_token:
+                        sessionToken,
 
-                    is_ready:
+                    p_room_code:
+                        room,
+
+                    p_is_ready:
                         newReadyState
-
-                })
-                .eq(
-                    "id",
-                    currentPlayerId
-                );
+                }
+            );
 
 
-        readyButton.disabled = false;
+        readyButton.disabled =
+            false;
 
 
         if (error) {
@@ -505,12 +549,64 @@ readyButton.addEventListener(
 
 
         await renderPlayers();
+
     }
 );
 
 
 // ============================================================
-// 9. LEAVE ROOM
+// 10. TRY START GAME — SECURE RPC
+// ============================================================
+
+async function tryStartGame() {
+
+    if (
+        !sessionToken ||
+        !room ||
+        gameRedirectStarted
+    ) {
+
+        return;
+    }
+
+
+    const { data, error } =
+        await supabaseClient.rpc(
+            "start_game_if_ready",
+            {
+                p_session_token:
+                    sessionToken,
+
+                p_room_code:
+                    room
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "START GAME ERROR:",
+            error
+        );
+
+        return;
+    }
+
+
+    if (data === true) {
+
+        statusText.textContent =
+            "ALL PLAYERS READY — INITIALIZING NEXUS...";
+
+        goToGame();
+
+    }
+}
+
+
+// ============================================================
+// 11. LEAVE ROOM — SECURE RPC
 // ============================================================
 
 leaveButton.addEventListener(
@@ -528,45 +624,59 @@ leaveButton.addEventListener(
         }
 
 
-        if (currentPlayerId) {
-
-            const { error } =
-                await supabaseClient
-                    .from("room_players")
-                    .delete()
-                    .eq(
-                        "id",
-                        currentPlayerId
-                    );
+        leaveButton.disabled =
+            true;
 
 
-            if (error) {
+        const { error } =
+            await supabaseClient.rpc(
+                "leave_student_room",
+                {
+                    p_session_token:
+                        sessionToken,
 
-                console.error(
-                    "LEAVE ERROR:",
-                    error
-                );
-            }
+                    p_room_code:
+                        room
+                }
+            );
+
+
+        if (error) {
+
+            console.error(
+                "LEAVE ERROR:",
+                error
+            );
+
+            statusText.textContent =
+                "GAGAL KELUAR DARI ROOM";
+
+            leaveButton.disabled =
+                false;
+
+            return;
         }
 
 
-        localStorage.removeItem(
-            "molNexusRoom"
+        sessionStorage.removeItem(
+            "mol_nexus_room"
         );
 
-        localStorage.removeItem(
-            "molNexusStudent"
+        sessionStorage.removeItem(
+            "mol_nexus_player_slot"
         );
 
 
-        window.location.href =
-            "index.html";
+        window.location.replace(
+            "index.html"
+        );
+
     }
 );
 
 
 // ============================================================
-// 10. REALTIME LISTENER
+// 12. REALTIME — ROOM PLAYERS
 // ============================================================
 
 const lobbyChannel =
@@ -577,134 +687,167 @@ const lobbyChannel =
         .on(
             "postgres_changes",
             {
-
                 event: "*",
-
                 schema: "public",
-
                 table: "room_players",
-
                 filter:
                     "room_code=eq." + room
-
             },
-
             async function () {
 
-    await renderPlayers();
-    await checkAllPlayersReady();
+                await renderPlayers();
 
             }
         )
         .subscribe();
-// ==========================================================
-// 10B. CHECK ALL PLAYERS READY
-// ==========================================================
 
-async function checkAllPlayersReady() {
 
-    const { data: players, error } =
-        await supabaseClient
-            .from("room_players")
-            .select("id, is_ready")
-            .eq("room_code", room);
-
-    if (error) {
-        console.error("CHECK READY ERROR:", error);
-        return;
-    }
-
-    // Game hanya mulai jika tepat 4 pemain sudah masuk
-    if (!players || players.length !== 4) {
-        return;
-    }
-
-    const allReady =
-        players.every(player => player.is_ready === true);
-
-    if (!allReady) {
-        return;
-    }
-
-    console.log("ALL PLAYERS READY");
-
-    statusText.textContent =
-        "ALL PLAYERS READY — INITIALIZING NEXUS...";
-
-    const { error: updateError } =
-        await supabaseClient
-            .from("game_rooms")
-            .update({
-                status: "PLAYING"
-            })
-            .eq("room_code", room)
-            .eq("status", "WAITING");
-
-    if (updateError) {
-        console.error(
-            "START GAME ERROR:",
-            updateError
-        );
-    }
-}
-// ======================================================
-// 10C. LISTEN GAME STATUS
-// ======================================================
+// ============================================================
+// 13. REALTIME — GAME STATUS
+// ============================================================
 
 const gameStatusChannel =
     supabaseClient
-        .channel("mol-nexus-game-status-" + room)
+        .channel(
+            "mol-nexus-game-status-" +
+            room
+        )
         .on(
             "postgres_changes",
             {
                 event: "UPDATE",
                 schema: "public",
                 table: "game_rooms",
-                filter: "room_code=eq." + room
+                filter:
+                    "room_code=eq." +
+                    room
             },
             function (payload) {
 
-                console.log(
-                    "GAME STATUS CHANGED:",
-                    payload.new.status
-                );
+                if (
+                    payload.new.status ===
+                    "PLAYING"
+                ) {
 
-                if (payload.new.status === "PLAYING") {
+                    goToGame();
 
-                    window.location.href =
-                        "game.html?student=" +
-                        encodeURIComponent(student) +
-                        "&room=" +
-                        encodeURIComponent(room);
                 }
+
             }
         )
         .subscribe();
+
+
 // ============================================================
-// 11. START LOBBY
+// 14. GAME REDIRECT
+// ============================================================
+
+function goToGame() {
+
+    if (gameRedirectStarted) {
+        return;
+    }
+
+
+    gameRedirectStarted =
+        true;
+
+
+    /*
+    Tidak lagi mengirim:
+    ?student=
+    ?room=
+    */
+
+    window.location.replace(
+        "game.html"
+    );
+}
+
+
+// ============================================================
+// 15. CLEAR STUDENT SESSION
+// ============================================================
+
+function clearStudentSession() {
+
+    sessionStorage.removeItem(
+        "mol_nexus_session_token"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_student_id"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_student_code"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_display_name"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_session_expires"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_room"
+    );
+
+    sessionStorage.removeItem(
+        "mol_nexus_player_slot"
+    );
+
+}
+
+
+// ============================================================
+// 16. START LOBBY
 // ============================================================
 
 async function startLobby() {
 
     console.log(
-        "MOL-NEXUS SUPABASE LOBBY START"
+        "MOL-NEXUS SECURE LOBBY v2.0"
     );
 
 
-    const roomExists =
-        await loadRoom();
+    const sessionValid =
+        await validateSession();
 
 
-    if (!roomExists) {
+    if (!sessionValid) {
         return;
     }
 
 
-    await joinPlayer();
+    const roomValid =
+        await loadRoom();
+
+
+    if (!roomValid) {
+        return;
+    }
+
+
+    const playerValid =
+        await loadCurrentPlayer();
+
+
+    if (!playerValid) {
+        return;
+    }
+
 
     await renderPlayers();
+
 }
 
+
+// ============================================================
+// START
+// ============================================================
 
 window.addEventListener(
     "DOMContentLoaded",
@@ -714,5 +857,5 @@ window.addEventListener(
 
 // ============================================================
 // MOL-NEXUS
-// END MULTIPLAYER LOBBY CONTROLLER
+// END SECURE MULTIPLAYER LOBBY
 // ============================================================
