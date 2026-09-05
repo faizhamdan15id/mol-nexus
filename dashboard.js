@@ -22,7 +22,30 @@ const supabaseClient =
     SUPABASE_ANON_KEY
   );
 
+/* =========================================================
+   TEACHER AUTH GUARD
+========================================================= */
 
+async function requireTeacherAuth() {
+  try {
+    const {
+      data: { session },
+      error
+    } = await supabaseClient.auth.getSession();
+
+    if (error || !session) {
+      window.location.replace("teacher-login.html");
+      return false;
+    }
+
+    return true;
+
+  } catch (error) {
+    console.error("Authentication check failed.");
+    window.location.replace("teacher-login.html");
+    return false;
+  }
+}
 /* =========================================================
    2. DOM ELEMENTS
 ========================================================= */
@@ -1085,7 +1108,14 @@ refreshButton.addEventListener(
 
 document.addEventListener(
   "DOMContentLoaded",
-  () => {
+  async () => {
+
+    const authenticated =
+      await requireTeacherAuth();
+
+    if (!authenticated) {
+      return;
+    }
 
     loadDashboard();
 
