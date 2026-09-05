@@ -261,7 +261,10 @@ async function loadCurrentPlayer() {
     isReady =
         data.is_ready;
 
-
+    sessionStorage.setItem(
+  "mol_nexus_room",
+  room
+);
     sessionStorage.setItem(
         "mol_nexus_player_slot",
         String(currentPlayerSlot)
