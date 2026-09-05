@@ -512,7 +512,7 @@ function clearStudentSession() {
     sessionStorage.removeItem(
         "mol_nexus_room"
     );
-
+    
     sessionStorage.removeItem(
         "mol_nexus_player_slot"
     );
