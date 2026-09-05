@@ -660,138 +660,68 @@ function findCurrentPlayer(
    ============================================================ */
 
 async function ensureStudentRecord() {
-
-  if (!currentPlayer) {
-
-    console.warn(
-      "STUDENT RECORD: currentPlayer belum tersedia."
-    );
-
-    return null;
-  }
-
-
-  const playerId =
-    currentPlayer.player_slot;
-
-
-  if (
-    playerId === null ||
-    playerId === undefined
-  ) {
-
+  if (!sessionToken) {
     console.error(
-      "STUDENT RECORD: ID pemain tidak ditemukan."
+      "STUDENT SESSION: token tidak tersedia."
     );
 
     return null;
   }
-
-
-  const displayName =
-    getPlayerName(
-      currentPlayer
-    ) ||
-    student ||
-    `PLAYER ${playerId}`;
-
-
-  const studentCode =
-    `${String(room)
-      .trim()
-      .toUpperCase()}-P${playerId}`;
-
 
   try {
+    const { data, error } =
+      await supabaseClient.rpc(
+        "validate_student_session",
+        {
+          p_session_token: sessionToken
+        }
+      );
 
-    const {
-      data: existingStudent,
-      error: findError
-    } = await supabaseClient
-      .from("students")
-      .select(
-        "student_id, student_code, display_name"
-      )
-      .eq(
-        "student_code",
-        studentCode
-      )
-      .maybeSingle();
-
-
-    if (findError) {
-
+    if (error) {
       console.error(
-        "FIND STUDENT ERROR:",
-        findError
+        "STUDENT SESSION VALIDATION ERROR:",
+        error
       );
 
       return null;
     }
 
+    const validatedStudent =
+      Array.isArray(data)
+        ? data[0]
+        : data;
 
-    if (existingStudent) {
-
-      currentStudentId =
-        existingStudent.student_id;
-
-
-      console.log(
-        "STUDENT FOUND:",
-        existingStudent
-      );
-
-
-      return existingStudent;
-    }
-
-
-    const {
-      data: newStudent,
-      error: insertError
-    } = await supabaseClient
-      .from("students")
-      .insert({
-        student_code:
-          studentCode,
-
-        display_name:
-          displayName,
-
-        username:
-          displayName
-      })
-      .select(
-        "student_id, student_code, display_name"
-      )
-      .single();
-
-
-    if (insertError) {
-
+    if (
+      !validatedStudent ||
+      !validatedStudent.student_id
+    ) {
       console.error(
-        "CREATE STUDENT ERROR:",
-        insertError
+        "STUDENT SESSION INVALID OR EXPIRED"
       );
 
       return null;
     }
-
 
     currentStudentId =
-      newStudent.student_id;
-
+      validatedStudent.student_id;
 
     console.log(
-      "STUDENT CREATED:",
-      newStudent
+      "SECURE STUDENT VALIDATED:",
+      {
+        student_id:
+          validatedStudent.student_id,
+
+        student_code:
+          validatedStudent.student_code,
+
+        display_name:
+          validatedStudent.display_name
+      }
     );
 
-
-    return newStudent;
+    return validatedStudent;
 
   } catch (error) {
-
     console.error(
       "ENSURE STUDENT RECORD ERROR:",
       error
@@ -799,6 +729,7 @@ async function ensureStudentRecord() {
 
     return null;
   }
+}
 }/* ============================================================
    GAME SESSION
    Memastikan setiap room memiliki session aktif
