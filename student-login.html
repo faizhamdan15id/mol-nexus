@@ -600,9 +600,9 @@
         */
 
         showMessage(
-          "error",
-          "Nama lengkap atau NISN tidak sesuai."
-        );
+  "error",
+  error?.message || "Terjadi kesalahan saat login."
+);
 
 
         loginButton.disabled = false;
