@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Student Access | MOL-NEXUS</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 50% 15%, #143b65 0%, #071a30 38%, #030b16 100%);
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      border: 2px solid #32e6ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
+      color: #32e6ff;
+      box-shadow:
+        0 0 20px rgba(50, 230, 255, 0.35),
+        inset 0 0 15px rgba(50, 230, 255, 0.12);
+    }
+
+    .brand h1 {
+      font-size: 32px;
+      letter-spacing: 4px;
+      color: #ffffff;
+    }
+
+    .brand h1 span {
+      color: #32e6ff;
+    }
+
+    .brand p {
+      margin-top: 8px;
+      color: #8fa9c2;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .login-card {
+      background: rgba(7, 25, 46, 0.88);
+      border: 1px solid rgba(50, 230, 255, 0.22);
+      border-radius: 18px;
+      padding: 30px 24px;
+      box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.45),
+        0 0 30px rgba(50, 230, 255, 0.05);
+      backdrop-filter: blur(12px);
+    }
+
+    .card-title {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .card-title h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+
+    .card-title p {
+      color: #7f9bb5;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #9fb6ca;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .field input {
+      width: 100%;
+      height: 52px;
+      padding: 0 15px;
+      border-radius: 10px;
+      border: 1px solid #23435e;
+      outline: none;
+      background: #071728;
+      color: white;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    .field input:focus {
+      border-color: #32e6ff;
+      box-shadow: 0 0 0 3px rgba(50, 230, 255, 0.08);
+    }
+
+    .field input::placeholder {
+      color: #506b82;
+    }
+
+    #nisn {
+      letter-spacing: 2px;
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 54px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      letter-spacing: 1.5px;
+      color: #02121d;
+      background: linear-gradient(90deg, #25d9ff, #3fffc1);
+      transition: 0.2s;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(50, 230, 255, 0.25);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .message {
+      display: none;
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .message.error {
+      display: block;
+      color: #ffb6bd;
+      background: rgba(255, 70, 90, 0.10);
+      border: 1px solid rgba(255, 70, 90, 0.25);
+    }
+
+    .message.success {
+      display: block;
+      color: #a9ffe1;
+      background: rgba(63, 255, 193, 0.08);
+      border: 1px solid rgba(63, 255, 193, 0.25);
+    }
+
+    .security-note {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid #17334b;
+      text-align: center;
+      color: #617f98;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .security-note strong {
+      color: #8ca8bf;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 22px;
+      color: #49667f;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 18px;
+      }
+
+      .brand h1 {
+        font-size: 27px;
+      }
+
+      .login-card {
+        padding: 26px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <div class="brand">
+
+    <div class="brand-icon">
+      ⚛
+    </div>
+
+    <h1>MOL-<span>NEXUS</span></h1>
+
+    <p>Stoichiometry Learning System</p>
+
+  </div>
+
+
+  <div class="login-card">
+
+    <div class="card-title">
+
+      <h2>Student Access</h2>
+
+      <p>
+        Masukkan identitas siswa untuk mengakses
+        MOL-NEXUS Learning Environment.
+      </p>
+
+    </div>
+
+
+    <form id="studentLoginForm">
+
+      <div class="field">
+
+        <label for="displayName">
+          Nama Lengkap
+        </label>
+
+        <input
+          type="text"
+          id="displayName"
+          autocomplete="name"
+          placeholder="Masukkan nama lengkap"
+          required
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label for="nisn">
+          NISN
+        </label>
+
+        <input
+          type="text"
+          id="nisn"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="10"
+          pattern="[0-9]{10}"
+          placeholder="10 digit NISN"
+          required
+        >
+
+      </div>
+
+
+      <button
+        type="submit"
+        class="login-btn"
+        id="loginButton"
+      >
+        ENTER NEXUS →
+      </button>
+
+
+      <div
+        id="loginMessage"
+        class="message"
+      ></div>
+
+    </form>
+
+
+    <div class="security-note">
+
+      🔒 <strong>Secure Student Access</strong><br>
+
+      Identitas digunakan untuk verifikasi akses.
+      NISN tidak ditampilkan di dalam permainan.
+
+    </div>
+
+  </div>
+
+
+  <div class="footer">
+
+    MOL-NEXUS Smart Learning System<br>
+    MA Nurul Islam
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /*
+  =========================================================
+  SUPABASE CONFIGURATION
+  =========================================================
+
+  Gunakan URL dan PUBLISHABLE KEY yang sama
+  dengan teacher-login.html.
+
+  JANGAN gunakan service_role / secret key.
+  */
+
+  const SUPABASE_URL = "https://snlpdwqdjfnborsorspd.supabase.co";
+
+  const SUPABASE_KEY = "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
+
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+
+  /*
+  =========================================================
+  ELEMENTS
+  =========================================================
+  */
+
+  const loginForm =
+    document.getElementById("studentLoginForm");
+
+  const displayNameInput =
+    document.getElementById("displayName");
+
+  const nisnInput =
+    document.getElementById("nisn");
+
+  const loginButton =
+    document.getElementById("loginButton");
+
+  const loginMessage =
+    document.getElementById("loginMessage");
+
+
+  /*
+  =========================================================
+  NISN INPUT
+  Hanya izinkan angka.
+  =========================================================
+  */
+
+  nisnInput.addEventListener("input", function () {
+
+    this.value =
+      this.value
+        .replace(/\D/g, "")
+        .slice(0, 10);
+
+  });
+
+
+  /*
+  =========================================================
+  MESSAGE
+  =========================================================
+  */
+
+  function showMessage(type, text) {
+
+    loginMessage.className =
+      "message " + type;
+
+    loginMessage.textContent = text;
+
+  }
+
+
+  /*
+  =========================================================
+  STUDENT LOGIN
+  =========================================================
+  */
+
+  loginForm.addEventListener(
+    "submit",
+    async function (event) {
+
+      event.preventDefault();
+
+      const displayName =
+        displayNameInput.value.trim();
+
+      const nisn =
+        nisnInput.value.trim();
+
+
+      /*
+      -----------------------------
+      Validasi frontend
+      -----------------------------
+      */
+
+      if (displayName.length < 3) {
+
+        showMessage(
+          "error",
+          "Masukkan nama lengkap siswa."
+        );
+
+        return;
+      }
+
+
+      if (!/^\d{10}$/.test(nisn)) {
+
+        showMessage(
+          "error",
+          "NISN harus terdiri dari 10 digit angka."
+        );
+
+        return;
+      }
+
+
+      /*
+      -----------------------------
+      Loading
+      -----------------------------
+      */
+
+      loginButton.disabled = true;
+
+      loginButton.textContent =
+        "VERIFYING...";
+
+      loginMessage.className =
+        "message";
+
+
+      try {
+
+        /*
+        -----------------------------
+        RPC LOGIN
+        -----------------------------
+        */
+
+        const { data, error } =
+          await supabaseClient.rpc(
+            "login_student",
+            {
+              p_display_name: displayName,
+              p_nisn: nisn
+            }
+          );
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (!data || data.length === 0) {
+
+          throw new Error(
+            "Identitas siswa tidak ditemukan."
+          );
+
+        }
+
+
+        const student =
+          data[0];
+
+
+        /*
+        =====================================================
+        SESSION STORAGE
+        =====================================================
+
+        Token disimpan di sessionStorage:
+        - tidak dimasukkan ke URL
+        - hilang ketika sesi/tab browser berakhir
+        - NISN TIDAK disimpan
+        =====================================================
+        */
+
+        sessionStorage.setItem(
+          "mol_nexus_session_token",
+          student.session_token
+        );
+
+        sessionStorage.setItem(
+          "mol_nexus_student_id",
+          student.student_id
+        );
+
+        sessionStorage.setItem(
+          "mol_nexus_student_code",
+          student.student_code
+        );
+
+        sessionStorage.setItem(
+          "mol_nexus_display_name",
+          student.display_name
+        );
+
+        sessionStorage.setItem(
+          "mol_nexus_session_expires",
+          student.expires_at
+        );
+
+
+        /*
+        Hapus NISN dari field secepatnya.
+        */
+
+        nisnInput.value = "";
+
+
+        showMessage(
+          "success",
+          "Identitas berhasil diverifikasi. Memasuki MOL-NEXUS..."
+        );
+
+
+        loginButton.textContent =
+          "ACCESS GRANTED ✓";
+
+
+        /*
+        =====================================================
+        REDIRECT
+        =====================================================
+
+        Untuk sementara menuju lobby.html.
+
+        NISN dan student_id tidak dikirim melalui URL.
+        =====================================================
+        */
+
+        setTimeout(function () {
+
+          window.location.replace(
+            "lobby.html"
+          );
+
+        }, 700);
+
+
+      } catch (error) {
+
+        console.error(
+          "Student login error:",
+          error
+        );
+
+
+        /*
+        Jangan tampilkan detail database kepada siswa.
+        */
+
+        showMessage(
+          "error",
+          "Nama lengkap atau NISN tidak sesuai."
+        );
+
+
+        loginButton.disabled = false;
+
+        loginButton.textContent =
+          "ENTER NEXUS →";
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+  </html>
