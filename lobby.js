@@ -577,7 +577,7 @@ async function tryStartGame() {
 
     const { data, error } =
         await supabaseClient.rpc(
-            "start_game_if_ready",
+           "try_start_room", 
             {
                 p_session_token:
                     sessionToken,
