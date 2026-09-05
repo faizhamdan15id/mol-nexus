@@ -336,7 +336,12 @@ async function joinNexus() {
             "mol_nexus_room",
             player.room_code
         );
-
+        
+       sessionStorage.setItem(
+  "mol_nexus_display_name",
+  currentStudent.display_name
+); 
+        
         sessionStorage.setItem(
             "mol_nexus_player_slot",
             String(player.player_slot)
