@@ -4,6 +4,7 @@
    Multiplayer + Supabase + Multi-Step Diagnostic Gameplay
    ============================================================ */
 
+alert("GAME.JS V2.4 BERHASIL DIMUAT");
 
 /* ============================================================
    1. SUPABASE CONFIG
