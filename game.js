@@ -45,7 +45,14 @@ const room =
   sessionStorage.getItem(
     "mol_nexus_room"
   ) || "";
-
+alert(
+  "GAME STORAGE\n" +
+  "TOKEN: " + (sessionToken ? "ADA" : "KOSONG") +
+  "\nROOM: " + room +
+  "\nNAME: " + student +
+  "\nSLOT: " +
+  sessionStorage.getItem("mol_nexus_player_slot")
+);
 if (!sessionToken || !student || !room) {
   console.error(
     "SECURE GAME CONTEXT MISSING",
