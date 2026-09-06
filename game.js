@@ -1,13 +1,13 @@
 /* ============================================================
    MOL-NEXUS GAME CONTROLLER
-   Version 2.2
-   Multiplayer + Supabase + Multi-Step Diagnostic Gameplay
+   Version 3.0 CLEAN
+   Multiplayer + Supabase + Secure Student Session
    ============================================================ */
 
-alert("GAME.JS V2.4 BERHASIL DIMUAT");
+"use strict";
 
 /* ============================================================
-   1. SUPABASE CONFIG
+   1. SUPABASE
    ============================================================ */
 
 const SUPABASE_URL =
@@ -24,162 +24,37 @@ const supabaseClient =
 
 
 /* ============================================================
-   2. URL / PLAYER DATA
+   2. SESSION CONTEXT
    ============================================================ */
-
-const urlParams =
-  new URLSearchParams(
-    window.location.search
-  );
 
 const sessionToken =
   sessionStorage.getItem(
     "mol_nexus_session_token"
-  );
-
-const student =
-  sessionStorage.getItem(
-    "mol_nexus_display_name"
   ) || "";
 
-const room =
+let room =
   sessionStorage.getItem(
     "mol_nexus_room"
   ) || "";
-alert(
-  "GAME STORAGE\n" +
-  "TOKEN: " + (sessionToken ? "ADA" : "KOSONG") +
-  "\nROOM: " + room +
-  "\nNAME: " + student +
-  "\nSLOT: " +
-  sessionStorage.getItem("mol_nexus_player_slot")
-);
-if (!sessionToken || !student || !room) {
-  console.error(
-    "SECURE GAME CONTEXT MISSING",
-    {
-      token: !!sessionToken,
-      student: student,
-      room: room
-    }
+
+const storedSlot =
+  Number(
+    sessionStorage.getItem(
+      "mol_nexus_player_slot"
+    ) || 0
   );
 
-  window.location.replace(
-    "student-login.html"
-  );
-}
-
-
-/* ============================================================
-   3. DOM
-   ============================================================ */
-
-const gameRoom =
-  document.getElementById(
-    "gameRoom"
-  );
-
-const gameStudent =
-  document.getElementById(
-    "gameStudent"
-  );
-
-const gameEnergy =
-  document.getElementById(
-    "gameEnergy"
-  );
-
-const sideEnergy =
-  document.getElementById(
-    "sideEnergy"
-  );
-
-const crystalCount =
-  document.getElementById(
-    "crystalCount"
-  );
-
-const gamePlayersList =
-  document.getElementById(
-    "gamePlayersList"
-  );
-
-const currentPlayerName =
-  document.getElementById(
-    "currentPlayerName"
-  );
-
-const turnStatus =
-  document.getElementById(
-    "turnStatus"
-  );
-
-const gameMessage =
-  document.getElementById(
-    "gameMessage"
-  );
-
-const caseZone =
-  document.getElementById(
-    "caseZone"
-  );
-
-const caseTitle =
-  document.getElementById(
-    "caseTitle"
-  );
-
-const caseDifficulty =
-  document.getElementById(
-    "caseDifficulty"
-  );
-
-const caseQuestion =
-  document.getElementById(
-    "caseQuestion"
-  );
-
-const selectedPathElement =
-  document.getElementById(
-    "selectedPath"
-  );
-
-const calculationAnswer =
-  document.getElementById(
-    "calculationAnswer"
-  );
-
-const unitAnswer =
-  document.getElementById(
-    "unitAnswer"
-  );
-
-const hintButton =
-  document.getElementById(
-    "hintButton"
-  );
-
-const submitCaseButton =
-  document.getElementById(
-    "submitCaseButton"
-  );
-
-const caseFeedback =
-  document.getElementById(
-    "caseFeedback"
-  );
-
-
-/* ============================================================
-   4. GAME STATE
-   ============================================================ */
-
-let currentPlayer = null;
-let currentQuestion = null;
+let student = "";
 
 let currentStudentId = null;
-let currentSessionId = null;
+let currentPlayer = null;
+let currentPlayers = [];
+let currentQuestion = null;
 
+let currentTurn = 1;
+let isMyTurn = false;
+
+let selectedZone = null;
 let selectedPath = [];
 let selectedFormulas = [];
 
@@ -188,7 +63,6 @@ let retryCount = 0;
 let attemptSequence = 1;
 
 let questionStartTime = null;
-
 let pathStageStartTime = null;
 let formulaStageStartTime = null;
 let calculationStageStartTime = null;
@@ -198,20 +72,79 @@ let formulaTimeMs = null;
 let calculationTimeMs = null;
 
 let isSubmitting = false;
-
-let selectedZone = null;
-
 let lastQuestionId = null;
 
+let playersChannel = null;
+let roomChannel = null;
+
+
 /* ============================================================
-   MULTIPLAYER TURN STATE
+   3. DOM HELPERS
    ============================================================ */
 
-let currentTurn = 1;
-let isMyTurn = false;
-let currentPlayers = [];
+const $ = id =>
+  document.getElementById(id);
+
+const gameRoom =
+  $("gameRoom");
+
+const gameStudent =
+  $("gameStudent");
+
+const gameEnergy =
+  $("gameEnergy");
+
+const sideEnergy =
+  $("sideEnergy");
+
+const crystalCount =
+  $("crystalCount");
+
+const gamePlayersList =
+  $("gamePlayersList");
+
+const currentPlayerName =
+  $("currentPlayerName");
+
+const turnStatus =
+  $("turnStatus");
+
+const gameMessage =
+  $("gameMessage");
+
+const caseZone =
+  $("caseZone");
+
+const caseTitle =
+  $("caseTitle");
+
+const caseDifficulty =
+  $("caseDifficulty");
+
+const caseQuestion =
+  $("caseQuestion");
+
+const selectedPathElement =
+  $("selectedPath");
+
+const calculationAnswer =
+  $("calculationAnswer");
+
+const unitAnswer =
+  $("unitAnswer");
+
+const hintButton =
+  $("hintButton");
+
+const submitCaseButton =
+  $("submitCaseButton");
+
+const caseFeedback =
+  $("caseFeedback");
+
+
 /* ============================================================
-   5. UTILITIES
+   4. UTILITIES
    ============================================================ */
 
 function escapeHTML(value) {
@@ -221,10 +154,7 @@ function escapeHTML(value) {
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
+    .replaceAll("'", "&#039;");
 }
 
 
@@ -238,14 +168,10 @@ function normalizeText(value) {
 
 function getPlayerName(player) {
 
-  if (!player) {
-    return "";
-  }
-
   return (
-    player.student_name ||
-    player.player_name ||
-    player.name ||
+    player?.student_name ||
+    player?.player_name ||
+    player?.name ||
     ""
   );
 }
@@ -259,14 +185,44 @@ function nowMs() {
 
 function elapsedMs(start) {
 
-  if (!start) {
-    return null;
-  }
+  return start
+    ? Math.max(
+        0,
+        nowMs() - start
+      )
+    : null;
+}
 
-  return Math.max(
-    0,
-    nowMs() - start
+
+function wait(ms) {
+
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
   );
+}
+
+
+function setMessage(text) {
+
+  if (gameMessage) {
+
+    gameMessage.textContent =
+      text;
+  }
+}
+
+
+function showFeedback(text) {
+
+  if (caseFeedback) {
+
+    caseFeedback.textContent =
+      text;
+  }
 }
 
 
@@ -274,962 +230,16 @@ function setSubmitDisabled(
   disabled
 ) {
 
-  if (!submitCaseButton) {
-    return;
-  }
+  if (submitCaseButton) {
 
-  submitCaseButton.disabled =
-    disabled;
-}
-
-/* ============================================================
-   MULTIPLAYER TURN CONTROL
-   ============================================================ */
-
-function applyTurnState(roomData) {
-    if (!roomData || !currentPlayer) {
-        return;
-    }
-
-    currentTurn = Number(roomData.current_turn || 1);
-
-    const mySlot = Number(currentPlayer.player_slot);
-
-    isMyTurn = mySlot === currentTurn;
-
-    /*
-     * CURRENT PLAYER harus menunjukkan
-     * pemain yang BENAR-BENAR sedang mendapat giliran,
-     * bukan pemilik browser/tab.
-     */
-    const activePlayer =
-        Array.isArray(currentPlayers)
-            ? currentPlayers.find(
-                player =>
-                    Number(player.player_slot) === currentTurn
-              )
-            : null;
-
-    if (currentPlayerName) {
-        currentPlayerName.textContent =
-            activePlayer
-                ? getPlayerName(activePlayer).toUpperCase()
-                : "PLAYER " + currentTurn;
-    }
-
-    if (isMyTurn) {
-        if (turnStatus) {
-            turnStatus.textContent =
-                "YOUR TURN • PLAYER " + mySlot;
-        }
-
-        if (gameMessage) {
-            gameMessage.textContent =
-                "Giliran Anda. Pilih Nexus dan selesaikan challenge.";
-        }
-
-        setSubmitDisabled(false);
-
-    } else {
-        if (turnStatus) {
-            turnStatus.textContent =
-                "PLAYER " + currentTurn + " TURN";
-        }
-
-        if (gameMessage) {
-            gameMessage.textContent =
-                "Menunggu giliran Player " + currentTurn + ".";
-        }
-
-        setSubmitDisabled(true);
-    }
-
-    console.log(
-        "TURN STATE:",
-        {
-            current_turn: currentTurn,
-            my_slot: mySlot,
-            active_player:
-                activePlayer
-                    ? getPlayerName(activePlayer)
-                    : null,
-            is_my_turn: isMyTurn
-        }
-    );
-}
-/* ============================================================
-   6. BASIC DATA
-   ============================================================ */
-
-function renderBasicData() {
-
-  if (gameRoom) {
-
-    gameRoom.textContent =
-      room || "----";
-  }
-
-  if (gameStudent) {
-
-    gameStudent.textContent =
-      student
-        ? student.toUpperCase()
-        : "PLAYER";
+    submitCaseButton.disabled =
+      disabled;
   }
 }
 
 
 /* ============================================================
-   7. LOAD ROOM
-   ============================================================ */
-
-async function loadGameRoom() {
-
-  if (!room) {
-    return null;
-  }
-
-  const {
-    data,
-    error
-  } = await supabaseClient
-    .from("game_rooms")
-    .select("*")
-    .eq(
-      "room_code",
-      room
-    )
-    .maybeSingle();
-
-
-  if (error) {
-
-    console.error(
-      "LOAD GAME ROOM ERROR:",
-      error
-    );
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Gagal membaca data room.";
-    }
-
-    return null;
-  }
-
-
-  if (!data) {
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Room tidak ditemukan.";
-    }
-
-    return null;
-  }
-
-
-  const status =
-    String(
-      data.status || ""
-    ).toUpperCase();
-
-
-  if (
-    status === "PLAYING"
-  ) {
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Nexus synchronized. Game is active.";
-    }
-
-    if (turnStatus) {
-
-      turnStatus.textContent =
-        "NEXUS ACTIVE";
-    }
-
-  } else {
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Waiting for Nexus activation.";
-    }
-  }
-
-applyTurnState(data);
-  return data;
-}
-
-
-/* ============================================================
-   8. LOAD PLAYERS
-   ============================================================ */
-
-async function loadGamePlayers() {
-
-  if (!room) {
-    return [];
-  }
-
-  const {
-    data: players,
-    error
-  } = await supabaseClient
-    .from("room_players")
-    .select("*")
-    .eq(
-      "room_code",
-      room
-    )
-    .order(
-      "player_slot",
-      {
-        ascending: true
-      }
-    );
-
-
-  if (error) {
-
-    console.error(
-      "LOAD PLAYERS ERROR:",
-      error
-    );
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Gagal membaca data pemain.";
-    }
-
-    return [];
-  }
-
-
-  const safePlayers =
-    players || [];
-
-currentPlayers = safePlayers;
-
-renderPlayers(
-    safePlayers
-);
-
-findCurrentPlayer(
-    safePlayers
-);
-
-const roomData = await loadGameRoom();
-
-if (roomData) {
-  applyTurnState(roomData);
-}
-  return safePlayers;
-}
-
-
-/* ============================================================
-   9. RENDER PLAYERS
-   ============================================================ */
-
-function renderPlayers(players) {
-
-  if (!gamePlayersList) {
-    return;
-  }
-
-
-  const colors = [
-    "cyan",
-    "purple",
-    "green",
-    "orange"
-  ];
-
-
-  let html = "";
-
-
-  for (
-    let slot = 1;
-    slot <= 4;
-    slot++
-  ) {
-
-    const player =
-      players.find(
-        item =>
-          Number(
-            item.player_slot
-          ) === slot
-      );
-
-
-    const playerName =
-      player
-        ? getPlayerName(player)
-        : "WAITING...";
-
-
-    const ready =
-      player?.is_ready === true;
-
-
-    html += `
-      <div class="game-player-card">
-
-        <div class="game-player-avatar ${colors[slot - 1]}">
-          ${String(slot).padStart(2, "0")}
-        </div>
-
-        <div class="game-player-info">
-
-          <strong>
-            ${escapeHTML(
-              playerName ||
-              "WAITING..."
-            )}
-          </strong>
-
-          <small>
-            ${
-              player
-                ? (
-                    ready
-                      ? "NEXUS EXPLORER • READY"
-                      : "NEXUS EXPLORER"
-                  )
-                : "WAITING FOR PLAYER"
-            }
-          </small>
-
-        </div>
-
-      </div>
-    `;
-  }
-
-
-  gamePlayersList.innerHTML =
-    html;
-}
-
-
-/* ============================================================
-   10. CURRENT PLAYER
-   ============================================================ */
-
-function findCurrentPlayer(
-  players
-) {
-
-  if (!student) {
-    return;
-  }
-
-
-  const target =
-    normalizeText(student);
-
-
-  currentPlayer =
-    players.find(
-      player =>
-        normalizeText(
-          getPlayerName(player)
-        ) === target
-    ) || null;
-
-
-  if (!currentPlayer) {
-
-    if (currentPlayerName) {
-
-      currentPlayerName.textContent =
-        student.toUpperCase();
-    }
-
-    return;
-  }
-
-
-  renderCurrentPlayer();
-}
-
-
-/* ============================================================
-   11. ENSURE STUDENT RECORD
-   ============================================================ */
-
-async function ensureStudentRecord() {
-  if (!sessionToken) {
-    console.error(
-      "STUDENT SESSION: token tidak tersedia."
-    );
-
-    return null;
-  }
-
-  try {
-    const { data, error } =
-      await supabaseClient.rpc(
-        "validate_student_session",
-        {
-          p_session_token: sessionToken
-        }
-      );
-
-    if (error) {
-      console.error(
-        "STUDENT SESSION VALIDATION ERROR:",
-        error
-      );
-
-      return null;
-    }
-
-    const validatedStudent =
-      Array.isArray(data)
-        ? data[0]
-        : data;
-
-    if (
-      !validatedStudent ||
-      !validatedStudent.student_id
-    ) {
-      console.error(
-        "STUDENT SESSION INVALID OR EXPIRED"
-      );
-
-      return null;
-    }
-
-    currentStudentId =
-      validatedStudent.student_id;
-
-    console.log(
-      "SECURE STUDENT VALIDATED:",
-      {
-        student_id:
-          validatedStudent.student_id,
-
-        student_code:
-          validatedStudent.student_code,
-
-        display_name:
-          validatedStudent.display_name
-      }
-    );
-
-    return validatedStudent;
-
-  } catch (error) {
-    console.error(
-      "ENSURE STUDENT RECORD ERROR:",
-      error
-    );
-
-    return null;
-  }
-}
-}/* ============================================================
-   GAME SESSION
-   Memastikan setiap room memiliki session aktif
-   ============================================================ */
-
-async function ensureGameSession() {
-
-  if (!room) {
-
-    console.warn(
-      "GAME SESSION: room belum tersedia."
-    );
-
-    return null;
-  }
-
-
-  try {
-
-    const {
-      data: existingSessions,
-      error: findError
-    } = await supabaseClient
-      .from("game_sessions")
-      .select(
-        "session_id, room_code, status, created_at"
-      )
-      .eq(
-        "room_code",
-        room
-      )
-      .in(
-        "status",
-        ["WAITING", "ACTIVE"]
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      )
-      .limit(1);
-
-
-    if (findError) {
-
-      console.error(
-        "FIND GAME SESSION ERROR:",
-        findError
-      );
-
-      return null;
-    }
-
-
-    if (
-      Array.isArray(
-        existingSessions
-      ) &&
-      existingSessions.length > 0
-    ) {
-
-      currentSessionId =
-        existingSessions[0]
-          .session_id;
-
-
-      console.log(
-        "GAME SESSION FOUND:",
-        existingSessions[0]
-      );
-
-
-      return existingSessions[0];
-    }
-
-
-    const {
-      data: newSession,
-      error: insertError
-    } = await supabaseClient
-      .from("game_sessions")
-      .insert({
-        room_code:
-          room,
-
-        status:
-          "WAITING"
-      })
-      .select(
-        "session_id, room_code, status, created_at"
-      )
-      .single();
-
-
-    if (insertError) {
-
-      console.error(
-        "CREATE GAME SESSION ERROR:",
-        insertError
-      );
-
-
-      if (gameMessage) {
-
-        gameMessage.textContent =
-          "SESSION ERROR: " +
-          (
-            insertError.message ||
-            JSON.stringify(
-              insertError
-            )
-          );
-      }
-
-
-      return null;
-    }
-
-
-    currentSessionId =
-      newSession.session_id;
-
-
-    console.log(
-      "GAME SESSION CREATED:",
-      newSession
-    );
-
-
-    return newSession;
-
-
-  } catch (error) {
-
-    console.error(
-      "ENSURE GAME SESSION ERROR:",
-      error
-    );
-
-    return null;
-  }
-}
-
-
-/* ============================================================
-   CURRENT PLAYER DISPLAY
-   ============================================================ */
-
-function renderCurrentPlayer() {
-
-  if (!currentPlayer) {
-    return;
-  }
-
-
-  const name =
-    getPlayerName(
-      currentPlayer
-    );
-
-
-  const energy =
-    Number(
-      currentPlayer.nexus_energy ||
-      0
-    );
-
-
-  if (currentPlayerName) {
-
-    currentPlayerName.textContent =
-      name.toUpperCase();
-  }
-
-
-  if (gameStudent) {
-
-    gameStudent.textContent =
-      name.toUpperCase();
-  }
-
-
-  if (gameEnergy) {
-
-    gameEnergy.textContent =
-      energy;
-  }
-
-
-  if (sideEnergy) {
-
-    sideEnergy.textContent =
-      energy;
-  }
-
-
-  renderCrystals(
-    currentPlayer
-  );
-}
-
-
-/* ============================================================
-   11. CRYSTALS
-   ============================================================ */
-
-function renderCrystals(player) {
-
-  const crystalMap = [
-
-    {
-      id:
-        "massCrystal",
-
-      fields: [
-        "mass_crystal",
-        "crystal_mass"
-      ]
-    },
-
-    {
-      id:
-        "particleCrystal",
-
-      fields: [
-        "particle_crystal",
-        "crystal_particle"
-      ]
-    },
-
-    {
-      id:
-        "gasCrystal",
-
-      fields: [
-        "gas_crystal",
-        "crystal_gas"
-      ]
-    },
-
-    {
-      id:
-        "solutionCrystal",
-
-      fields: [
-        "solution_crystal",
-        "crystal_solution"
-      ]
-    }
-
-  ];
-
-
-  let total = 0;
-
-
-  crystalMap.forEach(
-    item => {
-
-      const element =
-        document.getElementById(
-          item.id
-        );
-
-
-      const collected =
-        item.fields.some(
-          field =>
-            player[field] === true
-        );
-
-
-      if (collected) {
-
-        total++;
-
-        element?.classList.add(
-          "collected"
-        );
-
-      } else {
-
-        element?.classList.remove(
-          "collected"
-        );
-      }
-    }
-  );
-
-
-  if (crystalCount) {
-
-    crystalCount.textContent =
-      total;
-  }
-}
-
-
-/* ============================================================
-   12. PATH BUILDER
-   ============================================================ */
-
-function initializePathBuilder() {
-
-  document
-    .querySelectorAll(
-      ".path-block"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          function() {
-
-            const value =
-              this.dataset.path;
-
-
-            if (!value) {
-              return;
-            }
-
-
-            /*
-               Timer PATH dimulai ketika
-               siswa pertama kali berinteraksi
-               dengan Path Builder.
-            */
-
-            if (
-              pathStageStartTime ===
-              null
-            ) {
-
-              pathStageStartTime =
-                nowMs();
-            }
-
-
-            /*
-               Jika node belum dipilih,
-               tambahkan ke akhir path.
-
-               Jika node sudah dipilih,
-               path dipotong sampai sebelum
-               node tersebut.
-
-               Contoh:
-               MASS → MOL → PARTICLE
-
-               tekan MOL lagi:
-               menjadi MASS
-            */
-
-            if (
-              selectedPath.includes(
-                value
-              )
-            ) {
-
-              const index =
-                selectedPath.indexOf(
-                  value
-                );
-
-
-              selectedPath =
-                selectedPath.slice(
-                  0,
-                  index
-                );
-
-            } else {
-
-              selectedPath.push(
-                value
-              );
-            }
-
-
-            pathTimeMs =
-              elapsedMs(
-                pathStageStartTime
-              );
-
-
-            renderSelectedPath();
-
-            renderPathSelection();
-          }
-        );
-      }
-    );
-}
-
-
-/* ============================================================
-   RENDER SELECTED PATH
-   ============================================================ */
-
-function renderSelectedPath() {
-
-  if (!selectedPathElement) {
-    return;
-  }
-
-
-  if (
-    selectedPath.length === 0
-  ) {
-
-    selectedPathElement.textContent =
-      "PATH: —";
-
-    return;
-  }
-
-
-  selectedPathElement.textContent =
-    "PATH: " +
-    selectedPath.join(
-      " → "
-    );
-}
-
-
-/* ============================================================
-   RENDER PATH BUTTON STATE
-   ============================================================ */
-
-function renderPathSelection() {
-
-  document
-    .querySelectorAll(
-      ".path-block"
-    )
-    .forEach(
-      button => {
-
-        const value =
-          button.dataset.path;
-
-
-        if (
-          selectedPath.includes(
-            value
-          )
-        ) {
-
-          button.classList.add(
-            "selected"
-          );
-
-        } else {
-
-          button.classList.remove(
-            "selected"
-          );
-        }
-      }
-    );
-}
-
-
-/* ============================================================
-   RESET PATH
-   ============================================================ */
-
-function resetPath() {
-
-  selectedPath = [];
-
-
-  document
-    .querySelectorAll(
-      ".path-block"
-    )
-    .forEach(
-      button => {
-
-        button.classList.remove(
-          "selected"
-        );
-      }
-    );
-
-
-  renderSelectedPath();
-     }/* ============================================================
-   13. FORMULA LIBRARY
+   5. FORMULA LIBRARY
    ============================================================ */
 
 const FORMULA_LIBRARY = [
@@ -1281,36 +291,797 @@ const FORMULA_LIBRARY = [
 
   {
     id: "ML_TO_L",
-    label: "V(L) = V(mL) / 1000"
+    label:
+      "V(L) = V(mL) / 1000"
   }
 
 ];
 
 
+function formulaIdToLabel(id) {
+
+  return (
+    FORMULA_LIBRARY.find(
+      item =>
+        item.id === id
+    )?.label ||
+    id
+  );
+}
+
+
 /* ============================================================
-   14. FORMULA DISPLAY AREA
+   6. SECURE STUDENT SESSION
+   ============================================================ */
+
+async function validateStudentSession() {
+
+  if (!sessionToken) {
+
+    throw new Error(
+      "SESSION_TOKEN_MISSING"
+    );
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "validate_student_session",
+      {
+        p_session_token:
+          sessionToken
+      }
+    );
+
+
+  if (error) {
+
+    throw error;
+  }
+
+
+  const record =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (
+    !record ||
+    !record.student_id
+  ) {
+
+    throw new Error(
+      "SESSION_INVALID_OR_EXPIRED"
+    );
+  }
+
+
+  currentStudentId =
+    record.student_id;
+
+
+  student =
+    record.display_name || "";
+
+
+  /*
+    Nama hanya digunakan
+    untuk tampilan.
+
+    Identitas utama tetap
+    berasal dari token server.
+  */
+
+  sessionStorage.setItem(
+    "mol_nexus_display_name",
+    student
+  );
+
+
+  return record;
+}
+
+
+/* ============================================================
+   7. LOAD GAME ROOM
+   ============================================================ */
+
+async function loadGameRoom() {
+
+  if (!room) {
+
+    return null;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("game_rooms")
+      .select("*")
+      .eq(
+        "room_code",
+        room
+      )
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "LOAD ROOM ERROR:",
+      error
+    );
+
+
+    setMessage(
+      "Gagal membaca data room."
+    );
+
+
+    return null;
+  }
+
+
+  if (!data) {
+
+    setMessage(
+      "Room tidak ditemukan."
+    );
+
+
+    return null;
+  }
+
+
+  currentTurn =
+    Number(
+      data.current_turn || 1
+    );
+
+
+  const status =
+    String(
+      data.status || ""
+    ).toUpperCase();
+
+
+  if (
+    status === "PLAYING"
+  ) {
+
+    setMessage(
+      "Nexus synchronized. Game is active."
+    );
+
+  } else {
+
+    setMessage(
+      "Waiting for Nexus activation."
+    );
+  }
+
+
+  return data;
+}
+
+
+/* ============================================================
+   8. LOAD PLAYERS
+   ============================================================ */
+
+async function loadGamePlayers() {
+
+  if (!room) {
+
+    return [];
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("room_players")
+      .select("*")
+      .eq(
+        "room_code",
+        room
+      )
+      .order(
+        "player_slot",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "LOAD PLAYERS ERROR:",
+      error
+    );
+
+
+    setMessage(
+      "Gagal membaca data pemain."
+    );
+
+
+    return [];
+  }
+
+
+  currentPlayers =
+    data || [];
+
+
+  renderPlayers(
+    currentPlayers
+  );
+
+
+  /*
+    Prioritas pencarian:
+    1. student_id
+    2. slot dari lobby
+    3. nama siswa
+
+    student_id adalah
+    identitas utama.
+  */
+
+  currentPlayer =
+
+    currentPlayers.find(
+      player =>
+        player.student_id ===
+        currentStudentId
+    )
+
+    ||
+
+    currentPlayers.find(
+      player =>
+        Number(
+          player.player_slot
+        ) ===
+        storedSlot
+    )
+
+    ||
+
+    currentPlayers.find(
+      player =>
+        normalizeText(
+          getPlayerName(player)
+        ) ===
+        normalizeText(student)
+    )
+
+    ||
+
+    null;
+
+
+  if (currentPlayer) {
+
+    renderCurrentPlayer();
+  }
+
+
+  return currentPlayers;
+}
+
+
+/* ============================================================
+   9. RENDER PLAYERS
+   ============================================================ */
+
+function renderPlayers(players) {
+
+  if (!gamePlayersList) {
+
+    return;
+  }
+
+
+  const colors = [
+    "cyan",
+    "purple",
+    "green",
+    "orange"
+  ];
+
+
+  let html = "";
+
+
+  for (
+    let slot = 1;
+    slot <= 4;
+    slot++
+  ) {
+
+    const player =
+      players.find(
+        item =>
+          Number(
+            item.player_slot
+          ) === slot
+      );
+
+
+    const name =
+      player
+        ? getPlayerName(
+            player
+          )
+        : "WAITING...";
+
+
+    const status =
+      player
+        ? (
+            player.is_ready
+              ? "NEXUS EXPLORER • READY"
+              : "NEXUS EXPLORER"
+          )
+        : "WAITING FOR PLAYER";
+
+
+    html += `
+      <div class="game-player-card">
+
+        <div
+          class="game-player-avatar ${colors[slot - 1]}"
+        >
+          ${String(slot).padStart(2, "0")}
+        </div>
+
+        <div class="game-player-info">
+
+          <strong>
+            ${escapeHTML(
+              name ||
+              "WAITING..."
+            )}
+          </strong>
+
+          <small>
+            ${escapeHTML(status)}
+          </small>
+
+        </div>
+
+      </div>
+    `;
+  }
+
+
+  gamePlayersList.innerHTML =
+    html;
+}
+
+
+/* ============================================================
+   10. CURRENT PLAYER
+   ============================================================ */
+
+function renderCurrentPlayer() {
+
+  if (!currentPlayer) {
+
+    return;
+  }
+
+
+  const name =
+    getPlayerName(
+      currentPlayer
+    ) ||
+    student;
+
+
+  const energy =
+    Number(
+      currentPlayer.nexus_energy ||
+      0
+    );
+
+
+  if (gameStudent) {
+
+    gameStudent.textContent =
+      name.toUpperCase();
+  }
+
+
+  if (gameEnergy) {
+
+    gameEnergy.textContent =
+      energy;
+  }
+
+
+  if (sideEnergy) {
+
+    sideEnergy.textContent =
+      energy;
+  }
+
+
+  renderCrystals(
+    currentPlayer
+  );
+}
+
+
+/* ============================================================
+   11. CRYSTALS
+   ============================================================ */
+
+function renderCrystals(player) {
+
+  const items = [
+
+    [
+      "massCrystal",
+      [
+        "mass_crystal",
+        "crystal_mass"
+      ]
+    ],
+
+    [
+      "particleCrystal",
+      [
+        "particle_crystal",
+        "crystal_particle"
+      ]
+    ],
+
+    [
+      "gasCrystal",
+      [
+        "gas_crystal",
+        "crystal_gas"
+      ]
+    ],
+
+    [
+      "solutionCrystal",
+      [
+        "solution_crystal",
+        "crystal_solution"
+      ]
+    ]
+
+  ];
+
+
+  let total = 0;
+
+
+  for (
+    const [
+      id,
+      fields
+    ]
+    of items
+  ) {
+
+    const element =
+      $(id);
+
+
+    const collected =
+      fields.some(
+        field =>
+          player?.[field] ===
+          true
+      );
+
+
+    if (collected) {
+
+      total++;
+
+      element?.classList.add(
+        "collected"
+      );
+
+    } else {
+
+      element?.classList.remove(
+        "collected"
+      );
+    }
+  }
+
+
+  if (crystalCount) {
+
+    crystalCount.textContent =
+      total;
+  }
+}
+
+
+/* ============================================================
+   12. BASIC DATA
+   ============================================================ */
+
+function renderBasicData() {
+
+  if (gameRoom) {
+
+    gameRoom.textContent =
+      room || "----";
+  }
+
+
+  if (gameStudent) {
+
+    gameStudent.textContent =
+      student
+        ? student.toUpperCase()
+        : "PLAYER";
+  }
+}
+
+
+/* ============================================================
+   END BAGIAN 1
+   ============================================================ */
+/* ============================================================
+   13. TURN STATE
+   ============================================================ */
+
+function applyTurnState(roomData) {
+
+  if (
+    !roomData ||
+    !currentPlayer
+  ) {
+    return;
+  }
+
+
+  currentTurn =
+    Number(
+      roomData.current_turn || 1
+    );
+
+
+  const mySlot =
+    Number(
+      currentPlayer.player_slot
+    );
+
+
+  isMyTurn =
+    mySlot === currentTurn;
+
+
+  const activePlayer =
+    currentPlayers.find(
+      player =>
+        Number(
+          player.player_slot
+        ) === currentTurn
+    );
+
+
+  if (currentPlayerName) {
+
+    currentPlayerName.textContent =
+      activePlayer
+        ? getPlayerName(
+            activePlayer
+          ).toUpperCase()
+        : `PLAYER ${currentTurn}`;
+  }
+
+
+  if (isMyTurn) {
+
+    if (turnStatus) {
+
+      turnStatus.textContent =
+        `YOUR TURN • PLAYER ${mySlot}`;
+    }
+
+
+    setMessage(
+      "Giliran Anda. Pilih Nexus dan selesaikan challenge."
+    );
+
+
+    setSubmitDisabled(
+      false
+    );
+
+  } else {
+
+    if (turnStatus) {
+
+      turnStatus.textContent =
+        `PLAYER ${currentTurn} TURN`;
+    }
+
+
+    setMessage(
+      `Menunggu giliran Player ${currentTurn}.`
+    );
+
+
+    setSubmitDisabled(
+      true
+    );
+  }
+}
+
+
+/* ============================================================
+   14. PATH BUILDER
+   ============================================================ */
+
+function renderSelectedPath() {
+
+  if (!selectedPathElement) {
+
+    return;
+  }
+
+
+  selectedPathElement.textContent =
+    selectedPath.length
+      ? "PATH: " +
+        selectedPath.join(
+          " → "
+        )
+      : "PATH: —";
+}
+
+
+function renderPathSelection() {
+
+  document
+    .querySelectorAll(
+      ".path-block"
+    )
+    .forEach(
+      button => {
+
+        button.classList.toggle(
+          "selected",
+          selectedPath.includes(
+            button.dataset.path
+          )
+        );
+      }
+    );
+}
+
+
+function initializePathBuilder() {
+
+  document
+    .querySelectorAll(
+      ".path-block"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          function() {
+
+            if (!isMyTurn) {
+
+              showFeedback(
+                "Tunggu giliran Anda."
+              );
+
+              return;
+            }
+
+
+            const value =
+              this.dataset.path;
+
+
+            if (!value) {
+
+              return;
+            }
+
+
+            if (
+              pathStageStartTime ===
+              null
+            ) {
+
+              pathStageStartTime =
+                nowMs();
+            }
+
+
+            const index =
+              selectedPath.indexOf(
+                value
+              );
+
+
+            if (index >= 0) {
+
+              /*
+                Jika blok yang sudah dipilih
+                ditekan lagi, potong PATH
+                mulai dari blok tersebut.
+              */
+
+              selectedPath =
+                selectedPath.slice(
+                  0,
+                  index
+                );
+
+            } else {
+
+              selectedPath.push(
+                value
+              );
+            }
+
+
+            pathTimeMs =
+              elapsedMs(
+                pathStageStartTime
+              );
+
+
+            renderSelectedPath();
+
+            renderPathSelection();
+          }
+        );
+      }
+    );
+}
+
+
+/* ============================================================
+   15. FORMULA DISPLAY
    ============================================================ */
 
 function getFormulaDisplayElement() {
 
   let element =
-    document.getElementById(
-      "selectedFormulaPath"
-    );
+    $("selectedFormulaPath");
 
 
   if (element) {
+
     return element;
   }
 
 
   const builder =
-    document.getElementById(
-      "formulaBuilder"
-    );
+    $("formulaBuilder");
 
 
   if (!builder) {
+
     return null;
   }
 
@@ -1329,22 +1100,6 @@ function getFormulaDisplayElement() {
     "selected-formula-path";
 
 
-  element.style.marginTop =
-    "16px";
-
-
-  element.style.fontSize =
-    "14px";
-
-
-  element.style.lineHeight =
-    "1.7";
-
-
-  element.style.color =
-    "#25d9e8";
-
-
   builder.insertAdjacentElement(
     "afterend",
     element
@@ -1355,10 +1110,6 @@ function getFormulaDisplayElement() {
 }
 
 
-/* ============================================================
-   RENDER SELECTED FORMULAS
-   ============================================================ */
-
 function renderSelectedFormulas() {
 
   const element =
@@ -1366,73 +1117,85 @@ function renderSelectedFormulas() {
 
 
   if (!element) {
-    return;
-  }
-
-
-  if (
-    selectedFormulas.length === 0
-  ) {
-
-    element.textContent =
-      "FORMULA: —";
 
     return;
   }
-
-
-  const labels =
-    selectedFormulas.map(
-      formulaId => {
-
-        const formula =
-          FORMULA_LIBRARY.find(
-            item =>
-              item.id === formulaId
-          );
-
-
-        return formula
-          ? formula.label
-          : formulaId;
-      }
-    );
 
 
   element.textContent =
-    "FORMULA: " +
-    labels.join(
-      " → "
+    selectedFormulas.length
+      ? "FORMULA: " +
+        selectedFormulas
+          .map(
+            formulaIdToLabel
+          )
+          .join(
+            " → "
+          )
+      : "FORMULA: —";
+}
+
+
+function renderFormulaSelection() {
+
+  document
+    .querySelectorAll(
+      ".formula-block"
+    )
+    .forEach(
+      button => {
+
+        const index =
+          selectedFormulas.indexOf(
+            button.dataset.formula
+          );
+
+
+        button.classList.toggle(
+          "selected",
+          index >= 0
+        );
+
+
+        if (index >= 0) {
+
+          button.setAttribute(
+            "data-step",
+            String(
+              index + 1
+            )
+          );
+
+        } else {
+
+          button.removeAttribute(
+            "data-step"
+          );
+        }
+      }
     );
 }
 
 
 /* ============================================================
-   15. RENDER FORMULA BUTTONS
+   16. DYNAMIC FORMULA BUILDER
    ============================================================ */
 
 function renderDynamicFormulaBuilder() {
 
   const builder =
-    document.getElementById(
-      "formulaBuilder"
-    );
+    $("formulaBuilder");
 
 
   if (!builder) {
-
-    console.warn(
-      "formulaBuilder element not found"
-    );
 
     return;
   }
 
 
   /*
-     Formula diacak setiap challenge
-     supaya posisi tombol tidak menjadi
-     petunjuk jawaban bagi siswa.
+    Acak posisi formula agar siswa
+    tidak hanya menghafal posisi tombol.
   */
 
   const shuffled =
@@ -1446,19 +1209,19 @@ function renderDynamicFormulaBuilder() {
   builder.innerHTML =
     shuffled
       .map(
-        item => {
-
-          return `
-            <button
-              type="button"
-              class="formula-block"
-              data-formula="${escapeHTML(item.id)}"
-            >
-              ${escapeHTML(item.label)}
-            </button>
-          `;
-
-        }
+        item => `
+          <button
+            type="button"
+            class="formula-block"
+            data-formula="${escapeHTML(
+              item.id
+            )}"
+          >
+            ${escapeHTML(
+              item.label
+            )}
+          </button>
+        `
       )
       .join("");
 
@@ -1468,15 +1231,15 @@ function renderDynamicFormulaBuilder() {
 
 
 /* ============================================================
-   16. FORMULA BUILDER — MULTI STEP
+   17. FORMULA BUILDER
    ============================================================ */
 
 function initializeFormulaBuilder() {
 
   /*
-     Event delegation digunakan karena
-     tombol formula dibuat ulang setiap
-     challenge.
+    Event delegation digunakan
+    karena tombol formula dibuat ulang
+    setiap challenge.
   */
 
   document.addEventListener(
@@ -1490,6 +1253,17 @@ function initializeFormulaBuilder() {
 
 
       if (!button) {
+
+        return;
+      }
+
+
+      if (!isMyTurn) {
+
+        showFeedback(
+          "Tunggu giliran Anda."
+        );
+
         return;
       }
 
@@ -1499,14 +1273,10 @@ function initializeFormulaBuilder() {
 
 
       if (!formulaId) {
+
         return;
       }
 
-
-      /*
-         Timer formula dimulai pada
-         interaksi formula pertama.
-      */
 
       if (
         formulaStageStartTime ===
@@ -1519,9 +1289,8 @@ function initializeFormulaBuilder() {
 
 
       /*
-         Bila siswa mulai memilih formula,
-         timer PATH dihentikan apabila
-         sebelumnya sudah dimulai.
+        Saat siswa mulai memilih formula,
+        waktu PATH dianggap selesai.
       */
 
       if (
@@ -1536,45 +1305,30 @@ function initializeFormulaBuilder() {
       }
 
 
-      const existingIndex =
+      const index =
         selectedFormulas.indexOf(
           formulaId
         );
 
 
-      /*
-         Formula belum ada:
-         tambahkan sebagai langkah baru.
-      */
-
-      if (
-        existingIndex === -1
-      ) {
-
-        selectedFormulas.push(
-          formulaId
-        );
-
-      } else {
+      if (index >= 0) {
 
         /*
-           Formula ditekan kembali:
-           hapus formula tersebut dan
-           seluruh formula setelahnya.
-
-           Contoh:
-
-           n=m/Mr → N=n×NA
-
-           Jika n=m/Mr ditekan kembali,
-           sequence kembali kosong.
+          Memungkinkan koreksi urutan
+          formula multi-step.
         */
 
         selectedFormulas =
           selectedFormulas.slice(
             0,
-            existingIndex
+            index
           );
+
+      } else {
+
+        selectedFormulas.push(
+          formulaId
+        );
       }
 
 
@@ -1587,889 +1341,94 @@ function initializeFormulaBuilder() {
       renderFormulaSelection();
 
       renderSelectedFormulas();
-
-
-      console.log(
-        "FORMULA PATH:",
-        selectedFormulas
-      );
     }
   );
 }
 
 
 /* ============================================================
-   RENDER FORMULA SELECTION
+   18. UNIT OPTIONS
    ============================================================ */
 
-function renderFormulaSelection() {
+function renderDynamicUnits() {
 
-  document
-    .querySelectorAll(
-      ".formula-block"
-    )
-    .forEach(
-      button => {
+  if (!unitAnswer) {
 
-        const formulaId =
-          button.dataset.formula;
-
-
-        const index =
-          selectedFormulas.indexOf(
-            formulaId
-          );
-
-
-        if (
-          index >= 0
-        ) {
-
-          button.classList.add(
-            "selected"
-          );
-
-
-          button.setAttribute(
-            "data-step",
-            String(
-              index + 1
-            )
-          );
-
-        } else {
-
-          button.classList.remove(
-            "selected"
-          );
-
-
-          button.removeAttribute(
-            "data-step"
-          );
-        }
-      }
-    );
-}
-
-
-/* ============================================================
-   RESET FORMULA
-   ============================================================ */
-
-function resetFormula() {
-
-  selectedFormulas = [];
-
-
-  document
-    .querySelectorAll(
-      ".formula-block"
-    )
-    .forEach(
-      button => {
-
-        button.classList.remove(
-          "selected"
-        );
-
-
-        button.removeAttribute(
-          "data-step"
-        );
-      }
-    );
-
-
-  renderSelectedFormulas();
-}
-
-
-/* ============================================================
-   17. NORMALIZE PATH
-   ============================================================ */
-
-function normalizePath(value) {
-
-  if (!value) {
-    return "";
-  }
-
-
-  if (
-    Array.isArray(value)
-  ) {
-
-    return value
-      .map(
-        item =>
-          String(item)
-            .trim()
-            .toUpperCase()
-      )
-      .join(">");
-  }
-
-
-  /*
-     expected_path dari Supabase dapat
-     berupa JSON / JSON string / teks.
-  */
-
-  const text =
-    String(value).trim();
-
-
-  try {
-
-    const parsed =
-      JSON.parse(text);
-
-
-    if (
-      Array.isArray(parsed)
-    ) {
-
-      return parsed
-        .map(
-          item =>
-            String(item)
-              .trim()
-              .toUpperCase()
-        )
-        .join(">");
-    }
-
-  } catch (error) {
-
-    /*
-       Bukan JSON.
-       Lanjutkan normalisasi teks biasa.
-    */
-  }
-
-
-  return text
-    .replaceAll(
-      "→",
-      ">"
-    )
-    .replaceAll(
-      "↔",
-      ">"
-    )
-    .replace(
-      /[\[\]"']/g,
-      ""
-    )
-    .replaceAll(
-      ",",
-      ">"
-    )
-    .replace(
-      /\s+/g,
-      ""
-    )
-    .toUpperCase();
-}
-
-
-/* ============================================================
-   18. EVALUATE PATH
-   ============================================================ */
-
-function evaluatePath() {
-
-  if (!currentQuestion) {
-    return null;
-  }
-
-
-  const expected =
-    currentQuestion.expected_path ||
-    currentQuestion.correct_path;
-
-
-  if (!expected) {
-    return null;
-  }
-
-
-  return (
-    normalizePath(
-      selectedPath
-    ) ===
-    normalizePath(
-      expected
-    )
-  );
-}
-
-
-/* ============================================================
-   19. NORMALIZE FORMULA
-   ============================================================ */
-
-function normalizeFormula(value) {
-
-  let text =
-    String(value ?? "")
-      .trim()
-      .toLowerCase();
-
-
-  text =
-    text
-      .replace(
-        /\s+/g,
-        ""
-      )
-      .replace(
-        /[×x]/g,
-        "*"
-      )
-      .replace(
-        /÷/g,
-        "/"
-      )
-      .replace(
-        /,/g,
-        "."
-      )
-      .replace(
-        /₂/g,
-        "2"
-      )
-      .replace(
-        /₃/g,
-        "3"
-      );
-
-
-  /*
-     Database menggunakan Vm pada
-     beberapa soal gas.
-
-     Interface menggunakan 22.4 L/mol.
-
-     Untuk konteks STP keduanya
-     diperlakukan sebagai representasi
-     hubungan yang sama.
-  */
-
-  text =
-    text
-      .replace(
-        "n=v/vm",
-        "n=v/22.4"
-      )
-      .replace(
-        "v=n*vm",
-        "v=n*22.4"
-      );
-
-
-  return text;
-}
-
-
-/* ============================================================
-   SPLIT EXPECTED FORMULAS
-   ============================================================ */
-
-function splitExpectedFormulas(
-  value
-) {
-
-  if (!value) {
-    return [];
-  }
-
-
-  if (
-    Array.isArray(value)
-  ) {
-
-    return value
-      .map(
-        item =>
-          String(item).trim()
-      )
-      .filter(Boolean);
-  }
-
-
-  return String(value)
-    .split(
-      /[;|]+/
-    )
-    .map(
-      item =>
-        item.trim()
-    )
-    .filter(Boolean);
-}
-
-
-/* ============================================================
-   FORMULA ID → LABEL
-   ============================================================ */
-
-function formulaIdToLabel(id) {
-
-  const formula =
-    FORMULA_LIBRARY.find(
-      item =>
-        item.id === id
-    );
-
-
-  return formula
-    ? formula.label
-    : "";
-}
-
-
-/* ============================================================
-   20. EVALUATE FORMULA SEQUENCE
-   ============================================================ */
-
-function evaluateFormula() {
-
-  if (!currentQuestion) {
-    return null;
-  }
-
-
-  const expected =
-    currentQuestion.expected_formula ||
-    currentQuestion.correct_formula;
-
-
-  if (!expected) {
-    return null;
-  }
-
-
-  if (
-    selectedFormulas.length === 0
-  ) {
-
-    return false;
-  }
-
-
-  const expectedParts =
-    splitExpectedFormulas(
-      expected
-    );
-
-
-  /*
-     Jumlah formula harus sama.
-     Ini penting untuk soal multistep.
-  */
-
-  if (
-    selectedFormulas.length !==
-    expectedParts.length
-  ) {
-
-    return false;
-  }
-
-
-  /*
-     Urutan formula juga harus sama.
-  */
-
-  for (
-    let i = 0;
-    i < expectedParts.length;
-    i++
-  ) {
-
-    const selectedLabel =
-      formulaIdToLabel(
-        selectedFormulas[i]
-      );
-
-
-    if (
-      normalizeFormula(
-        selectedLabel
-      ) !==
-      normalizeFormula(
-        expectedParts[i]
-      )
-    ) {
-
-      return false;
-    }
-  }
-
-
-  return true;
-     }/* ============================================================
-   21. CALCULATION
-   ============================================================ */
-
-function evaluateCalculation() {
-
-  if (!currentQuestion) {
-    return null;
-  }
-
-
-  const expected =
-    Number(
-      currentQuestion.correct_answer
-    );
-
-
-  if (
-    !Number.isFinite(expected)
-  ) {
-
-    return null;
-  }
-
-
-  const raw =
-    String(
-      calculationAnswer?.value ?? ""
-    )
-      .trim()
-      .replace(
-        ",",
-        "."
-      );
-
-
-  if (!raw) {
-    return false;
-  }
-
-
-  const answer =
-    Number(raw);
-
-
-  if (
-    !Number.isFinite(answer)
-  ) {
-
-    return false;
-  }
-
-
-  const databaseTolerance =
-    Number(
-      currentQuestion.answer_tolerance
-    );
-
-
-  const tolerance =
-    Number.isFinite(
-      databaseTolerance
-    ) &&
-    databaseTolerance >= 0
-
-      ? databaseTolerance
-
-      : Math.max(
-          Math.abs(expected) * 0.01,
-          0.000001
-        );
-
-
-  return (
-    Math.abs(
-      answer - expected
-    ) <= tolerance
-  );
-}
-
-
-/* ============================================================
-   CALCULATION TIMER
-   ============================================================ */
-
-function initializeCalculationTracking() {
-
-  if (!calculationAnswer) {
     return;
   }
 
 
-  /*
-     Timer calculation dimulai ketika
-     siswa pertama kali berinteraksi
-     dengan kolom jawaban.
-  */
+  const units = [
 
-  const startCalculationTimer =
-    function() {
+    [
+      "",
+      "UNIT"
+    ],
 
-      if (
-        calculationStageStartTime ===
-        null
-      ) {
+    [
+      "mol",
+      "mol"
+    ],
 
-        calculationStageStartTime =
-          nowMs();
-      }
+    [
+      "g",
+      "g"
+    ],
+
+    [
+      "L",
+      "L"
+    ],
+
+    [
+      "mL",
+      "mL"
+    ],
+
+    [
+      "M",
+      "M"
+    ],
+
+    [
+      "partikel",
+      "partikel"
+    ],
+
+    [
+      "molekul",
+      "molekul"
+    ],
+
+    [
+      "atom",
+      "atom"
+    ]
+
+  ];
 
 
-      /*
-         Ketika tahap calculation dimulai,
-         waktu formula terakhir dicatat.
-      */
-
-      if (
-        formulaStageStartTime !==
-        null
-      ) {
-
-        formulaTimeMs =
-          elapsedMs(
-            formulaStageStartTime
-          );
-      }
-    };
-
-
-  calculationAnswer.addEventListener(
-    "focus",
-    startCalculationTimer
-  );
-
-
-  calculationAnswer.addEventListener(
-    "input",
-    function() {
-
-      startCalculationTimer();
-
-
-      calculationTimeMs =
-        elapsedMs(
-          calculationStageStartTime
-        );
-    }
-  );
+  unitAnswer.innerHTML =
+    units
+      .map(
+        ([value, label]) => `
+          <option
+            value="${escapeHTML(
+              value
+            )}"
+          >
+            ${escapeHTML(
+              label
+            )}
+          </option>
+        `
+      )
+      .join("");
 }
 
 
 /* ============================================================
-   22. UNIT
-   ============================================================ */
-
-function normalizeUnit(value) {
-
-  const text =
-    String(value ?? "")
-      .trim()
-      .toLowerCase();
-
-
-  const aliases = {
-
-    "m": "molar",
-
-    "mol/l": "molar",
-
-    "mol·l-1": "molar",
-
-    "mol·l⁻¹": "molar",
-
-    "mol l-1": "molar",
-
-    "molar": "molar",
-
-    "molekul": "molekul",
-
-    "molecule": "molekul",
-
-    "molecules": "molekul",
-
-    "partikel": "partikel",
-
-    "particle": "partikel",
-
-    "particles": "partikel",
-
-    "liter": "l",
-
-    "litre": "l",
-
-    "l": "l",
-
-    "milliliter": "ml",
-
-    "millilitre": "ml",
-
-    "ml": "ml",
-
-    "gram": "g",
-
-    "grams": "g",
-
-    "g": "g",
-
-    "mol": "mol",
-
-    "atom": "atom",
-
-    "atoms": "atom"
-
-  };
-
-
-  return (
-    aliases[text] ||
-    text
-  );
-}
-
-
-/* ============================================================
-   EVALUATE UNIT
-   ============================================================ */
-
-function evaluateUnit() {
-
-  if (!currentQuestion) {
-    return null;
-  }
-
-
-  const expected =
-    currentQuestion.correct_unit;
-
-
-  if (!expected) {
-    return null;
-  }
-
-
-  const answer =
-    unitAnswer?.value || "";
-
-
-  return (
-    normalizeUnit(
-      answer
-    ) ===
-    normalizeUnit(
-      expected
-    )
-  );
-}
-
-
-/* ============================================================
-   23. FIRST FAILURE POINT
-   ============================================================ */
-
-/*
-   FIRST FAILURE POINT menunjukkan
-   tahap pertama tempat kesalahan
-   siswa muncul.
-
-   Nilai yang disimpan ke Supabase:
-
-   PATH
-   FORMULA
-   CALCULATION
-   UNIT
-   NONE
-
-   Nilai ini sengaja DIPISAHKAN
-   dari error_type.
-*/
-
-function determineFirstFailurePoint(
-  pathCorrect,
-  formulaCorrect,
-  calculationCorrect,
-  unitCorrect
-) {
-
-  if (
-    pathCorrect === false
-  ) {
-
-    return "PATH";
-  }
-
-
-  if (
-    formulaCorrect === false
-  ) {
-
-    return "FORMULA";
-  }
-
-
-  if (
-    calculationCorrect === false
-  ) {
-
-    return "CALCULATION";
-  }
-
-
-  if (
-    unitCorrect === false
-  ) {
-
-    return "UNIT";
-  }
-
-
-  return "NONE";
-}
-
-
-/* ============================================================
-   24. ERROR TYPE
-   ============================================================ */
-
-/*
-   ERROR TYPE menunjukkan pola
-   kesalahan pada satu attempt.
-
-   Jika hanya satu komponen salah:
-
-   PATH_ERROR
-   FORMULA_ERROR
-   CALCULATION_ERROR
-   UNIT_ERROR
-
-   Jika lebih dari satu komponen salah:
-
-   MULTIPLE_ERROR
-
-   Jika seluruh komponen benar:
-
-   NONE
-*/
-
-function determineErrorType(
-  pathCorrect,
-  formulaCorrect,
-  calculationCorrect,
-  unitCorrect
-) {
-
-  const errors = [];
-
-
-  if (
-    pathCorrect === false
-  ) {
-
-    errors.push(
-      "PATH_ERROR"
-    );
-  }
-
-
-  if (
-    formulaCorrect === false
-  ) {
-
-    errors.push(
-      "FORMULA_ERROR"
-    );
-  }
-
-
-  if (
-    calculationCorrect === false
-  ) {
-
-    errors.push(
-      "CALCULATION_ERROR"
-    );
-  }
-
-
-  if (
-    unitCorrect === false
-  ) {
-
-    errors.push(
-      "UNIT_ERROR"
-    );
-  }
-
-
-  if (
-    errors.length === 0
-  ) {
-
-    return "NONE";
-  }
-
-
-  if (
-    errors.length > 1
-  ) {
-
-    return "MULTIPLE_ERROR";
-  }
-
-
-  return errors[0];
-}
-
-
-/* ============================================================
-   25. FINAL CORRECT
-   ============================================================ */
-
-function determineFinalCorrect(
-  pathCorrect,
-  formulaCorrect,
-  calculationCorrect,
-  unitCorrect
-) {
-
-  const checks = [
-
-    pathCorrect,
-
-    formulaCorrect,
-
-    calculationCorrect,
-
-    unitCorrect
-
-  ].filter(
-    value =>
-      value !== null
-  );
-
-
-  if (
-    checks.length === 0
-  ) {
-
-    return false;
-  }
-
-
-  return checks.every(
-    value =>
-      value === true
-  );
-}
-
-
-/* ============================================================
-   26. RESET DIAGNOSTIC TIMERS
+   19. DIAGNOSTIC TIMERS
    ============================================================ */
 
 function resetDiagnosticTimers() {
@@ -2503,18 +1462,7 @@ function resetDiagnosticTimers() {
 }
 
 
-/* ============================================================
-   27. FINALIZE DIAGNOSTIC TIMERS
-   ============================================================ */
-
 function finalizeDiagnosticTimers() {
-
-  /*
-     Saat LOCK ANSWER ditekan,
-     timer tahap yang sedang aktif
-     diperbarui untuk terakhir kali.
-  */
-
 
   if (
     pathStageStartTime !==
@@ -2553,25 +1501,18 @@ function finalizeDiagnosticTimers() {
 }
 
 
-/* ============================================================
-   28. GET TOTAL RESPONSE TIME
-   ============================================================ */
-
 function getTotalResponseTime() {
 
-  if (!questionStartTime) {
-    return null;
-  }
-
-
-  return elapsedMs(
-    questionStartTime
-  );
+  return questionStartTime
+    ? elapsedMs(
+        questionStartTime
+      )
+    : null;
 }
 
 
 /* ============================================================
-   29. RESET ATTEMPT STATE
+   20. RESET ATTEMPT
    ============================================================ */
 
 function resetAttemptState() {
@@ -2586,8 +1527,7 @@ function resetAttemptState() {
 
   attemptSequence = 1;
 
-
-  resetDiagnosticTimers();
+  isSubmitting = false;
 
 
   if (calculationAnswer) {
@@ -2618,23 +1558,59 @@ function resetAttemptState() {
   renderSelectedFormulas();
 
   renderFormulaSelection();
-         }/* ============================================================
-   30. LOAD QUESTION
+
+  resetDiagnosticTimers();
+}
+
+
+/* ============================================================
+   21. LOAD QUESTION
    ============================================================ */
 
 async function loadQuestion() {
 
+  /*
+    Privasi multiplayer:
+    soal hanya dirender pada browser
+    siswa yang sedang mendapat giliran.
+  */
+
+  if (!isMyTurn) {
+
+    currentQuestion =
+      null;
+
+
+    if (caseTitle) {
+
+      caseTitle.textContent =
+        "WAITING FOR TURN";
+    }
+
+
+    if (caseQuestion) {
+
+      caseQuestion.textContent =
+        "Challenge hanya ditampilkan saat giliran Anda.";
+    }
+
+
+    return;
+  }
+
+
   const {
     data,
     error
-  } = await supabaseClient
-    .from("questions")
-    .select("*")
-    .eq(
-      "active",
-      true
-    )
-    .limit(100);
+  } =
+    await supabaseClient
+      .from("questions")
+      .select("*")
+      .eq(
+        "active",
+        true
+      )
+      .limit(100);
 
 
   if (error) {
@@ -2679,18 +1655,18 @@ async function loadQuestion() {
   }
 
 
-  /*
-     Jika pemain memilih zona Nexus,
-     prioritaskan soal dari zona tersebut.
-  */
-
-  let questionPool =
+  let pool =
     [...data];
 
 
+  /*
+    Jika siswa memilih zona,
+    prioritaskan soal zona tersebut.
+  */
+
   if (selectedZone) {
 
-    const zoneFiltered =
+    const zoneQuestions =
       data.filter(
         question =>
           normalizeText(
@@ -2703,28 +1679,28 @@ async function loadQuestion() {
 
 
     if (
-      zoneFiltered.length > 0
+      zoneQuestions.length >
+      0
     ) {
 
-      questionPool =
-        zoneFiltered;
+      pool =
+        zoneQuestions;
     }
   }
 
 
   /*
-     Hindari soal yang sama muncul
-     dua kali berturut-turut apabila
-     tersedia lebih dari satu soal.
+    Hindari soal yang sama
+    berturut-turut jika ada alternatif.
   */
 
   if (
-    questionPool.length > 1 &&
+    pool.length > 1 &&
     lastQuestionId
   ) {
 
-    const withoutLast =
-      questionPool.filter(
+    const alternative =
+      pool.filter(
         question =>
           question.question_id !==
           lastQuestionId
@@ -2732,25 +1708,22 @@ async function loadQuestion() {
 
 
     if (
-      withoutLast.length > 0
+      alternative.length >
+      0
     ) {
 
-      questionPool =
-        withoutLast;
+      pool =
+        alternative;
     }
   }
 
 
-  const randomIndex =
-    Math.floor(
-      Math.random() *
-      questionPool.length
-    );
-
-
   currentQuestion =
-    questionPool[
-      randomIndex
+    pool[
+      Math.floor(
+        Math.random() *
+        pool.length
+      )
     ];
 
 
@@ -2760,12 +1733,6 @@ async function loadQuestion() {
     null;
 
 
-  console.log(
-    "CURRENT QUESTION:",
-    currentQuestion
-  );
-
-
   renderQuestion(
     currentQuestion
   );
@@ -2773,7 +1740,7 @@ async function loadQuestion() {
 
 
 /* ============================================================
-   31. RENDER QUESTION
+   22. RENDER QUESTION
    ============================================================ */
 
 function renderQuestion(
@@ -2781,6 +1748,7 @@ function renderQuestion(
 ) {
 
   if (!question) {
+
     return;
   }
 
@@ -2800,8 +1768,7 @@ function renderQuestion(
   const title =
     question.title ||
     question.question_title ||
-    zone +
-      " CHALLENGE";
+    `${zone} CHALLENGE`;
 
 
   const text =
@@ -2815,7 +1782,7 @@ function renderQuestion(
   if (caseZone) {
 
     caseZone.textContent =
-      zone + " NEXUS";
+      `${zone} NEXUS`;
   }
 
 
@@ -2842,189 +1809,91 @@ function renderQuestion(
   }
 
 
-  /*
-     Setiap challenge baru harus
-     memulai attempt dari kondisi bersih.
-  */
-
-  selectedPath = [];
-
-  selectedFormulas = [];
-
-  hintCount = 0;
-
-  retryCount = 0;
-
-  attemptSequence = 1;
-
-  isSubmitting = false;
-
-
-  if (calculationAnswer) {
-
-    calculationAnswer.value =
-      "";
-  }
-
-
-  if (unitAnswer) {
-
-    unitAnswer.value =
-      "";
-  }
-
-
-  if (caseFeedback) {
-
-    caseFeedback.textContent =
-      "";
-  }
-
-
-  renderSelectedPath();
-
-  renderPathSelection();
-
-
-  /*
-     Formula Builder dibuat ulang agar
-     posisi tombol kembali diacak.
-  */
+  resetAttemptState();
 
   renderDynamicFormulaBuilder();
 
-  renderFormulaSelection();
-
-
-  /*
-     Unit jawaban dibuat ulang.
-  */
-
   renderDynamicUnits();
 
-
-  /*
-     Mulai timer challenge.
-  */
-
-  resetDiagnosticTimers();
-
-
-  /*
-     Tombol LOCK ANSWER diaktifkan
-     kembali setelah soal baru muncul.
-  */
-
   setSubmitDisabled(
-    false
-  );
-
-
-  console.log(
-    "QUESTION READY:",
-    {
-      question_id:
-        question.question_id ||
-        question.id,
-
-      question_code:
-        question.question_code,
-
-      zone:
-        zone,
-
-      attempt_sequence:
-        attemptSequence
-    }
+    !isMyTurn
   );
 }
 
 
 /* ============================================================
-   32. UNIT OPTIONS
+   23. CALCULATION TRACKING
    ============================================================ */
 
-function renderDynamicUnits() {
+function initializeCalculationTracking() {
 
-  if (!unitAnswer) {
+  if (!calculationAnswer) {
+
     return;
   }
 
 
-  const units = [
+  const startCalculation =
+    function() {
 
-    {
-      value: "",
-      label: "UNIT"
-    },
+      if (
+        calculationStageStartTime ===
+        null
+      ) {
 
-    {
-      value: "mol",
-      label: "mol"
-    },
+        calculationStageStartTime =
+          nowMs();
+      }
 
-    {
-      value: "g",
-      label: "g"
-    },
 
-    {
-      value: "L",
-      label: "L"
-    },
+      /*
+        Begitu masuk perhitungan,
+        waktu formula difinalisasi.
+      */
 
-    {
-      value: "mL",
-      label: "mL"
-    },
+      if (
+        formulaStageStartTime !==
+        null
+      ) {
 
-    {
-      value: "M",
-      label: "M"
-    },
+        formulaTimeMs =
+          elapsedMs(
+            formulaStageStartTime
+          );
+      }
+    };
 
-    {
-      value: "partikel",
-      label: "partikel"
-    },
 
-    {
-      value: "molekul",
-      label: "molekul"
-    },
+  calculationAnswer.addEventListener(
+    "focus",
+    startCalculation
+  );
 
-    {
-      value: "atom",
-      label: "atom"
+
+  calculationAnswer.addEventListener(
+    "input",
+    function() {
+
+      startCalculation();
+
+
+      calculationTimeMs =
+        elapsedMs(
+          calculationStageStartTime
+        );
     }
-
-  ];
-
-
-  unitAnswer.innerHTML =
-    units
-      .map(
-        unit => {
-
-          return `
-            <option value="${escapeHTML(unit.value)}">
-              ${escapeHTML(unit.label)}
-            </option>
-          `;
-
-        }
-      )
-      .join("");
+  );
 }
 
 
 /* ============================================================
-   33. UNIT INTERACTION TRACKING
+   24. UNIT TRACKING
    ============================================================ */
 
 function initializeUnitTracking() {
 
   if (!unitAnswer) {
+
     return;
   }
 
@@ -3032,16 +1901,6 @@ function initializeUnitTracking() {
   unitAnswer.addEventListener(
     "change",
     function() {
-
-      /*
-         Ketika siswa sudah memilih unit,
-         calculation timer diperbarui.
-
-         Unit belum memiliki kolom timer
-         tersendiri pada case_attempts,
-         sehingga waktunya tetap menjadi
-         bagian dari total_response_time_ms.
-      */
 
       if (
         calculationStageStartTime !==
@@ -3059,12 +1918,13 @@ function initializeUnitTracking() {
 
 
 /* ============================================================
-   34. HINT
+   25. HINT SYSTEM
    ============================================================ */
 
 function initializeHintButton() {
 
   if (!hintButton) {
+
     return;
   }
 
@@ -3072,6 +1932,16 @@ function initializeHintButton() {
   hintButton.addEventListener(
     "click",
     function() {
+
+      if (!isMyTurn) {
+
+        showFeedback(
+          "Tunggu giliran Anda."
+        );
+
+        return;
+      }
+
 
       if (!currentQuestion) {
 
@@ -3086,16 +1956,7 @@ function initializeHintButton() {
       hintCount++;
 
 
-      /*
-         Maksimal level hint adalah 3.
-         Klik berikutnya tetap tercatat
-         sebagai penggunaan hint, tetapi
-         pesan tetap pada Hint 3.
-      */
-
-      if (
-        hintCount === 1
-      ) {
+      if (hintCount === 1) {
 
         showFeedback(
           "HINT 1: Identifikasi besaran awal dan besaran yang ditanyakan."
@@ -3112,32 +1973,32 @@ function initializeHintButton() {
       } else {
 
         showFeedback(
-          "HINT 3: Periksa kembali urutan PATH, FORMULA, perhitungan, dan satuan."
+          "HINT 3: Periksa PATH, FORMULA, perhitungan, dan satuan."
         );
       }
-
-
-      console.log(
-        "HINT USED:",
-        {
-          question_id:
-            currentQuestion.question_id ||
-            currentQuestion.id,
-
-          hint_count:
-            hintCount
-        }
-      );
     }
   );
 }
 
 
 /* ============================================================
-   35. VALIDATE ANSWER INPUT
+   END BAGIAN 2
+   ============================================================ */
+/* ============================================================
+   26. VALIDATE CURRENT ANSWER
    ============================================================ */
 
 function validateCurrentAnswer() {
+
+  if (!isMyTurn) {
+
+    return {
+      valid: false,
+      message:
+        "Sekarang bukan giliran Anda."
+    };
+  }
+
 
   if (!currentQuestion) {
 
@@ -3173,16 +2034,14 @@ function validateCurrentAnswer() {
   }
 
 
-  const calculationValue =
+  const rawAnswer =
     String(
       calculationAnswer?.value ??
       ""
     ).trim();
 
 
-  if (
-    calculationValue === ""
-  ) {
+  if (!rawAnswer) {
 
     return {
       valid: false,
@@ -3192,8 +2051,32 @@ function validateCurrentAnswer() {
   }
 
 
+  const numericAnswer =
+    Number(
+      rawAnswer.replace(
+        ",",
+        "."
+      )
+    );
+
+
   if (
-    !unitAnswer?.value
+    !Number.isFinite(
+      numericAnswer
+    )
+  ) {
+
+    return {
+      valid: false,
+      message:
+        "Jawaban perhitungan harus berupa angka."
+    };
+  }
+
+
+  if (
+    !unitAnswer ||
+    !unitAnswer.value
   ) {
 
     return {
@@ -3212,381 +2095,303 @@ function validateCurrentAnswer() {
 
 
 /* ============================================================
-   36. CREATE DIAGNOSTIC RESULT
+   27. SAVE STUDENT ATTEMPT
    ============================================================ */
 
-function createDiagnosticResult(
-  pathCorrect,
-  formulaCorrect,
-  calculationCorrect,
-  unitCorrect,
-  finalCorrect,
-  firstFailurePoint,
-  errorType,
-  responseTimeMs
-) {
+async function saveStudentAttempt() {
 
-  return {
+  /*
+    Browser hanya mengirim RESPONS siswa.
 
-    question_id:
-      currentQuestion?.question_id ||
-      currentQuestion?.id ||
-      null,
+    Penentuan:
+    - path benar/salah
+    - formula benar/salah
+    - calculation benar/salah
+    - unit benar/salah
+    - final_correct
+    - first_failure_point
+    - error_type
 
-    question_code:
-      currentQuestion?.question_code ||
-      null,
-
-    nexus_zone:
-      currentQuestion?.nexus_zone ||
-      null,
-
-    difficulty:
-      currentQuestion?.difficulty ||
-      null,
-
-    selected_path:
-      [...selectedPath],
-
-    selected_formulas:
-      selectedFormulas.map(
-        formulaId =>
-          formulaIdToLabel(
-            formulaId
-          )
-      ),
-
-    calculation_answer:
-      calculationAnswer?.value ||
-      null,
-
-    selected_unit:
-      unitAnswer?.value ||
-      null,
-
-    path_correct:
-      pathCorrect,
-
-    formula_correct:
-      formulaCorrect,
-
-    calculation_correct:
-      calculationCorrect,
-
-    unit_correct:
-      unitCorrect,
-
-    final_correct:
-      finalCorrect,
-
-    first_failure_point:
-      firstFailurePoint,
-
-    error_type:
-      errorType,
-
-    attempt_sequence:
-      attemptSequence,
-
-    retry_count:
-      retryCount,
-
-    response_time_ms:
-      responseTimeMs,
-
-    path_time_ms:
-      pathTimeMs,
-
-    formula_time_ms:
-      formulaTimeMs,
-
-    calculation_time_ms:
-      calculationTimeMs,
-
-    hint_count:
-      hintCount
-  };
-       }/* ============================================================
-   37. BUILD CASE ATTEMPT DATA
-   ============================================================ */
-
-function buildAttemptData(
-  pathCorrect,
-  formulaCorrect,
-  calculationCorrect,
-  unitCorrect,
-  finalCorrect,
-  firstFailurePoint,
-  errorType,
-  responseTimeMs
-) {
-
-  return {
-
-    student_id:
-      currentStudentId,
-
-    session_id:
-      currentSessionId,
-
-    question_id:
-      currentQuestion.question_id,
-
-    attempt_sequence:
-      attemptSequence,
-
-    /*
-       selected_path adalah JSONB
-       di Supabase.
-
-       Kirim array JavaScript langsung,
-       tidak perlu JSON.stringify().
-    */
-
-    selected_path:
-      [...selectedPath],
-
-    path_correct:
-      pathCorrect,
-
-    selected_formula:
-      selectedFormulas
-        .map(
-          formulaId =>
-            formulaIdToLabel(
-              formulaId
-            )
-        )
-        .join("; "),
-
-    formula_correct:
-      formulaCorrect,
-
-    student_answer:
-      Number(
-        String(
-          calculationAnswer.value
-        )
-          .trim()
-          .replace(",", ".")
-      ),
-
-    calculation_correct:
-      calculationCorrect,
-
-    selected_unit:
-      unitAnswer.value,
-
-    unit_correct:
-      unitCorrect,
-
-    final_correct:
-      finalCorrect,
-
-    path_time_ms:
-      pathTimeMs,
-
-    formula_time_ms:
-      formulaTimeMs,
-
-    calculation_time_ms:
-      calculationTimeMs,
-
-    total_response_time_ms:
-      responseTimeMs,
-
-    hint_count:
-      hintCount,
-
-    retry_count:
-      retryCount,
-
-    first_failure_point:
-      firstFailurePoint,
-
-    error_type:
-      errorType
-  };
-}
+    dilakukan oleh RPC
+    save_student_attempt di server.
+  */
 
 
-/* ============================================================
-   38. SAVE CASE ATTEMPT
-   ============================================================ */
-async function saveCaseAttempt(attemptData) {
-  const sessionToken =
-    sessionStorage.getItem("mol_nexus_session_token");
+  if (!sessionToken) {
 
-  const room =
-    sessionStorage.getItem("room") ||
-    new URLSearchParams(window.location.search).get("room");
-
-  if (
-    !sessionToken ||
-    !room ||
-    !currentQuestion?.question_id
-  ) {
-    console.error(
-      "SECURE CASE ATTEMPT NOT SAVED: missing required data",
-      {
-        token: !!sessionToken,
-        room: room,
-        question_id: currentQuestion?.question_id
-      }
+    throw new Error(
+      "SESSION_TOKEN_MISSING"
     );
-
-    return {
-      success: false,
-      error: "MISSING_REQUIRED_DATA"
-    };
   }
 
-  console.log(
-    "SAVING SECURE CASE ATTEMPT..."
-  );
 
-  const { data, error } =
+  if (!room) {
+
+    throw new Error(
+      "ROOM_MISSING"
+    );
+  }
+
+
+  if (
+    !currentQuestion ||
+    !currentQuestion.question_id
+  ) {
+
+    throw new Error(
+      "QUESTION_ID_MISSING"
+    );
+  }
+
+
+  const selectedFormulaText =
+    selectedFormulas
+      .map(
+        formulaIdToLabel
+      )
+      .join("; ");
+
+
+  const rawAnswer =
+    String(
+      calculationAnswer.value
+    )
+      .trim()
+      .replace(
+        ",",
+        "."
+      );
+
+
+  const numericAnswer =
+    Number(
+      rawAnswer
+    );
+
+
+  const {
+    data,
+    error
+  } =
     await supabaseClient.rpc(
       "save_student_attempt",
       {
-        p_session_token: sessionToken,
-        p_room_code: room,
-        p_question_id: currentQuestion.question_id,
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room,
+
+        p_question_id:
+          currentQuestion.question_id,
 
         p_attempt_sequence:
-          attemptData.attempt_sequence,
+          attemptSequence,
 
         p_selected_path:
-          attemptData.selected_path,
+          [...selectedPath],
 
         p_selected_formula:
-          attemptData.selected_formula,
+          selectedFormulaText,
 
         p_student_answer:
-          attemptData.student_answer,
+          numericAnswer,
 
         p_selected_unit:
-          attemptData.selected_unit,
+          unitAnswer.value,
 
         p_path_time_ms:
-          attemptData.path_time_ms,
+          pathTimeMs,
 
         p_formula_time_ms:
-          attemptData.formula_time_ms,
+          formulaTimeMs,
 
         p_calculation_time_ms:
-          attemptData.calculation_time_ms,
+          calculationTimeMs,
 
         p_total_response_time_ms:
-          attemptData.total_response_time_ms,
+          getTotalResponseTime(),
 
         p_hint_count:
-          attemptData.hint_count,
+          hintCount,
 
         p_retry_count:
-          attemptData.retry_count
+          retryCount
       }
     );
 
+
   if (error) {
+
     console.error(
-      "SECURE CASE ATTEMPT RPC ERROR:",
+      "SAVE ATTEMPT RPC ERROR:",
       error
     );
 
-    return {
-      success: false,
-      error: error
-    };
+    throw error;
   }
+
 
   const result =
     Array.isArray(data)
       ? data[0]
       : data;
 
-  if (!result) {
-    console.error(
-      "SECURE CASE ATTEMPT: empty server response"
-    );
 
-    return {
-      success: false,
-      error: "EMPTY_SERVER_RESPONSE"
-    };
+  if (!result) {
+
+    throw new Error(
+      "EMPTY_ATTEMPT_RESPONSE"
+    );
   }
+
 
   console.log(
-    "SECURE CASE ATTEMPT SAVED:",
-    {
-      attempt_id:
-        result.saved_attempt_id,
-
-      path_correct:
-        result.path_correct,
-
-      formula_correct:
-        result.formula_correct,
-
-      calculation_correct:
-        result.calculation_correct,
-
-      unit_correct:
-        result.unit_correct,
-
-      final_correct:
-        result.final_correct,
-
-      first_failure_point:
-        result.first_failure_point,
-
-      error_type:
-        result.error_type
-    }
+    "SERVER DIAGNOSTIC RESULT:",
+    result
   );
 
-  return {
-    success: true,
-    result: result
-  };
+
+  return result;
 }
 
 
-
 /* ============================================================
-   39. INITIALIZE SUBMIT BUTTON
+   28. ADD ENERGY
    ============================================================ */
 
-function initializeSubmitButton() {
+async function addEnergy(
+  amount
+) {
 
-  if (!submitCaseButton) {
-    return;
+  if (
+    !sessionToken ||
+    !room
+  ) {
+
+    return false;
   }
 
 
-  submitCaseButton.addEventListener(
-    "click",
-    submitCurrentCase
-  );
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "add_student_energy",
+      {
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room,
+
+        p_amount:
+          Number(
+            amount || 0
+          )
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ENERGY RPC ERROR:",
+      error
+    );
+
+    return false;
+  }
+
+
+  /*
+    RPC mengembalikan energy
+    terbaru milik siswa.
+  */
+
+  if (currentPlayer) {
+
+    currentPlayer.nexus_energy =
+      Number(
+        data || 0
+      );
+
+
+    renderCurrentPlayer();
+  }
+
+
+  return true;
 }
 
 
 /* ============================================================
-   40. SUBMIT CURRENT CASE
+   29. ADVANCE TURN
+   ============================================================ */
+
+async function advanceTurn() {
+
+  if (!room) {
+
+    return false;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "next_turn",
+      {
+        p_room_code:
+          room
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ADVANCE TURN ERROR:",
+      error
+    );
+
+
+    return false;
+  }
+
+
+  currentTurn =
+    Number(
+      data || 1
+    );
+
+
+  console.log(
+    "TURN ADVANCED:",
+    currentTurn
+  );
+
+
+  return true;
+}
+
+
+/* ============================================================
+   30. SUBMIT CURRENT CASE
    ============================================================ */
 
 async function submitCurrentCase() {
 
   /*
-     Mencegah double click menghasilkan
-     dua row attempt sekaligus.
+    Cegah double click.
   */
 
   if (isSubmitting) {
-
-    console.warn(
-      "SUBMIT BLOCKED: request masih diproses."
-    );
 
     return;
   }
@@ -3606,49 +2411,9 @@ async function submitCurrentCase() {
   }
 
 
-  /*
-     Pastikan identitas penelitian
-     tersedia sebelum evaluasi disimpan.
-  */
+  isSubmitting =
+    true;
 
-  if (
-    !currentStudentId ||
-    !currentSessionId
-  ) {
-
-    console.warn(
-      "DIAGNOSTIC ID belum siap. Mencoba sinkronisasi ulang."
-    );
-
-
-    if (!currentStudentId) {
-
-      await ensureStudentRecord();
-    }
-
-
-    if (!currentSessionId) {
-
-      await ensureGameSession();
-    }
-  }
-
-
-  if (
-    !currentStudentId ||
-    !currentSessionId ||
-    !currentQuestion?.question_id
-  ) {
-
-    showFeedback(
-      "Data pemain belum tersinkronisasi. Coba beberapa saat lagi."
-    );
-
-    return;
-  }
-
-
-  isSubmitting = true;
 
   setSubmitDisabled(
     true
@@ -3658,161 +2423,45 @@ async function submitCurrentCase() {
   try {
 
     /*
-       Finalisasi timer sebelum evaluasi.
+      Finalisasi waktu setiap
+      tahap diagnostik.
     */
 
     finalizeDiagnosticTimers();
 
 
-    const responseTimeMs =
-      getTotalResponseTime();
+    /*
+      Kirim respons siswa ke server.
+    */
 
-
-    /* ========================================================
-       EVALUATE FOUR DIAGNOSTIC COMPONENTS
-       ======================================================== */
-
-    const pathCorrect =
-      evaluatePath();
-
-
-    const formulaCorrect =
-      evaluateFormula();
-
-
-    const calculationCorrect =
-      evaluateCalculation();
-
-
-    const unitCorrect =
-      evaluateUnit();
-
-
-    /* ========================================================
-       FINAL CORRECT
-       ======================================================== */
-
-    const finalCorrect =
-      determineFinalCorrect(
-        pathCorrect,
-        formulaCorrect,
-        calculationCorrect,
-        unitCorrect
-      );
-
-
-    /* ========================================================
-       FIRST FAILURE POINT
-       ======================================================== */
-
-    const firstFailurePoint =
-      determineFirstFailurePoint(
-        pathCorrect,
-        formulaCorrect,
-        calculationCorrect,
-        unitCorrect
-      );
-
-
-    /* ========================================================
-       ERROR TYPE
-       ======================================================== */
-
-    const errorType =
-      determineErrorType(
-        pathCorrect,
-        formulaCorrect,
-        calculationCorrect,
-        unitCorrect
-      );
-
-
-    /* ========================================================
-       DIAGNOSTIC RESULT FOR CONSOLE
-       ======================================================== */
-
-    const diagnosticResult =
-      createDiagnosticResult(
-        pathCorrect,
-        formulaCorrect,
-        calculationCorrect,
-        unitCorrect,
-        finalCorrect,
-        firstFailurePoint,
-        errorType,
-        responseTimeMs
-      );
-
-
-    console.log(
-      "MOL-NEXUS DIAGNOSTIC RESULT:",
-      diagnosticResult
-    );
-
-
-    /* ========================================================
-       BUILD DATABASE ROW
-       ======================================================== */
-
-    const attemptData =
-      buildAttemptData(
-        pathCorrect,
-        formulaCorrect,
-        calculationCorrect,
-        unitCorrect,
-        finalCorrect,
-        firstFailurePoint,
-        errorType,
-        responseTimeMs
-      );
-
-
-    /* ========================================================
-       SAVE FIRST
-       ======================================================== */
-
-    const saveResult =
-      await saveCaseAttempt(
-        attemptData
-      );
+    const result =
+      await saveStudentAttempt();
 
 
     /*
-       Jangan berikan reward atau
-       memindahkan challenge jika data
-       penelitian gagal tersimpan.
+      PENTING:
+      keputusan benar/salah
+      memakai hasil SERVER.
+
+      Browser tidak menentukan
+      final_correct.
     */
 
-    if (!saveResult.success) {
+    const finalCorrect =
+      result.final_correct ===
+      true;
 
-      showFeedback(
-        "Jawaban telah diperiksa, tetapi data diagnostik gagal disimpan."
-      );
-
-
-      setSubmitDisabled(
-        false
-      );
-
-
-      return;
-    }
-
-
-    /* ========================================================
-       CORRECT ANSWER
-       ======================================================== */
 
     if (finalCorrect) {
 
       /*
-         ENERGY:
+        REWARD:
 
-         Attempt pertama tanpa hint = +3
+        Benar pertama tanpa hint = +3
 
-         Attempt pertama dengan hint = +2
+        Benar pertama dengan hint = +2
 
-         Benar setelah retry = +1
+        Benar setelah retry = +1
       */
 
       let reward = 1;
@@ -3839,71 +2488,92 @@ async function submitCurrentCase() {
       );
 
 
-      console.log(
-        "NEXUS CLEAR:",
-        {
-          reward:
-            reward,
+      /*
+        Beri waktu siswa melihat
+        feedback.
+      */
 
-          attempt_sequence:
-            attemptSequence,
-
-          retry_count:
-            retryCount,
-
-          hint_count:
-            hintCount
-        }
+      await wait(
+        1200
       );
 
 
       /*
-         Beri waktu agar siswa melihat
-         feedback sebelum challenge baru.
+        Pindahkan giliran.
       */
 
-      await wait(
-  1400
-);
+      const advanced =
+        await advanceTurn();
 
-const turnAdvanced =
-  await advanceTurn();
 
-if (turnAdvanced) {
+      if (advanced) {
 
-  const updatedRoom =
-    await loadGameRoom();
+        /*
+          Refresh state multiplayer.
+        */
 
-  if (updatedRoom) {
-    applyTurnState(updatedRoom);
-  }
-}
+        await loadGamePlayers();
 
-return;
+
+        const roomData =
+          await loadGameRoom();
+
+
+        if (roomData) {
+
+          applyTurnState(
+            roomData
+          );
+        }
+      }
+
+
+      /*
+        Jika setelah pergantian
+        ternyata masih giliran siswa
+        ini (contoh room testing
+        max_players = 1),
+        langsung ambil soal berikutnya.
+      */
+
+      if (isMyTurn) {
+
+        await loadQuestion();
+
+      } else {
+
+        currentQuestion =
+          null;
+
+
+        if (caseTitle) {
+
+          caseTitle.textContent =
+            "WAITING FOR TURN";
+        }
+
+
+        if (caseQuestion) {
+
+          caseQuestion.textContent =
+            "Menunggu giliran berikutnya.";
+        }
+      }
+
+
+      return;
     }
 
 
     /* ========================================================
-       WRONG ANSWER / RETRY
+       WRONG ANSWER
        ======================================================== */
+
 
     retryCount++;
 
+
     attemptSequence++;
-
-
-    /*
-       Jawaban salah TIDAK menghapus
-       pilihan siswa.
-
-       Dengan demikian siswa dapat
-       memperbaiki bagian yang dianggap
-       salah dan melakukan LOCK ANSWER
-       kembali.
-
-       Ini penting untuk merekam proses
-       diagnostik, bukan hanya skor akhir.
-    */
 
 
     showFeedback(
@@ -3911,28 +2581,14 @@ return;
     );
 
 
-    console.log(
-      "NEXUS RETRY:",
-      {
-        next_attempt_sequence:
-          attemptSequence,
-
-        retry_count:
-          retryCount,
-
-        previous_first_failure:
-          firstFailurePoint,
-
-        previous_error_type:
-          errorType
-      }
-    );
-
-
     /*
-       Timer attempt berikutnya dimulai
-       setelah feedback jawaban salah.
+      Pilihan siswa tidak dihapus.
+
+      Ini penting agar proses
+      perbaikannya dapat direkam
+      pada attempt berikutnya.
     */
+
 
     resetDiagnosticTimers();
 
@@ -3951,7 +2607,7 @@ return;
 
 
     showFeedback(
-      "Terjadi gangguan saat memproses jawaban."
+      "Data diagnostik gagal disimpan. Silakan coba lagi."
     );
 
 
@@ -3962,188 +2618,33 @@ return;
 
   } finally {
 
-    isSubmitting = false;
+    isSubmitting =
+      false;
   }
 }
 
+
 /* ============================================================
-   MULTIPLAYER — ADVANCE TURN
+   31. SUBMIT BUTTON
    ============================================================ */
 
-async function advanceTurn() {
+function initializeSubmitButton() {
 
-  if (!room) {
-    console.warn("ADVANCE TURN: room tidak tersedia.");
-    return false;
+  if (!submitCaseButton) {
+
+    return;
   }
 
-  try {
 
-    const {
-      data,
-      error
-    } = await supabaseClient.rpc(
-      "next_turn",
-      {
-        p_room_code: room
-      }
-    );
-
-    if (error) {
-
-      console.error(
-        "ADVANCE TURN ERROR:",
-        error
-      );
-
-      return false;
-    }
-
-    currentTurn = Number(data || 1);
-
-    console.log(
-      "TURN ADVANCED:",
-      {
-        room: room,
-        current_turn: currentTurn
-      }
-    );
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "ADVANCE TURN EXCEPTION:",
-      error
-    );
-
-    return false;
-  }
-}
-/* ============================================================
-   41. WAIT UTILITY
-   ============================================================ */
-
-function wait(milliseconds) {
-
-  return new Promise(
-    resolve => {
-
-      setTimeout(
-        resolve,
-        milliseconds
-      );
-    }
+  submitCaseButton.addEventListener(
+    "click",
+    submitCurrentCase
   );
 }
 
 
 /* ============================================================
-   42. FEEDBACK
-   ============================================================ */
-
-function showFeedback(message) {
-
-  if (caseFeedback) {
-
-    caseFeedback.textContent =
-      message;
-  }
-}
-
-
-/* ============================================================
-   43. ENERGY
-   ============================================================ */
-
-async function addEnergy(amount) {
-
-  if (!currentPlayer) {
-
-    console.warn(
-      "ENERGY: currentPlayer tidak tersedia."
-    );
-
-    return false;
-  }
-
-
-  if (!currentPlayer.id) {
-
-    console.warn(
-      "PLAYER ID NOT FOUND"
-    );
-
-    return false;
-  }
-
-
-  const oldEnergy =
-    Number(
-      currentPlayer.nexus_energy ||
-      0
-    );
-
-
-  const newEnergy =
-    oldEnergy +
-    Number(
-      amount || 0
-    );
-
-
-  const {
-    data: updatedEnergy,
-    error
-} = await supabaseClient.rpc(
-    "add_student_energy",
-    {
-        p_session_token: sessionToken,
-        p_room_code: room,
-        p_amount: Number(amount || 0)
-    }
-);
-
-
-  if (error) {
-
-    console.error(
-      "UPDATE ENERGY ERROR:",
-      error
-    );
-
-    return false;
-  }
-
-
-  currentPlayer.nexus_energy =
-    Number(updatedEnergy);
-
-
-  renderCurrentPlayer();
-
-
-  console.log(
-    "ENERGY UPDATED:",
-    {
-      old_energy:
-        oldEnergy,
-
-      added:
-        Number(
-          amount || 0
-        ),
-
-     new_energy:
-    Number(updatedEnergy) 
-    }
-  );
-
-
-  return true;
-     }/* ============================================================
-   44. ZONE BUTTONS
+   32. ZONE BUTTONS
    ============================================================ */
 
 function initializeZoneButtons() {
@@ -4159,23 +2660,26 @@ function initializeZoneButtons() {
           "click",
           async function() {
 
-            const zone =
-              this.dataset.zone;
+            if (!isMyTurn) {
 
+              showFeedback(
+                "Tunggu giliran Anda."
+              );
 
-            if (!zone) {
               return;
             }
 
 
             selectedZone =
-              zone;
+              this.dataset.zone ||
+              null;
 
 
-            /*
-               Tandai zona yang sedang
-               dipilih pada interface.
-            */
+            if (!selectedZone) {
+
+              return;
+            }
+
 
             document
               .querySelectorAll(
@@ -4184,9 +2688,11 @@ function initializeZoneButtons() {
               .forEach(
                 zoneButton => {
 
-                  zoneButton.classList.remove(
-                    "selected"
-                  );
+                  zoneButton
+                    .classList
+                    .remove(
+                      "selected"
+                    );
                 }
               );
 
@@ -4196,24 +2702,10 @@ function initializeZoneButtons() {
             );
 
 
-            if (gameMessage) {
-
-              gameMessage.textContent =
-                zone +
-                " NEXUS selected.";
-            }
-
-
-            console.log(
-              "ZONE SELECTED:",
-              selectedZone
+            setMessage(
+              `${selectedZone} NEXUS selected.`
             );
 
-
-            /*
-               Memuat challenge dari zona
-               yang dipilih jika tersedia.
-            */
 
             await loadQuestion();
           }
@@ -4224,7 +2716,7 @@ function initializeZoneButtons() {
 
 
 /* ============================================================
-   45. GAME ACTIONS
+   33. GAME ACTION BAR
    ============================================================ */
 
 function initializeGameActions() {
@@ -4246,38 +2738,40 @@ function initializeGameActions() {
                 .toUpperCase();
 
 
-            if (!gameMessage) {
-              return;
-            }
-
-
             if (
               action === "EVENT"
             ) {
 
-              gameMessage.textContent =
-                "EVENT NEXUS akan tersedia pada tahap berikutnya.";
+              setMessage(
+                "EVENT NEXUS akan tersedia pada tahap berikutnya."
+              );
+
 
             } else if (
               action === "DUEL"
             ) {
 
-              gameMessage.textContent =
-                "NEXUS DUEL akan tersedia pada tahap berikutnya.";
+              setMessage(
+                "NEXUS DUEL akan tersedia pada tahap berikutnya."
+              );
+
 
             } else if (
               action === "MAP"
             ) {
 
-              gameMessage.textContent =
-                "Stoichiometry Nexus Map active.";
+              setMessage(
+                "Stoichiometry Nexus Map active."
+              );
+
 
             } else if (
               action === "HELP"
             ) {
 
-              gameMessage.textContent =
-                "Bangun PATH → pilih FORMULA secara berurutan → hitung → pilih UNIT → LOCK ANSWER.";
+              setMessage(
+                "Bangun PATH → pilih FORMULA → hitung → pilih UNIT → LOCK ANSWER."
+              );
             }
           }
         );
@@ -4287,219 +2781,265 @@ function initializeGameActions() {
 
 
 /* ============================================================
-   46. REALTIME PLAYERS
+   END BAGIAN 3
+   ============================================================ */
+/* ============================================================
+   34. REALTIME PLAYERS
    ============================================================ */
 
 function subscribePlayers() {
 
-  if (!room) {
+  if (
+    !room ||
+    playersChannel
+  ) {
     return;
   }
 
 
-  supabaseClient
-    .channel(
-      "mol-nexus-game-players-" +
-      room
-    )
-    .on(
+  playersChannel =
+    supabaseClient
+      .channel(
+        `mol-nexus-game-players-${room}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "room_players",
+          filter:
+            `room_code=eq.${room}`
+        },
+        async function() {
 
-      "postgres_changes",
+          /*
+            Ada perubahan:
+            - energy
+            - ready
+            - player
+            - crystal
+            dll.
 
-      {
-        event: "*",
+            Refresh daftar pemain.
+          */
 
-        schema:
-          "public",
-
-        table:
-          "room_players",
-
-        filter:
-          "room_code=eq." +
-          room
-      },
-
-      async function(payload) {
-
-        console.log(
-          "PLAYER REALTIME:",
-          payload
-        );
+          await loadGamePlayers();
 
 
-        await loadGamePlayers();
-      }
-    )
-    .subscribe(
-      status => {
+          const roomData =
+            await loadGameRoom();
 
-        console.log(
-          "PLAYER REALTIME STATUS:",
-          status
-        );
-      }
-    );
+
+          if (roomData) {
+
+            applyTurnState(
+              roomData
+            );
+          }
+        }
+      )
+      .subscribe(
+        status => {
+
+          console.log(
+            "PLAYERS REALTIME:",
+            status
+          );
+        }
+      );
 }
 
 
 /* ============================================================
-   47. REALTIME ROOM
+   35. REALTIME ROOM
    ============================================================ */
 
 function subscribeRoom() {
 
-  if (!room) {
+  if (
+    !room ||
+    roomChannel
+  ) {
     return;
   }
 
 
-  supabaseClient
-    .channel(
-      "mol-nexus-game-room-" +
-      room
-    )
-    .on(
+  roomChannel =
+    supabaseClient
+      .channel(
+        `mol-nexus-game-room-${room}`
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "game_rooms",
+          filter:
+            `room_code=eq.${room}`
+        },
+        async function(payload) {
 
-      "postgres_changes",
-
-      {
-        event:
-          "UPDATE",
-
-        schema:
-          "public",
-
-        table:
-          "game_rooms",
-
-        filter:
-          "room_code=eq." +
-          room
-      },
-
-      function(payload) {
-
-        console.log(
-          "ROOM REALTIME:",
-          payload
-        );
+          console.log(
+            "ROOM REALTIME UPDATE:",
+            payload.new
+          );
 
 
-        const status =
-          String(
-            payload.new?.status ||
-            ""
-          ).toUpperCase();
+          /*
+            Simpan kondisi giliran
+            sebelum update.
+          */
+
+          const previousMyTurn =
+            isMyTurn;
 
 
-        if (
-          status === "PLAYING"
-        ) {
+          /*
+            Refresh pemain terlebih dahulu
+            supaya currentPlayer dan slot
+            tetap sinkron.
+          */
 
-          if (gameMessage) {
+          await loadGamePlayers();
 
-            gameMessage.textContent =
-              "Nexus synchronized. Game is active.";
+
+          /*
+            Terapkan current_turn terbaru.
+          */
+
+          applyTurnState(
+            payload.new
+          );
+
+
+          /*
+            Jika sebelumnya bukan giliran
+            siswa ini, lalu sekarang menjadi
+            gilirannya:
+            ambil challenge BARU.
+          */
+
+          if (
+            !previousMyTurn &&
+            isMyTurn
+          ) {
+
+            await loadQuestion();
           }
 
 
-          if (turnStatus) {
+          /*
+            Jika giliran siswa ini selesai,
+            sembunyikan challenge.
 
-            turnStatus.textContent =
-              "NEXUS ACTIVE";
-          }
+            Dengan demikian soal milik siswa
+            tidak ditampilkan pada pemain lain.
+          */
 
-        } else {
+          if (
+            previousMyTurn &&
+            !isMyTurn
+          ) {
 
-          if (turnStatus) {
+            currentQuestion =
+              null;
 
-            turnStatus.textContent =
-              status ||
-              "WAITING";
+
+            if (caseZone) {
+
+              caseZone.textContent =
+                "NEXUS";
+            }
+
+
+            if (caseTitle) {
+
+              caseTitle.textContent =
+                "WAITING FOR TURN";
+            }
+
+
+            if (caseDifficulty) {
+
+              caseDifficulty.textContent =
+                "WAITING";
+            }
+
+
+            if (caseQuestion) {
+
+              caseQuestion.textContent =
+                "Challenge pemain lain tidak ditampilkan.";
+            }
+
+
+            setSubmitDisabled(
+              true
+            );
           }
         }
-      }
-    )
-    .subscribe(
-      status => {
+      )
+      .subscribe(
+        status => {
 
-        console.log(
-          "ROOM REALTIME STATUS:",
-          status
-        );
-      }
-    );
+          console.log(
+            "ROOM REALTIME:",
+            status
+          );
+        }
+      );
 }
 
 
 /* ============================================================
-   48. INTERFACE INITIALIZATION
+   36. INTERFACE INITIALIZATION
    ============================================================ */
 
 function initializeInterface() {
 
-  renderBasicData();
-
-
   /*
-     PATH BUILDER
+    Event listener hanya dipasang
+    satu kali saat halaman dibuka.
   */
 
   initializePathBuilder();
 
-
-  /*
-     FORMULA BUILDER
-
-     Menggunakan document event
-     delegation sehingga hanya perlu
-     diinisialisasi satu kali.
-  */
-
   initializeFormulaBuilder();
-
-
-  /*
-     TRACKING CALCULATION
-  */
 
   initializeCalculationTracking();
 
-
-  /*
-     TRACKING UNIT
-  */
-
   initializeUnitTracking();
-
-
-  /*
-     ZONE SELECTOR
-  */
-
-  initializeZoneButtons();
-
-
-  /*
-     HINT
-  */
 
   initializeHintButton();
 
-
-  /*
-     LOCK ANSWER
-  */
-
   initializeSubmitButton();
 
-
-  /*
-     EVENT / DUEL / MAP / HELP
-  */
+  initializeZoneButtons();
 
   initializeGameActions();
+
+
+  /*
+    Render kondisi awal.
+  */
+
+  renderSelectedPath();
+
+  renderDynamicFormulaBuilder();
+
+  renderDynamicUnits();
+
+
+  /*
+    LOCK ANSWER belum boleh digunakan
+    sebelum session + turn siap.
+  */
+
+  setSubmitDisabled(
+    true
+  );
 
 
   console.log(
@@ -4509,7 +3049,7 @@ function initializeInterface() {
 
 
 /* ============================================================
-   49. START GAME
+   37. START MOL-NEXUS GAME
    ============================================================ */
 
 async function startMolNexusGame() {
@@ -4519,17 +3059,7 @@ async function startMolNexusGame() {
   );
 
   console.log(
-    "MOL-NEXUS GAME CONTROLLER v2.2"
-  );
-
-  console.log(
-    "STUDENT:",
-    student
-  );
-
-  console.log(
-    "ROOM:",
-    room
+    "MOL-NEXUS GAME CONTROLLER v3.0"
   );
 
   console.log(
@@ -4538,185 +3068,378 @@ async function startMolNexusGame() {
 
 
   /*
-     Pasang seluruh event listener.
+    Pasang interface terlebih dahulu.
   */
 
   initializeInterface();
 
 
   /*
-     Game harus dibuka melalui Lobby
-     agar student dan room tersedia.
+    Tidak ada token berarti game
+    tidak boleh dibuka langsung.
   */
 
-  if (
-    !student ||
-    !room
-  ) {
+  if (!sessionToken) {
 
-    if (gameMessage) {
+    console.warn(
+      "SESSION TOKEN NOT FOUND"
+    );
 
-      gameMessage.textContent =
-        "Data pemain/room tidak ditemukan. Masuklah melalui Multiplayer Lobby.";
+
+    window.location.replace(
+      "student-login.html"
+    );
+
+
+    return;
+  }
+
+
+  try {
+
+    /* ========================================================
+       STEP 1
+       VALIDATE STUDENT SESSION
+       ======================================================== */
+
+    const studentRecord =
+      await validateStudentSession();
+
+
+    student =
+      studentRecord.display_name ||
+      student;
+
+
+    console.log(
+      "STUDENT SESSION VALID:",
+      {
+        student_id:
+          currentStudentId,
+
+        display_name:
+          student
+      }
+    );
+
+
+    /* ========================================================
+       STEP 2
+       GET ROOM FROM LOBBY STORAGE
+       ======================================================== */
+
+    room =
+      sessionStorage.getItem(
+        "mol_nexus_room"
+      ) ||
+      room;
+
+
+    if (!room) {
+
+      console.warn(
+        "ROOM NOT FOUND"
+      );
+
+
+      setMessage(
+        "Room tidak ditemukan. Masuk kembali melalui Multiplayer Lobby."
+      );
+
+
+      /*
+        Tidak langsung menghapus token.
+        Token siswa masih valid.
+      */
+
+      setTimeout(
+        function() {
+
+          window.location.replace(
+            "lobby.html"
+          );
+        },
+        1000
+      );
+
+
+      return;
     }
+
+
+    /*
+      Sekarang identitas siswa dan room
+      sudah tervalidasi.
+
+      Baru render header.
+    */
+
+    renderBasicData();
+
+
+    /* ========================================================
+       STEP 3
+       LOAD ROOM
+       ======================================================== */
+
+    const roomData =
+      await loadGameRoom();
+
+
+    if (!roomData) {
+
+      console.warn(
+        "START GAME: ROOM FAILED"
+      );
+
+
+      return;
+    }
+
+
+    console.log(
+      "ROOM READY:",
+      {
+        room_code:
+          roomData.room_code,
+
+        status:
+          roomData.status,
+
+        current_turn:
+          roomData.current_turn
+      }
+    );
+
+
+    /* ========================================================
+       STEP 4
+       LOAD ROOM PLAYERS
+       ======================================================== */
+
+    await loadGamePlayers();
+
+
+    /*
+      currentPlayer harus ditemukan
+      dari membership room_players.
+    */
+
+    if (!currentPlayer) {
+
+      console.warn(
+        "CURRENT PLAYER NOT FOUND"
+      );
+
+
+      setMessage(
+        "Akun siswa tidak ditemukan sebagai anggota room."
+      );
+
+
+      if (turnStatus) {
+
+        turnStatus.textContent =
+          "PLAYER NOT FOUND";
+      }
+
+
+      return;
+    }
+
+
+    console.log(
+      "CURRENT PLAYER READY:",
+      {
+        player_slot:
+          currentPlayer.player_slot,
+
+        student_id:
+          currentPlayer.student_id,
+
+        player_name:
+          getPlayerName(
+            currentPlayer
+          )
+      }
+    );
+
+
+    /* ========================================================
+       STEP 5
+       APPLY TURN
+       ======================================================== */
+
+    applyTurnState(
+      roomData
+    );
+
+
+    /* ========================================================
+       STEP 6
+       START REALTIME
+       ======================================================== */
+
+    subscribePlayers();
+
+    subscribeRoom();
+
+
+    /* ========================================================
+       STEP 7
+       LOAD PERSONAL CHALLENGE
+       ======================================================== */
+
+    if (isMyTurn) {
+
+      await loadQuestion();
+
+    } else {
+
+      currentQuestion =
+        null;
+
+
+      if (caseZone) {
+
+        caseZone.textContent =
+          "NEXUS";
+      }
+
+
+      if (caseTitle) {
+
+        caseTitle.textContent =
+          "WAITING FOR TURN";
+      }
+
+
+      if (caseDifficulty) {
+
+        caseDifficulty.textContent =
+          "WAITING";
+      }
+
+
+      if (caseQuestion) {
+
+        caseQuestion.textContent =
+          "Challenge pemain lain tidak ditampilkan.";
+      }
+    }
+
+
+    console.log(
+      "================================"
+    );
+
+    console.log(
+      "MOL-NEXUS GAME READY v3.0"
+    );
+
+    console.log(
+      {
+        room:
+          room,
+
+        student:
+          student,
+
+        student_id:
+          currentStudentId,
+
+        player_slot:
+          currentPlayer.player_slot,
+
+        current_turn:
+          currentTurn,
+
+        is_my_turn:
+          isMyTurn
+      }
+    );
+
+    console.log(
+      "================================"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "START MOL-NEXUS ERROR:",
+      error
+    );
+
+
+    /*
+      Jika validate_student_session
+      gagal, kemungkinan token:
+      - tidak valid
+      - expired
+      - revoked
+
+      Token lokal dihapus.
+    */
+
+    sessionStorage.removeItem(
+      "mol_nexus_session_token"
+    );
+
+
+    setMessage(
+      "Sesi siswa tidak valid atau sudah berakhir."
+    );
 
 
     if (turnStatus) {
 
       turnStatus.textContent =
-        "WAITING FOR LOBBY";
+        "SESSION EXPIRED";
     }
 
 
-    return;
-  }
+    setTimeout(
+      function() {
 
-
-  /*
-     1. Pastikan room tersedia.
-  */
-
-  const roomData =
-    await loadGameRoom();
-
-
-  if (!roomData) {
-
-    console.warn(
-      "START GAME: room tidak tersedia."
+        window.location.replace(
+          "student-login.html"
+        );
+      },
+      1200
     );
-
-    return;
   }
-
-
-  /*
-     2. Ambil pemain.
-
-     Ini harus dilakukan sebelum
-     ensureStudentRecord karena
-     currentPlayer berasal dari
-     room_players.
-  */
-
-  await loadGamePlayers();
-
-
-  if (!currentPlayer) {
-
-    console.warn(
-      "START GAME: current player belum ditemukan."
-    );
-
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Pemain belum ditemukan di room. Masuk kembali melalui Multiplayer Lobby.";
-    }
-
-
-    return;
-  }
-
-
-  /*
-     3. Sinkronkan player dengan
-        tabel students.
-  */
-
-  const studentRecord =
-    await ensureStudentRecord();
-
-
-  if (!studentRecord) {
-
-    console.warn(
-      "START GAME: student record gagal disiapkan."
-    );
-
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Data siswa gagal disinkronkan.";
-    }
-
-
-    return;
-  }
-
-
-  /*
-     4. Pastikan game session aktif.
-  */
-
-  const sessionRecord =
-    await ensureGameSession();
-
-
-  if (!sessionRecord) {
-
-    console.warn(
-      "START GAME: session gagal disiapkan."
-    );
-
-
-    if (gameMessage) {
-
-      gameMessage.textContent =
-        "Game session gagal disiapkan.";
-    }
-
-
-    return;
-  }
-
-
-  console.log(
-    "RESEARCH IDENTIFIERS READY:",
-    {
-      student_id:
-        currentStudentId,
-
-      session_id:
-        currentSessionId
-    }
-  );
-
-
-  /*
-     5. Aktifkan realtime.
-  */
-
-  subscribePlayers();
-
-  subscribeRoom();
-
-
-  /*
-     6. Ambil challenge pertama.
-  */
-
-  await loadQuestion();
-
-
-  console.log(
-    "================================"
-  );
-
-  console.log(
-    "MOL-NEXUS GAME READY v2.2"
-  );
-
-  console.log(
-    "================================"
-  );
 }
 
 
 /* ============================================================
-   50. START AFTER DOM READY
+   38. CLEANUP REALTIME
+   ============================================================ */
+
+window.addEventListener(
+  "beforeunload",
+  function() {
+
+    if (playersChannel) {
+
+      supabaseClient.removeChannel(
+        playersChannel
+      );
+    }
+
+
+    if (roomChannel) {
+
+      supabaseClient.removeChannel(
+        roomChannel
+      );
+    }
+  }
+);
+
+
+/* ============================================================
+   39. START AFTER DOM READY
    ============================================================ */
 
 window.addEventListener(
@@ -4727,5 +3450,5 @@ window.addEventListener(
 
 /* ============================================================
    END
-   MOL-NEXUS GAME CONTROLLER v2.2
+   MOL-NEXUS GAME CONTROLLER v3.0 CLEAN
    ============================================================ */
