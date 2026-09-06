@@ -763,7 +763,7 @@ async function ensureGameSession() {
       )
       .in(
         "status",
-        ["WAITING", "PLAYING"]
+        ["WAITING", "ACTIVE"]
       )
       .order(
         "created_at",
