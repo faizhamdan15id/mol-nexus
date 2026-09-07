@@ -2502,6 +2502,49 @@ async function loadFinalNexusQuestion() {
 
   return question;
 }
+/* ================================================
+   COMPLETE FINAL NEXUS
+================================================ */
+
+async function completeFinalNexus() {
+  if (
+    !sessionToken ||
+    !room ||
+    !currentQuestion?.question_id
+  ) {
+    return null;
+  }
+
+  const { data, error } = await supabaseClient.rpc(
+    "complete_final_nexus",
+    {
+      p_session_token: sessionToken,
+      p_room_code: room,
+      p_question_id: currentQuestion.question_id
+    }
+  );
+
+  if (error) {
+    console.error(
+      "COMPLETE FINAL NEXUS ERROR:",
+      error
+    );
+
+    return null;
+  }
+
+  const result =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+  console.log(
+    "FINAL NEXUS COMPLETION:",
+    result
+  );
+
+  return result;
+}
 /* ============================================================
    29. ADVANCE TURN
    ============================================================ */
