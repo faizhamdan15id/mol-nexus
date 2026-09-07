@@ -2256,7 +2256,74 @@ async function saveStudentAttempt() {
   return result;
 }
 
+/* ============================================================
+   28B. AWARD CRYSTAL
+   ============================================================ */
 
+async function awardCrystal() {
+
+  if (
+    !sessionToken ||
+    !room ||
+    !currentQuestion?.question_id
+  ) {
+    return null;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "award_student_crystal",
+      {
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room,
+
+        p_question_id:
+          currentQuestion.question_id
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "CRYSTAL RPC ERROR:",
+      error
+    );
+
+    return null;
+  }
+
+
+  const result =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  console.log(
+    "CRYSTAL RESULT:",
+    result
+  );
+
+
+  /*
+    Refresh room_players agar
+    Crystal terbaru langsung
+    tampil pada UI.
+  */
+
+  await loadGamePlayers();
+
+
+  return result;
+}
 /* ============================================================
    28. ADD ENERGY
    ============================================================ */
