@@ -1622,7 +1622,7 @@ document
     stage.style.display = "none";
   });
    document
-  .querySelectorAll(".challenge-actions")
+  .querySelectorAll(".case-actions")
   .forEach(action => {
     action.style.display = "none";
   });
