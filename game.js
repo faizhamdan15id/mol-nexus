@@ -1616,7 +1616,12 @@ if (currentPlayer?.final_nexus_completed === true) {
     caseQuestion.textContent =
       "Selamat! Anda telah menyelesaikan seluruh rangkaian MOL-NEXUS.";
   }
+const challengeArea =
+  document.querySelector(".challenge-area");
 
+if (challengeArea) {
+  challengeArea.style.display = "none";
+}
   setSubmitDisabled(true);
 
   return null;
