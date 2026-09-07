@@ -2549,7 +2549,9 @@ async function submitCurrentCase() {
         reward
       );
 
-
+     const crystalResult =
+  await awardCrystal(); 
+       
       showFeedback(
         `NEXUS CLEAR ✓  +${reward} ENERGY`
       );
