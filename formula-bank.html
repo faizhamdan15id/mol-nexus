@@ -2,10 +2,76 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>MOL-NEXUS | Bank Rumus</title>
+
+  <link
+    rel="stylesheet"
+    href="dashboard.css"
+  >
 </head>
+
 <body>
-  <h1>Bank Rumus</h1>
+
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MOL-NEXUS</p>
+
+      <h1>Bank Rumus</h1>
+
+      <p class="subtitle">
+        Formula Management System
+      </p>
+    </div>
+
+    <div class="system-status">
+      <span class="status-dot"></span>
+      TEACHER MODE
+    </div>
+  </header>
+
+  <nav class="teacher-nav">
+    <a href="dashboard.html" class="nav-link">
+      📊 Dashboard
+    </a>
+
+    <a href="question-bank.html" class="nav-link">
+      📚 Bank Soal
+    </a>
+
+    <a href="formula-bank.html" class="nav-link active">
+      🧪 Bank Rumus
+    </a>
+  </nav>
+
+  <main class="dashboard">
+
+    <section class="panel">
+
+      <div class="panel-heading">
+        <div>
+          <p class="section-label">
+            FORMULA MANAGEMENT
+          </p>
+
+          <h2>Daftar Rumus MOL-NEXUS</h2>
+        </div>
+      </div>
+
+      <div id="formulaList">
+        <p class="state-message">
+          Memuat Bank Rumus...
+        </p>
+      </div>
+
+    </section>
+
+  </main>
+
 </body>
 </html>
