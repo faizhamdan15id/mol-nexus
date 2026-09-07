@@ -2622,7 +2622,22 @@ console.log(
       showFeedback(
         `NEXUS CLEAR ✓  +${reward} ENERGY`
       );
+if (finalAccess?.unlocked === true) {
 
+  showFeedback(
+    "4 NEXUS CRYSTALS COMPLETE 💎 — FINAL NEXUS UNLOCKED!"
+  );
+
+  setMessage(
+    "FINAL NEXUS CHALLENGE telah terbuka."
+  );
+
+  console.log(
+    "FINAL NEXUS UNLOCKED"
+  );
+
+  return;
+}
 
       /*
         Beri waktu siswa melihat
