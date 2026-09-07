@@ -106,3 +106,58 @@ async function initFormulaBank() {
 
 
 initFormulaBank();
+/* =========================================
+   FORMULA MODAL
+========================================= */
+
+const addFormulaButton =
+  document.getElementById("addFormulaButton");
+
+const formulaModal =
+  document.getElementById("formulaModal");
+
+const closeFormulaModal =
+  document.getElementById("closeFormulaModal");
+
+const formulaForm =
+  document.getElementById("formulaForm");
+
+
+function openAddFormulaModal() {
+
+  formulaForm.reset();
+
+  document.getElementById("formulaId").value = "";
+  document.getElementById("formulaActive").checked = true;
+
+  document.getElementById("formulaModalTitle").textContent =
+    "Tambah Rumus";
+
+  formulaModal.hidden = false;
+}
+
+
+function closeFormulaEditor() {
+  formulaModal.hidden = true;
+}
+
+
+addFormulaButton.addEventListener(
+  "click",
+  openAddFormulaModal
+);
+
+
+closeFormulaModal.addEventListener(
+  "click",
+  closeFormulaEditor
+);
+
+
+formulaModal.addEventListener("click", (event) => {
+
+  if (event.target === formulaModal) {
+    closeFormulaEditor();
+  }
+
+});
