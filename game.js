@@ -2394,6 +2394,67 @@ async function addEnergy(
   return true;
 }
 
+/* ============================================================
+   FINAL NEXUS ACCESS
+   ============================================================ */
+
+async function checkFinalNexusAccess() {
+
+  if (!sessionToken || !room) {
+    return {
+      unlocked: false,
+      total_crystals: 0
+    };
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "check_final_nexus_access",
+      {
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "FINAL NEXUS ACCESS ERROR:",
+      error
+    );
+
+    return {
+      unlocked: false,
+      total_crystals: 0
+    };
+  }
+
+
+  const result =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  console.log(
+    "FINAL NEXUS ACCESS:",
+    result
+  );
+
+
+  return result || {
+    unlocked: false,
+    total_crystals: 0
+  };
+}
 
 /* ============================================================
    29. ADVANCE TURN
