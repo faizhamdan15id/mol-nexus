@@ -1621,6 +1621,11 @@ document
   .forEach(stage => {
     stage.style.display = "none";
   });
+   document
+  .querySelectorAll(".challenge-actions")
+  .forEach(action => {
+    action.style.display = "none";
+  });
   setSubmitDisabled(true);
 
   return null;
