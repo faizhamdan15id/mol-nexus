@@ -1593,7 +1593,34 @@ function resetAttemptState() {
    ============================================================ */
 
 async function loadQuestion() {
+if (currentPlayer?.final_nexus_completed === true) {
+  currentQuestion = null;
 
+  setMessage(
+    "🏆 FINAL NEXUS COMPLETED — Seluruh Nexus Challenge telah diselesaikan."
+  );
+
+  if (caseZone) {
+    caseZone.textContent = "NEXUS COMPLETE";
+  }
+
+  if (caseTitle) {
+    caseTitle.textContent = "🏆 FINAL NEXUS COMPLETED";
+  }
+
+  if (caseDifficulty) {
+    caseDifficulty.textContent = "NEXUS MASTER";
+  }
+
+  if (caseQuestion) {
+    caseQuestion.textContent =
+      "Selamat! Anda telah menyelesaikan seluruh rangkaian MOL-NEXUS.";
+  }
+
+  setSubmitDisabled(true);
+
+  return null;
+}
   /*
     Privasi multiplayer:
     soal hanya dirender pada browser
