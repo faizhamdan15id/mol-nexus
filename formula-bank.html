@@ -79,6 +79,96 @@
     </section>
 
   </main>
+  <div id="formulaModal" class="formula-modal" hidden>
+
+  <div class="formula-modal-card">
+
+    <div class="formula-modal-header">
+      <div>
+        <p class="section-label">FORMULA EDITOR</p>
+        <h2 id="formulaModalTitle">Tambah Rumus</h2>
+      </div>
+
+      <button
+        id="closeFormulaModal"
+        type="button"
+        class="formula-modal-close"
+      >
+        ×
+      </button>
+    </div>
+
+    <form id="formulaForm">
+
+      <input type="hidden" id="formulaId">
+
+      <label>
+        Kode Rumus
+        <input
+          id="formulaCode"
+          type="text"
+          placeholder="Contoh: MOL_TO_GAS"
+          required
+        >
+      </label>
+
+      <label>
+        Rumus
+        <input
+          id="formulaLabel"
+          type="text"
+          placeholder="Contoh: V = n × R × T / P"
+          required
+        >
+      </label>
+
+      <label>
+        Konsep Asal
+        <input
+          id="originConcept"
+          type="text"
+          placeholder="Contoh: MOL"
+          required
+        >
+      </label>
+
+      <label>
+        Konsep Tujuan
+        <input
+          id="targetConcept"
+          type="text"
+          placeholder="Contoh: GAS"
+          required
+        >
+      </label>
+
+      <label>
+        Deskripsi
+        <textarea
+          id="formulaDescription"
+          rows="3"
+          placeholder="Keterangan penggunaan rumus"
+        ></textarea>
+      </label>
+
+      <label class="formula-checkbox">
+        <input
+          id="formulaActive"
+          type="checkbox"
+          checked
+        >
+        Rumus Aktif
+      </label>
+
+      <button type="submit" class="formula-save-button">
+        Simpan Rumus
+      </button>
+
+    </form>
+
+  </div>
+
+  </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="formula-bank.js"></script>
 </body>
