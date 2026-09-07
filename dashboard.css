@@ -1046,3 +1046,63 @@ footer {
     grid-template-columns: 1fr;
   }
   }
+/* =========================================
+   TEACHER NAVIGATION
+========================================= */
+
+.teacher-nav {
+  max-width: 1200px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+
+  scrollbar-width: none;
+}
+
+.teacher-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-link {
+  flex: 0 0 auto;
+  padding: 12px 18px;
+
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 12px;
+
+  background: rgba(8, 32, 48, 0.7);
+
+  color: #94a3b8;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+
+  transition: 0.2s ease;
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  border-color: rgba(34, 211, 238, 0.5);
+}
+
+.nav-link.active {
+  color: #22d3ee;
+  background: rgba(34, 211, 238, 0.1);
+  border-color: rgba(34, 211, 238, 0.45);
+}
+
+@media (max-width: 600px) {
+  .teacher-nav {
+    margin-top: 14px;
+    padding: 0 16px;
+    gap: 8px;
+  }
+
+  .nav-link {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}
