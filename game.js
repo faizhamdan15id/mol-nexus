@@ -2456,6 +2456,52 @@ async function checkFinalNexusAccess() {
   };
 }
 
+async function loadFinalNexusQuestion() {
+  if (!sessionToken || !room) {
+    return null;
+  }
+
+  const { data, error } = await supabaseClient.rpc(
+    "get_final_nexus_question",
+    {
+      p_session_token: sessionToken,
+      p_room_code: room
+    }
+  );
+
+  if (error) {
+    console.error(
+      "FINAL NEXUS QUESTION ERROR:",
+      error
+    );
+
+    setMessage(
+      "Final Nexus Challenge gagal dimuat."
+    );
+
+    return null;
+  }
+
+  const question =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+  if (!question) {
+    setMessage(
+      "Soal Final Nexus belum tersedia."
+    );
+
+    return null;
+  }
+
+  console.log(
+    "FINAL NEXUS QUESTION:",
+    question
+  );
+
+  return question;
+}
 /* ============================================================
    29. ADVANCE TURN
    ============================================================ */
