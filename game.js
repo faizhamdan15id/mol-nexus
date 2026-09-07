@@ -2606,6 +2606,15 @@ async function submitCurrentCase() {
 
    const isFinalNexus =
   currentQuestion?.question_type === "FINAL_NEXUS";
+   console.log(
+  "SUBMIT QUESTION DEBUG:",
+  {
+    question_id: currentQuestion?.question_id,
+    question_code: currentQuestion?.question_code,
+    question_type: currentQuestion?.question_type,
+    isFinalNexus
+  }
+);
   /*
     Cegah double click.
   */
