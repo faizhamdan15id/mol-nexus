@@ -2670,7 +2670,41 @@ async function submitCurrentCase() {
 
 
     if (finalCorrect) {
+       
+    /* FINAL NEXUS COMPLETION */
+if (currentQuestion?.question_type === "FINAL_NEXUS") {
 
+  const completion =
+    await completeFinalNexus();
+
+  if (completion?.completed === true) {
+
+    showFeedback(
+      "🏆 FINAL NEXUS COMPLETED!"
+    );
+
+    setMessage(
+      "Selamat! Anda berhasil menyelesaikan FINAL NEXUS CHALLENGE."
+    );
+
+    console.log(
+      "FINAL NEXUS COMPLETED:",
+      completion
+    );
+
+    setSubmitDisabled(true);
+
+    return;
+  }
+
+  showFeedback(
+    "Final Nexus berhasil dijawab, tetapi status penyelesaian gagal disimpan."
+  );
+
+  setSubmitDisabled(false);
+
+  return;
+}
       /*
         REWARD:
 
