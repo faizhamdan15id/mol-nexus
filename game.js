@@ -2604,6 +2604,8 @@ async function advanceTurn() {
 
 async function submitCurrentCase() {
 
+   const isFinalNexus =
+  currentQuestion?.question_type === "FINAL_NEXUS";
   /*
     Cegah double click.
   */
@@ -2672,7 +2674,7 @@ async function submitCurrentCase() {
     if (finalCorrect) {
        
     /* FINAL NEXUS COMPLETION */
-if (currentQuestion?.question_type === "FINAL_NEXUS") {
+if (isFinalNexus) {
 
   const completion =
     await completeFinalNexus();
