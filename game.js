@@ -2675,12 +2675,32 @@ if (finalAccess?.unlocked === true) {
   );
 
   setMessage(
-    "FINAL NEXUS CHALLENGE telah terbuka."
+    "Memuat FINAL NEXUS CHALLENGE..."
   );
 
+  const finalQuestion =
+    await loadFinalNexusQuestion();
+
+  if (!finalQuestion) {
+    setSubmitDisabled(false);
+    return;
+  }
+
+  currentQuestion = finalQuestion;
+  selectedZone = null;
+
   console.log(
-    "FINAL NEXUS UNLOCKED"
+    "FINAL NEXUS LOADED:",
+    finalQuestion
   );
+
+  renderQuestion(finalQuestion);
+
+  setMessage(
+    "🏆 FINAL NEXUS CHALLENGE — selesaikan tantangan terakhir!"
+  );
+
+  setSubmitDisabled(false);
 
   return;
 }
