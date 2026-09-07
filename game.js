@@ -2612,7 +2612,13 @@ async function submitCurrentCase() {
 
      const crystalResult =
   await awardCrystal(); 
-       
+      const finalAccess =
+  await checkFinalNexusAccess();
+
+console.log(
+  "FINAL NEXUS AFTER CRYSTAL:",
+  finalAccess
+); 
       showFeedback(
         `NEXUS CLEAR ✓  +${reward} ENERGY`
       );
