@@ -576,7 +576,32 @@ async function loadGamePlayers() {
 
     renderCurrentPlayer();
   }
+if (currentPlayer?.final_nexus_completed === true) {
+  currentQuestion = null;
 
+  setMessage(
+    "🏆 FINAL NEXUS COMPLETED — Selamat! Anda telah menyelesaikan seluruh Nexus Challenge."
+  );
+
+  if (caseZone) {
+    caseZone.textContent = "NEXUS COMPLETE";
+  }
+
+  if (caseTitle) {
+    caseTitle.textContent = "🏆 FINAL NEXUS COMPLETED";
+  }
+
+  if (caseDifficulty) {
+    caseDifficulty.textContent = "NEXUS MASTER";
+  }
+
+  if (caseQuestion) {
+    caseQuestion.textContent =
+      "Seluruh Nexus Crystal telah dikumpulkan dan Final Nexus Challenge berhasil diselesaikan.";
+  }
+
+  setSubmitDisabled(true);
+}
 
   return currentPlayers;
 }
