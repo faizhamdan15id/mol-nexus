@@ -161,3 +161,67 @@ formulaModal.addEventListener("click", (event) => {
   }
 
 });
+formulaForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const formulaCode =
+    document.getElementById("formulaCode").value.trim().toUpperCase();
+
+  const formulaLabel =
+    document.getElementById("formulaLabel").value.trim();
+
+  const originConcept =
+    document.getElementById("originConcept").value.trim().toUpperCase();
+
+  const targetConcept =
+    document.getElementById("targetConcept").value.trim().toUpperCase();
+
+  const description =
+    document.getElementById("formulaDescription").value.trim();
+
+  const isActive =
+    document.getElementById("formulaActive").checked;
+
+  const saveButton =
+    formulaForm.querySelector(".formula-save-button");
+
+  saveButton.disabled = true;
+  saveButton.textContent = "Menyimpan...";
+
+  try {
+
+    const { error } = await supabaseClient
+      .from("formula_bank")
+      .insert({
+        formula_code: formulaCode,
+        formula_label: formulaLabel,
+        origin_concept: originConcept,
+        target_concept: targetConcept,
+        description: description || null,
+        is_active: isActive
+      });
+
+    if (error) throw error;
+
+    closeFormulaEditor();
+
+    await loadFormulas();
+
+    alert("Rumus berhasil ditambahkan.");
+
+  } catch (error) {
+
+    console.error("Gagal menyimpan rumus:", error);
+
+    alert(
+      error?.message ||
+      "Rumus gagal disimpan."
+    );
+
+  } finally {
+
+    saveButton.disabled = false;
+    saveButton.textContent = "Simpan Rumus";
+
+  }
+});
