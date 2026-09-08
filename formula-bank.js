@@ -96,6 +96,14 @@ async function loadFormulas() {
 >
   ✏️ Edit
 </button>
+<button
+  type="button"
+  class="delete-formula-button"
+  data-id="${formula.id}"
+  data-code="${formula.formula_code}"
+>
+  🗑 Hapus
+</button>
     </article>
   `).join("");
 }
