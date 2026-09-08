@@ -463,3 +463,43 @@ questionForm.addEventListener("submit", async (event) => {
 
   }
 });
+/* =========================================
+   DELETE QUESTION
+========================================= */
+
+questionList.addEventListener("click", async (event) => {
+
+  const deleteButton =
+    event.target.closest(".delete-question-button");
+
+  if (!deleteButton) return;
+
+  const questionId = deleteButton.dataset.id;
+  const questionCode = deleteButton.dataset.code;
+
+  const confirmed = confirm(
+    `Hapus permanen soal ${questionCode}?\n\nTindakan ini tidak dapat dibatalkan.`
+  );
+
+  if (!confirmed) return;
+
+  const { error } = await supabaseClient
+    .from("questions")
+    .delete()
+    .eq("question_id", questionId);
+
+  if (error) {
+    console.error("Gagal menghapus soal:", error);
+
+    alert(
+      error.message ||
+      "Soal gagal dihapus."
+    );
+
+    return;
+  }
+
+  alert("Soal berhasil dihapus.");
+
+  await loadQuestions();
+});
