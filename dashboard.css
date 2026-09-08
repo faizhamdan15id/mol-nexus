@@ -1263,3 +1263,33 @@ footer {
     border-radius: 20px;
   }
 }
+/* =========================================
+   FORMULA EDIT BUTTON
+========================================= */
+
+.edit-formula-button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px 18px;
+
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.45);
+  border-radius: 12px;
+
+  color: #22d3ee;
+  font-size: 16px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-formula-button:hover {
+  background: rgba(0, 210, 255, 0.16);
+  border-color: #22d3ee;
+  transform: translateY(-1px);
+}
+
+.edit-formula-button:active {
+  transform: scale(0.98);
+}
