@@ -130,7 +130,23 @@ async function loadQuestions() {
           •
           ${question.active ? "AKTIF" : "NONAKTIF"}
         </small>
+        
+     <button
+  type="button"
+  class="edit-question-button"
+  data-id="${question.question_id}"
+>
+  ✏️ Edit
+</button>
 
+<button
+  type="button"
+  class="delete-question-button"
+  data-id="${question.question_id}"
+  data-code="${question.question_code}"
+>
+  🗑 Hapus
+</button>  
       </article>
     `;
   }).join("");
