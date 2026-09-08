@@ -168,6 +168,10 @@ const questionForm =
 const formulaOptions =
   document.getElementById("formulaOptions");
 
+const selectedFormulaOrder =
+  document.getElementById("selectedFormulaOrder");
+
+let selectedFormulaSequence = [];
 
 async function loadFormulaOptions() {
 
@@ -258,4 +262,71 @@ questionModal.addEventListener("click", (event) => {
     closeQuestionEditor();
   }
 
+});
+/* =========================================
+   FORMULA SELECTION ORDER
+========================================= */
+
+function renderSelectedFormulaOrder() {
+
+  if (selectedFormulaSequence.length === 0) {
+    selectedFormulaOrder.innerHTML = `
+      <p class="state-message">
+        Belum ada rumus dipilih.
+      </p>
+    `;
+    return;
+  }
+
+  selectedFormulaOrder.innerHTML =
+    selectedFormulaSequence
+      .map((formula, index) => `
+        <div class="selected-formula-step">
+          <strong>
+            ${index + 1}. ${formula.label}
+          </strong>
+
+          <small>
+            ${formula.code}
+          </small>
+        </div>
+      `)
+      .join("");
+}
+
+
+formulaOptions.addEventListener("change", (event) => {
+
+  const checkbox = event.target.closest(
+    'input[name="questionFormula"]'
+  );
+
+  if (!checkbox) return;
+
+  const formula = {
+    code: checkbox.value,
+    label: checkbox.dataset.label
+  };
+
+  if (checkbox.checked) {
+
+    const alreadySelected =
+      selectedFormulaSequence.some(
+        item => item.code === formula.code
+      );
+
+    if (!alreadySelected) {
+      selectedFormulaSequence.push(formula);
+    }
+
+  } else {
+
+    selectedFormulaSequence =
+      selectedFormulaSequence.filter(
+        item => item.code !== formula.code
+      );
+
+  }
+
+  renderSelectedFormulaOrder();
 });
