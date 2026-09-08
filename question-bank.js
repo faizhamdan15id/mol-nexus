@@ -224,7 +224,8 @@ async function loadFormulaOptions() {
 async function openAddQuestionModal() {
 
   questionForm.reset();
-
+  selectedFormulaSequence = [];
+renderSelectedFormulaOrder(); 
   document.getElementById("questionId").value = "";
   document.getElementById("questionActive").checked = true;
 
