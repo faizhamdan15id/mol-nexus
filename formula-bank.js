@@ -198,7 +198,7 @@ formulaForm.addEventListener("submit", async (event) => {
 
   const formulaId =
   document.getElementById("formulaId").value;
-
+alert("FORMULA ID = " + formulaId);
 let result;
 
 if (formulaId) {
