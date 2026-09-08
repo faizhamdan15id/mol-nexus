@@ -196,18 +196,43 @@ formulaForm.addEventListener("submit", async (event) => {
 
   try {
 
-    const { error } = await supabaseClient
-      .from("formula_bank")
-      .insert({
-        formula_code: formulaCode,
-        formula_label: formulaLabel,
-        origin_concept: originConcept,
-        target_concept: targetConcept,
-        description: description || null,
-        is_active: isActive
-      });
+  const formulaId =
+  document.getElementById("formulaId").value;
 
-    if (error) throw error;
+let result;
+
+if (formulaId) {
+
+  // EDIT / UPDATE
+  result = await supabaseClient
+    .from("formula_bank")
+    .update({
+      formula_code: formulaCode,
+      formula_label: formulaLabel,
+      origin_concept: originConcept,
+      target_concept: targetConcept,
+      description: description || null,
+      is_active: isActive
+    })
+    .eq("id", formulaId);
+
+} else {
+
+  // TAMBAH / INSERT
+  result = await supabaseClient
+    .from("formula_bank")
+    .insert({
+      formula_code: formulaCode,
+      formula_label: formulaLabel,
+      origin_concept: originConcept,
+      target_concept: targetConcept,
+      description: description || null,
+      is_active: isActive
+    });
+
+}
+
+if (result.error) throw result.error;  
 
     closeFormulaEditor();
 
