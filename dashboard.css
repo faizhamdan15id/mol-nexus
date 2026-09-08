@@ -1293,3 +1293,23 @@ footer {
 .edit-formula-button:active {
   transform: scale(0.98);
 }
+#addQuestionButton {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 20px;
+
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  border-radius: 12px;
+
+  background: rgba(34, 211, 238, 0.10);
+  color: #22d3ee;
+
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#addQuestionButton:hover {
+  background: rgba(34, 211, 238, 0.18);
+  border-color: #22d3ee;
+}
