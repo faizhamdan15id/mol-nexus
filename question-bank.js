@@ -227,9 +227,11 @@ async function openAddQuestionModal() {
   document.getElementById("questionModalTitle").textContent =
     "Tambah Soal";
 
-  await loadFormulaOptions();
-
+  // Buka modal terlebih dahulu
   questionModal.hidden = false;
+
+  // Baru muat daftar rumus
+  await loadFormulaOptions();
 }
 
 
