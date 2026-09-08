@@ -465,7 +465,11 @@ if (result.error) throw result.error;
 
     await loadQuestions();
 
-    alert("Soal berhasil ditambahkan.");
+    alert(
+  questionId
+    ? "Soal berhasil diperbarui."
+    : "Soal berhasil ditambahkan."
+);
 
   } catch (error) {
 
