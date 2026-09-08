@@ -323,3 +323,34 @@ formulaList.addEventListener("click", async (event) => {
 
   formulaModal.hidden = false;
 });
+formulaList.addEventListener("click", async (event) => {
+
+  const deleteButton =
+    event.target.closest(".delete-formula-button");
+
+  if (!deleteButton) return;
+
+  const formulaId = deleteButton.dataset.id;
+  const formulaCode = deleteButton.dataset.code;
+
+  const confirmed = confirm(
+    `Hapus permanen rumus ${formulaCode}?\n\nTindakan ini tidak dapat dibatalkan.`
+  );
+
+  if (!confirmed) return;
+
+  const { error } = await supabaseClient
+    .from("formula_bank")
+    .delete()
+    .eq("id", formulaId);
+
+  if (error) {
+    console.error("Gagal menghapus rumus:", error);
+    alert(error.message || "Rumus gagal dihapus.");
+    return;
+  }
+
+  alert("Rumus berhasil dihapus.");
+
+  await loadFormulas();
+});
