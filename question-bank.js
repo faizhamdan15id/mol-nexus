@@ -331,3 +331,119 @@ formulaOptions.addEventListener("change", (event) => {
 
   renderSelectedFormulaOrder();
 });
+/* =========================================
+   SAVE QUESTION
+========================================= */
+
+questionForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const questionCode =
+    document.getElementById("questionCode")
+      .value.trim().toUpperCase();
+
+  const nexusZone =
+    document.getElementById("nexusZone").value;
+
+  const difficulty =
+    document.getElementById("questionDifficulty").value;
+
+  const questionType =
+    document.getElementById("questionType").value;
+
+  const questionText =
+    document.getElementById("questionText").value.trim();
+
+  const originConcept =
+    document.getElementById("originConceptQuestion").value;
+
+  const targetConcept =
+    document.getElementById("targetConceptQuestion").value;
+
+  const expectedPath =
+    document.getElementById("expectedPath")
+      .value
+      .split(",")
+      .map(item => item.trim().toUpperCase())
+      .filter(Boolean);
+
+  const correctAnswer =
+    Number(document.getElementById("correctAnswer").value);
+
+  const answerTolerance =
+    Number(document.getElementById("answerTolerance").value);
+
+  const correctUnit =
+    document.getElementById("correctUnit").value.trim();
+
+  const numeracySkill =
+    document.getElementById("numeracySkill").value || null;
+
+  const active =
+    document.getElementById("questionActive").checked;
+
+
+  if (selectedFormulaSequence.length === 0) {
+    alert("Pilih minimal satu rumus.");
+    return;
+  }
+
+
+  const expectedFormula =
+    selectedFormulaSequence
+      .map(formula => formula.label)
+      .join("; ");
+
+
+  const saveButton =
+    questionForm.querySelector(".formula-save-button");
+
+  saveButton.disabled = true;
+  saveButton.textContent = "Menyimpan...";
+
+
+  try {
+
+    const { error } = await supabaseClient
+      .from("questions")
+      .insert({
+        question_code: questionCode,
+        nexus_zone: nexusZone,
+        difficulty: difficulty,
+        question_type: questionType,
+        question_text: questionText,
+        origin_concept: originConcept,
+        target_concept: targetConcept,
+        expected_path: expectedPath,
+        expected_formula: expectedFormula,
+        correct_answer: correctAnswer,
+        answer_tolerance: answerTolerance,
+        correct_unit: correctUnit,
+        numeracy_skill: numeracySkill,
+        active: active
+      });
+
+    if (error) throw error;
+
+    closeQuestionEditor();
+
+    await loadQuestions();
+
+    alert("Soal berhasil ditambahkan.");
+
+  } catch (error) {
+
+    console.error("Gagal menyimpan soal:", error);
+
+    alert(
+      error?.message ||
+      "Soal gagal disimpan."
+    );
+
+  } finally {
+
+    saveButton.disabled = false;
+    saveButton.textContent = "Simpan Soal";
+
+  }
+});
