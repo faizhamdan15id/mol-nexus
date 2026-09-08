@@ -81,6 +81,181 @@
     </section>
 
   </main>
+  <!-- QUESTION EDITOR MODAL -->
+<div id="questionModal" class="formula-modal" hidden>
+
+  <div class="formula-modal-card">
+
+    <div class="formula-modal-header">
+      <div>
+        <p class="section-label">QUESTION EDITOR</p>
+        <h2 id="questionModalTitle">Tambah Soal</h2>
+      </div>
+
+      <button
+        id="closeQuestionModal"
+        type="button"
+        class="formula-modal-close"
+      >
+        ×
+      </button>
+    </div>
+
+    <form id="questionForm">
+
+      <input type="hidden" id="questionId">
+
+      <label>
+        Kode Soal
+        <input
+          id="questionCode"
+          type="text"
+          placeholder="Contoh: MN-GAS-003"
+          required
+        >
+      </label>
+
+      <label>
+        Zona Nexus
+        <select id="nexusZone" required>
+          <option value="">Pilih Zona</option>
+          <option value="MASS">MASS</option>
+          <option value="PARTICLE">PARTICLE</option>
+          <option value="GAS">GAS</option>
+          <option value="SOLUTION">SOLUTION</option>
+          <option value="STOICHIOMETRY">STOICHIOMETRY</option>
+        </select>
+      </label>
+
+      <label>
+        Tingkat Kesulitan
+        <select id="questionDifficulty" required>
+          <option value="">Pilih Level</option>
+          <option value="EXPLORER">EXPLORER</option>
+          <option value="CONNECTOR">CONNECTOR</option>
+          <option value="NEXUS_MASTER">NEXUS MASTER</option>
+        </select>
+      </label>
+
+      <label>
+        Tipe Soal
+        <select id="questionType" required>
+          <option value="CASE">CASE</option>
+          <option value="FINAL_NEXUS">FINAL NEXUS</option>
+        </select>
+      </label>
+
+      <label>
+        Soal
+        <textarea
+          id="questionText"
+          rows="5"
+          placeholder="Tuliskan soal..."
+          required
+        ></textarea>
+      </label>
+
+      <label>
+        Konsep Asal
+        <select id="originConceptQuestion" required>
+          <option value="">Pilih Konsep</option>
+          <option value="MASS">MASS</option>
+          <option value="PARTICLE">PARTICLE</option>
+          <option value="GAS">GAS</option>
+          <option value="SOLUTION">SOLUTION</option>
+          <option value="MOL">MOL</option>
+        </select>
+      </label>
+
+      <label>
+        Konsep Tujuan
+        <select id="targetConceptQuestion" required>
+          <option value="">Pilih Konsep</option>
+          <option value="MASS">MASS</option>
+          <option value="PARTICLE">PARTICLE</option>
+          <option value="GAS">GAS</option>
+          <option value="SOLUTION">SOLUTION</option>
+          <option value="MOL">MOL</option>
+        </select>
+      </label>
+
+      <label>
+        Path Jawaban
+        <input
+          id="expectedPath"
+          type="text"
+          placeholder="Contoh: MASS, MOL, PARTICLE"
+          required
+        >
+      </label>
+
+      <label>
+        Rumus
+        <select id="expectedFormula" required>
+          <option value="">Pilih Rumus dari Bank Rumus</option>
+        </select>
+      </label>
+
+      <label>
+        Jawaban Benar
+        <input
+          id="correctAnswer"
+          type="number"
+          step="any"
+          placeholder="Contoh: 0.5"
+          required
+        >
+      </label>
+
+      <label>
+        Toleransi Jawaban
+        <input
+          id="answerTolerance"
+          type="number"
+          step="any"
+          value="0.001"
+          required
+        >
+      </label>
+
+      <label>
+        Satuan
+        <input
+          id="correctUnit"
+          type="text"
+          placeholder="Contoh: mol"
+          required
+        >
+      </label>
+
+      <label>
+        Numeracy Skill
+        <select id="numeracySkill">
+          <option value="">Pilih Kemampuan Numerasi</option>
+          <option value="DIVISION">DIVISION</option>
+          <option value="MULTIPLICATION">MULTIPLICATION</option>
+          <option value="SCIENTIFIC_NOTATION">SCIENTIFIC NOTATION</option>
+          <option value="UNIT_CONVERSION">UNIT CONVERSION</option>
+          <option value="MULTI_STEP_STOICHIOMETRY">
+            MULTI STEP STOICHIOMETRY
+          </option>
+        </select>
+      </label>
+
+      <label class="formula-checkbox">
+        <input id="questionActive" type="checkbox" checked>
+        Soal Aktif
+      </label>
+
+      <button type="submit" class="formula-save-button">
+        Simpan Soal
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="question-bank.js"></script>
 </body>
