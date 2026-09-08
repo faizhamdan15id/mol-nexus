@@ -503,3 +503,131 @@ questionList.addEventListener("click", async (event) => {
 
   await loadQuestions();
 });
+/* =========================================
+   EDIT QUESTION
+========================================= */
+
+questionList.addEventListener("click", async (event) => {
+
+  const editButton =
+    event.target.closest(".edit-question-button");
+
+  if (!editButton) return;
+
+  const questionId = editButton.dataset.id;
+
+  const { data, error } = await supabaseClient
+    .from("questions")
+    .select(`
+      question_id,
+      question_code,
+      nexus_zone,
+      difficulty,
+      question_type,
+      question_text,
+      origin_concept,
+      target_concept,
+      expected_path,
+      expected_formula,
+      correct_answer,
+      answer_tolerance,
+      correct_unit,
+      numeracy_skill,
+      active
+    `)
+    .eq("question_id", questionId)
+    .single();
+
+  if (error) {
+    console.error("Gagal mengambil soal:", error);
+    alert("Data soal gagal dimuat.");
+    return;
+  }
+
+  questionForm.reset();
+  selectedFormulaSequence = [];
+
+  document.getElementById("questionId").value =
+    data.question_id;
+
+  document.getElementById("questionCode").value =
+    data.question_code;
+
+  document.getElementById("nexusZone").value =
+    data.nexus_zone;
+
+  document.getElementById("questionDifficulty").value =
+    data.difficulty;
+
+  document.getElementById("questionType").value =
+    data.question_type || "CASE";
+
+  document.getElementById("questionText").value =
+    data.question_text;
+
+  document.getElementById("originConceptQuestion").value =
+    data.origin_concept || "";
+
+  document.getElementById("targetConceptQuestion").value =
+    data.target_concept || "";
+
+  document.getElementById("expectedPath").value =
+    Array.isArray(data.expected_path)
+      ? data.expected_path.join(", ")
+      : "";
+
+  document.getElementById("correctAnswer").value =
+    data.correct_answer ?? "";
+
+  document.getElementById("answerTolerance").value =
+    data.answer_tolerance ?? 0.001;
+
+  document.getElementById("correctUnit").value =
+    data.correct_unit || "";
+
+  document.getElementById("numeracySkill").value =
+    data.numeracy_skill || "";
+
+  document.getElementById("questionActive").checked =
+    data.active !== false;
+
+  document.getElementById("questionModalTitle").textContent =
+    "Edit Soal";
+
+  // Modal langsung dibuka
+  questionModal.hidden = false;
+
+  // Muat Bank Rumus
+  await loadFormulaOptions();
+
+  // Pulihkan urutan rumus soal
+  const storedFormulas = (data.expected_formula || "")
+    .split(";")
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  const checkboxes = Array.from(
+    formulaOptions.querySelectorAll(
+      'input[name="questionFormula"]'
+    )
+  );
+
+  storedFormulas.forEach(label => {
+
+    const checkbox = checkboxes.find(
+      item => item.dataset.label.trim() === label
+    );
+
+    if (checkbox) {
+      checkbox.checked = true;
+
+      selectedFormulaSequence.push({
+        code: checkbox.value,
+        label: checkbox.dataset.label
+      });
+    }
+
+  });
+
+  renderSelectedFormulaOrder();
+});
