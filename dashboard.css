@@ -1313,3 +1313,128 @@ footer {
   background: rgba(34, 211, 238, 0.18);
   border-color: #22d3ee;
 }
+/* =========================================
+   QUESTION EDITOR FORM
+========================================= */
+
+#questionForm {
+  display: grid;
+  gap: 18px;
+}
+
+#questionForm > label {
+  display: grid;
+  gap: 8px;
+
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#questionForm input[type="text"],
+#questionForm input[type="number"],
+#questionForm textarea,
+#questionForm select {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 14px 16px;
+
+  background: #041724;
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  border-radius: 12px;
+
+  color: #ffffff;
+  font: inherit;
+}
+
+#questionForm textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+#questionForm input:focus,
+#questionForm textarea:focus,
+#questionForm select:focus {
+  outline: none;
+  border-color: #22d3ee;
+}
+
+
+/* FORMULA OPTIONS */
+
+#formulaOptions {
+  display: grid;
+  gap: 10px;
+}
+
+.question-formula-option {
+  display: flex !important;
+  flex-direction: row;
+  align-items: flex-start;
+
+  gap: 12px !important;
+  padding: 14px;
+
+  background: rgba(4, 23, 36, 0.75);
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 12px;
+
+  cursor: pointer;
+}
+
+.question-formula-option input {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+
+  flex-shrink: 0;
+}
+
+.question-formula-option span {
+  display: grid;
+  gap: 4px;
+}
+
+.question-formula-option strong {
+  color: #22d3ee;
+  font-size: 16px;
+}
+
+.question-formula-option small {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+
+/* ACTIVE CHECKBOX */
+
+#questionForm .formula-checkbox {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px !important;
+}
+
+#questionForm .formula-checkbox input {
+  width: 20px;
+  height: 20px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  #questionForm {
+    gap: 16px;
+  }
+
+  #questionForm input[type="text"],
+  #questionForm input[type="number"],
+  #questionForm textarea,
+  #questionForm select {
+    font-size: 16px;
+  }
+
+}
