@@ -149,3 +149,111 @@ async function initQuestionBank() {
 
 
 initQuestionBank();
+/* =========================================
+   QUESTION EDITOR MODAL
+========================================= */
+
+const addQuestionButton =
+  document.getElementById("addQuestionButton");
+
+const questionModal =
+  document.getElementById("questionModal");
+
+const closeQuestionModal =
+  document.getElementById("closeQuestionModal");
+
+const questionForm =
+  document.getElementById("questionForm");
+
+const formulaOptions =
+  document.getElementById("formulaOptions");
+
+
+async function loadFormulaOptions() {
+
+  formulaOptions.innerHTML =
+    `<p class="state-message">Memuat Bank Rumus...</p>`;
+
+  const { data, error } = await supabaseClient
+    .from("formula_bank")
+    .select(`
+      id,
+      formula_code,
+      formula_label,
+      origin_concept,
+      target_concept
+    `)
+    .eq("is_active", true)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Gagal memuat Bank Rumus:", error);
+
+    formulaOptions.innerHTML =
+      `<p class="state-message error-message">
+        Bank Rumus gagal dimuat.
+      </p>`;
+
+    return;
+  }
+
+  formulaOptions.innerHTML = data.map(formula => `
+    <label class="question-formula-option">
+      <input
+        type="checkbox"
+        name="questionFormula"
+        value="${formula.formula_code}"
+        data-label="${formula.formula_label}"
+      >
+
+      <span>
+        <strong>${formula.formula_label}</strong>
+        <small>
+          ${formula.origin_concept} → ${formula.target_concept}
+        </small>
+      </span>
+    </label>
+  `).join("");
+}
+
+
+async function openAddQuestionModal() {
+
+  questionForm.reset();
+
+  document.getElementById("questionId").value = "";
+  document.getElementById("questionActive").checked = true;
+
+  document.getElementById("questionModalTitle").textContent =
+    "Tambah Soal";
+
+  await loadFormulaOptions();
+
+  questionModal.hidden = false;
+}
+
+
+function closeQuestionEditor() {
+  questionModal.hidden = true;
+}
+
+
+addQuestionButton.addEventListener(
+  "click",
+  openAddQuestionModal
+);
+
+
+closeQuestionModal.addEventListener(
+  "click",
+  closeQuestionEditor
+);
+
+
+questionModal.addEventListener("click", (event) => {
+
+  if (event.target === questionModal) {
+    closeQuestionEditor();
+  }
+
+});
