@@ -5,8 +5,8 @@
    QUESTION BANK MANAGEMENT
 ========================================= */
 
-const SUPABASE_URL = "SALIN_DARI_DASHBOARD_JS";
-const SUPABASE_ANON_KEY = "SALIN_DARI_DASHBOARD_JS";
+const SUPABASE_URL = "https://snlpdwqdjfnborsorspd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
