@@ -231,3 +231,62 @@ formulaForm.addEventListener("submit", async (event) => {
 
   }
 });
+/* =========================================
+   EDIT FORMULA
+========================================= */
+
+formulaList.addEventListener("click", async (event) => {
+
+  const editButton =
+    event.target.closest(".edit-formula-button");
+
+  if (!editButton) return;
+
+  const formulaId = editButton.dataset.id;
+
+  const { data, error } = await supabaseClient
+    .from("formula_bank")
+    .select(`
+      id,
+      formula_code,
+      formula_label,
+      origin_concept,
+      target_concept,
+      description,
+      is_active
+    `)
+    .eq("id", formulaId)
+    .single();
+
+  if (error) {
+    console.error("Gagal mengambil rumus:", error);
+    alert("Data rumus gagal dimuat.");
+    return;
+  }
+
+  document.getElementById("formulaId").value =
+    data.id;
+
+  document.getElementById("formulaCode").value =
+    data.formula_code;
+
+  document.getElementById("formulaLabel").value =
+    data.formula_label;
+
+  document.getElementById("originConcept").value =
+    data.origin_concept;
+
+  document.getElementById("targetConcept").value =
+    data.target_concept;
+
+  document.getElementById("formulaDescription").value =
+    data.description || "";
+
+  document.getElementById("formulaActive").checked =
+    data.is_active;
+
+  document.getElementById("formulaModalTitle").textContent =
+    "Edit Rumus";
+
+  formulaModal.hidden = false;
+});
