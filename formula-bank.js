@@ -89,7 +89,13 @@ async function loadFormulas() {
         •
         ${formula.is_active ? "AKTIF" : "NONAKTIF"}
       </small>
-
+<button
+  type="button"
+  class="edit-formula-button"
+  data-id="${formula.id}"
+>
+  ✏️ Edit
+</button>
     </article>
   `).join("");
 }
