@@ -420,26 +420,46 @@ questionForm.addEventListener("submit", async (event) => {
 
   try {
 
-    const { error } = await supabaseClient
-      .from("questions")
-      .insert({
-        question_code: questionCode,
-        nexus_zone: nexusZone,
-        difficulty: difficulty,
-        question_type: questionType,
-        question_text: questionText,
-        origin_concept: originConcept,
-        target_concept: targetConcept,
-        expected_path: expectedPath,
-        expected_formula: expectedFormula,
-        correct_answer: correctAnswer,
-        answer_tolerance: answerTolerance,
-        correct_unit: correctUnit,
-        numeracy_skill: numeracySkill,
-        active: active
-      });
+    const questionId =
+  document.getElementById("questionId").value;
 
-    if (error) throw error;
+const questionPayload = {
+  question_code: questionCode,
+  nexus_zone: nexusZone,
+  difficulty: difficulty,
+  question_type: questionType,
+  question_text: questionText,
+  origin_concept: originConcept,
+  target_concept: targetConcept,
+  expected_path: expectedPath,
+  expected_formula: expectedFormula,
+  correct_answer: correctAnswer,
+  answer_tolerance: answerTolerance,
+  correct_unit: correctUnit,
+  numeracy_skill: numeracySkill,
+  active: active
+};
+
+let result;
+
+if (questionId) {
+
+  // EDIT / UPDATE
+  result = await supabaseClient
+    .from("questions")
+    .update(questionPayload)
+    .eq("question_id", questionId);
+
+} else {
+
+  // TAMBAH / INSERT
+  result = await supabaseClient
+    .from("questions")
+    .insert(questionPayload);
+
+}
+
+if (result.error) throw result.error;
 
     closeQuestionEditor();
 
