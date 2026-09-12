@@ -275,6 +275,71 @@
 
 
   <!-- =========================================
+       IMPORT EXCEL PREVIEW MODAL
+  ========================================== -->
+
+  <div
+    id="importStudentModal"
+    class="formula-modal"
+    hidden
+  >
+
+    <div class="formula-modal-card">
+
+      <div class="formula-modal-header">
+
+        <div>
+
+          <p class="section-label">
+            BULK STUDENT IMPORT
+          </p>
+
+          <h2>
+            Preview Import Siswa
+          </h2>
+
+        </div>
+
+
+        <button
+          id="closeImportStudentModal"
+          type="button"
+          class="formula-modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div id="importSummary">
+
+        <p class="state-message">
+          Pilih file Excel untuk mulai import.
+        </p>
+
+      </div>
+
+
+      <div id="importPreview">
+      </div>
+
+
+      <button
+        id="confirmImportStudents"
+        type="button"
+        class="student-action-button"
+        hidden
+      >
+        Import Siswa Valid
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
        FOOTER
   ========================================== -->
 
