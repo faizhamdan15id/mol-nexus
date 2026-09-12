@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
 
@@ -18,11 +19,17 @@
   >
 </head>
 
+
 <body>
+
+  <!-- =========================================
+       TOPBAR
+  ========================================== -->
 
   <header class="topbar">
 
     <div>
+
       <p class="eyebrow">
         MOL-NEXUS
       </p>
@@ -34,64 +41,135 @@
       <p class="subtitle">
         Cognitive & Numeracy Diagnostic System
       </p>
+
     </div>
 
+
     <div class="system-status">
+
       <span class="status-dot"></span>
+
       ANALYTICS ONLINE
+
     </div>
 
   </header>
-<nav class="teacher-nav">
-  <a href="dashboard.html" class="nav-link active">
-    📊 Dashboard
-  </a>
 
-  <a href="question-bank.html" class="nav-link">
-    📚 Bank Soal
-  </a>
 
-  <a href="formula-bank.html" class="nav-link">
-    🧪 Bank Rumus
-  </a>
-</nav>
+  <!-- =========================================
+       TEACHER NAVIGATION
+  ========================================== -->
+
+  <nav class="teacher-nav">
+
+    <a
+      href="dashboard.html"
+      class="nav-link active"
+    >
+      📊 Dashboard
+    </a>
+
+    <a
+      href="students.html"
+      class="nav-link"
+    >
+      👥 Siswa
+    </a>
+
+    <a
+      href="question-bank.html"
+      class="nav-link"
+    >
+      📚 Bank Soal
+    </a>
+
+    <a
+      href="formula-bank.html"
+      class="nav-link"
+    >
+      🧪 Bank Rumus
+    </a>
+
+  </nav>
+
+
+  <!-- =========================================
+       MAIN DASHBOARD
+  ========================================== -->
 
   <main class="dashboard">
 
-    <!-- RINGKASAN KELAS -->
+
+    <!-- =========================================
+         RINGKASAN KELAS
+    ========================================== -->
 
     <section class="summary-grid">
 
       <article class="summary-card">
-        <span>Total Siswa</span>
-        <strong id="totalStudents">0</strong>
+
+        <span>
+          Total Siswa
+        </span>
+
+        <strong id="totalStudents">
+          0
+        </strong>
+
       </article>
 
-      <article class="summary-card">
-        <span>Total Attempt</span>
-        <strong id="totalAttempts">0</strong>
-      </article>
 
       <article class="summary-card">
-        <span>Akurasi Kelas</span>
-        <strong id="classAccuracy">0%</strong>
+
+        <span>
+          Total Attempt
+        </span>
+
+        <strong id="totalAttempts">
+          0
+        </strong>
+
       </article>
 
+
       <article class="summary-card">
-        <span>Perlu Intervensi</span>
-        <strong id="needIntervention">0</strong>
+
+        <span>
+          Akurasi Kelas
+        </span>
+
+        <strong id="classAccuracy">
+          0%
+        </strong>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <span>
+          Perlu Intervensi
+        </span>
+
+        <strong id="needIntervention">
+          0
+        </strong>
+
       </article>
 
     </section>
 
 
-    <!-- PROFIL SISWA -->
+    <!-- =========================================
+         PROFIL DIAGNOSTIK SISWA
+    ========================================== -->
 
     <section class="panel">
 
       <div class="panel-heading">
 
         <div>
+
           <p class="section-label">
             COGNITIVE MAPPING
           </p>
@@ -99,7 +177,9 @@
           <h2>
             Profil Diagnostik Siswa
           </h2>
+
         </div>
+
 
         <button
           id="refreshDashboard"
@@ -134,7 +214,9 @@
     </section>
 
 
-    <!-- DETAIL DIAGNOSTIK -->
+    <!-- =========================================
+         DETAIL DIAGNOSTIK
+    ========================================== -->
 
     <section
       id="diagnosticPanel"
@@ -144,6 +226,7 @@
       <div class="panel-heading">
 
         <div>
+
           <p class="section-label">
             DIAGNOSTIC ENGINE
           </p>
@@ -151,6 +234,7 @@
           <h2>
             Detail Analitik
           </h2>
+
         </div>
 
       </div>
@@ -169,6 +253,10 @@
   </main>
 
 
+  <!-- =========================================
+       FOOTER
+  ========================================== -->
+
   <footer>
 
     MOL-NEXUS • Multiplayer Chemistry
@@ -177,9 +265,16 @@
   </footer>
 
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- =========================================
+       SCRIPT
+  ========================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
 
   <script src="dashboard.js"></script>
 
 </body>
+
 </html>
