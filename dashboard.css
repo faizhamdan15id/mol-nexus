@@ -1519,3 +1519,89 @@ footer {
 .delete-question-button:active {
   transform: scale(0.98);
 }
+/* =========================================
+   STUDENT MANAGEMENT
+========================================= */
+
+.student-management-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.student-action-button {
+  padding: 14px 18px;
+
+  background: rgba(34, 211, 238, 0.10);
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  border-radius: 12px;
+
+  color: #22d3ee;
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.student-action-button:hover {
+  background: rgba(34, 211, 238, 0.18);
+  border-color: #22d3ee;
+}
+
+.student-action-button.secondary {
+  background: rgba(148, 163, 184, 0.07);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+}
+
+
+/* SEARCH + FILTER */
+
+.student-filter-bar {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 12px;
+
+  margin-bottom: 24px;
+}
+
+.student-filter-bar input,
+.student-filter-bar select {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 14px 16px;
+
+  background: #041724;
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  border-radius: 12px;
+
+  color: #ffffff;
+  font: inherit;
+}
+
+.student-filter-bar input:focus,
+.student-filter-bar select:focus {
+  outline: none;
+  border-color: #22d3ee;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+  .student-management-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .student-filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .student-action-button {
+    width: 100%;
+  }
+}
