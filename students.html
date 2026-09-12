@@ -100,7 +100,9 @@
   <main class="dashboard">
 
 
-    <!-- RINGKASAN -->
+    <!-- =========================================
+         RINGKASAN DATA SISWA
+    ========================================== -->
 
     <section class="summary-grid">
 
@@ -158,7 +160,9 @@
     </section>
 
 
-    <!-- STUDENT MANAGEMENT -->
+    <!-- =========================================
+         STUDENT MANAGEMENT
+    ========================================== -->
 
     <section class="panel">
 
@@ -179,7 +183,9 @@
       </div>
 
 
-      <!-- ACTION BUTTONS -->
+      <!-- =========================================
+           ACTION BUTTONS
+      ========================================== -->
 
       <div class="student-management-actions">
 
@@ -212,7 +218,21 @@
       </div>
 
 
-      <!-- FILTER -->
+      <!-- =========================================
+           HIDDEN EXCEL INPUT
+      ========================================== -->
+
+      <input
+        id="studentExcelInput"
+        type="file"
+        accept=".xlsx,.xls"
+        hidden
+      >
+
+
+      <!-- =========================================
+           SEARCH & FILTER
+      ========================================== -->
 
       <div class="student-filter-bar">
 
@@ -234,7 +254,9 @@
       </div>
 
 
-      <!-- LIST -->
+      <!-- =========================================
+           STUDENT LIST
+      ========================================== -->
 
       <div
         id="studentList"
@@ -264,12 +286,26 @@
 
 
   <!-- =========================================
-       SCRIPT
+       SUPABASE
   ========================================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
+
+
+  <!-- =========================================
+       EXCEL / SHEETJS
+  ========================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"
+  ></script>
+
+
+  <!-- =========================================
+       STUDENT MANAGEMENT SCRIPT
+  ========================================== -->
 
   <script src="students.js"></script>
 
