@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    MOL-NEXUS | Manajemen Siswa
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="dashboard.css"
+  >
+</head>
+
+
+<body>
+
+  <!-- =========================================
+       TOPBAR
+  ========================================== -->
+
+  <header class="topbar">
+
+    <div>
+
+      <p class="eyebrow">
+        MOL-NEXUS
+      </p>
+
+      <h1>
+        Manajemen Siswa
+      </h1>
+
+      <p class="subtitle">
+        Student Management & Bulk Import System
+      </p>
+
+    </div>
+
+
+    <div class="system-status">
+
+      <span class="status-dot"></span>
+
+      TEACHER MODE
+
+    </div>
+
+  </header>
+
+
+  <!-- =========================================
+       NAVIGATION
+  ========================================== -->
+
+  <nav class="teacher-nav">
+
+    <a
+      href="dashboard.html"
+      class="nav-link"
+    >
+      📊 Dashboard
+    </a>
+
+    <a
+      href="students.html"
+      class="nav-link active"
+    >
+      👥 Siswa
+    </a>
+
+    <a
+      href="question-bank.html"
+      class="nav-link"
+    >
+      📚 Bank Soal
+    </a>
+
+    <a
+      href="formula-bank.html"
+      class="nav-link"
+    >
+      🧪 Bank Rumus
+    </a>
+
+  </nav>
+
+
+  <!-- =========================================
+       MAIN
+  ========================================== -->
+
+  <main class="dashboard">
+
+
+    <!-- RINGKASAN -->
+
+    <section class="summary-grid">
+
+      <article class="summary-card">
+
+        <span>
+          Total Siswa
+        </span>
+
+        <strong id="studentCount">
+          0
+        </strong>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <span>
+          Total Kelas
+        </span>
+
+        <strong id="classCount">
+          0
+        </strong>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <span>
+          NISN Terdaftar
+        </span>
+
+        <strong id="nisnCount">
+          0
+        </strong>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <span>
+          Belum Memiliki Kelas
+        </span>
+
+        <strong id="unassignedCount">
+          0
+        </strong>
+
+      </article>
+
+    </section>
+
+
+    <!-- STUDENT MANAGEMENT -->
+
+    <section class="panel">
+
+      <div class="panel-heading">
+
+        <div>
+
+          <p class="section-label">
+            STUDENT MANAGEMENT
+          </p>
+
+          <h2>
+            Daftar Siswa MOL-NEXUS
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <!-- ACTION BUTTONS -->
+
+      <div class="student-management-actions">
+
+        <button
+          id="addStudentButton"
+          type="button"
+          class="student-action-button"
+        >
+          + Tambah Siswa
+        </button>
+
+
+        <button
+          id="importStudentsButton"
+          type="button"
+          class="student-action-button"
+        >
+          📥 Import Excel
+        </button>
+
+
+        <button
+          id="downloadTemplateButton"
+          type="button"
+          class="student-action-button secondary"
+        >
+          📄 Download Template
+        </button>
+
+      </div>
+
+
+      <!-- FILTER -->
+
+      <div class="student-filter-bar">
+
+        <input
+          id="studentSearch"
+          type="search"
+          placeholder="Cari nama, kode siswa, atau NISN..."
+        >
+
+
+        <select id="classFilter">
+
+          <option value="">
+            Semua Kelas
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- LIST -->
+
+      <div
+        id="studentList"
+        class="student-list"
+      >
+
+        <p class="state-message">
+          Memuat data siswa...
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================================
+       FOOTER
+  ========================================== -->
+
+  <footer>
+
+    MOL-NEXUS • Student Management System
+
+  </footer>
+
+
+  <!-- =========================================
+       SCRIPT
+  ========================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <script src="students.js"></script>
+
+</body>
+
+</html>
