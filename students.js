@@ -409,3 +409,512 @@ downloadTemplateButton.addEventListener("click", () => {
   );
 
 });
+/* =========================================
+   IMPORT EXCEL - PREVIEW & VALIDATION
+========================================= */
+
+const importStudentsButton =
+  document.getElementById("importStudentsButton");
+
+const studentExcelInput =
+  document.getElementById("studentExcelInput");
+
+const importStudentModal =
+  document.getElementById("importStudentModal");
+
+const closeImportStudentModal =
+  document.getElementById("closeImportStudentModal");
+
+const importSummary =
+  document.getElementById("importSummary");
+
+const importPreview =
+  document.getElementById("importPreview");
+
+const confirmImportStudents =
+  document.getElementById("confirmImportStudents");
+
+
+let importStudentRows = [];
+
+
+/* OPEN FILE PICKER */
+
+importStudentsButton.addEventListener("click", () => {
+
+  studentExcelInput.value = "";
+
+  studentExcelInput.click();
+
+});
+
+
+/* CLOSE MODAL */
+
+function closeStudentImportModal() {
+
+  importStudentModal.hidden = true;
+
+}
+
+
+closeImportStudentModal.addEventListener(
+  "click",
+  closeStudentImportModal
+);
+
+
+importStudentModal.addEventListener("click", (event) => {
+
+  if (event.target === importStudentModal) {
+    closeStudentImportModal();
+  }
+
+});
+
+
+/* NORMALIZE TEXT */
+
+function normalizeImportText(value) {
+
+  return String(value ?? "").trim();
+
+}
+
+
+/* READ EXCEL */
+
+studentExcelInput.addEventListener(
+  "change",
+  async (event) => {
+
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+
+    try {
+
+      const buffer =
+        await file.arrayBuffer();
+
+
+      const workbook =
+        XLSX.read(buffer, {
+          type: "array"
+        });
+
+
+      const sheetName =
+        workbook.SheetNames.includes("DATA SISWA")
+          ? "DATA SISWA"
+          : workbook.SheetNames[0];
+
+
+      const worksheet =
+        workbook.Sheets[sheetName];
+
+
+      const excelRows =
+        XLSX.utils.sheet_to_json(
+          worksheet,
+          {
+            defval: "",
+            raw: false
+          }
+        );
+
+
+      if (excelRows.length === 0) {
+
+        alert("File Excel tidak memiliki data siswa.");
+
+        return;
+      }
+
+
+      validateImportedStudents(excelRows);
+
+      importStudentModal.hidden = false;
+
+    } catch (error) {
+
+      console.error(
+        "Gagal membaca Excel:",
+        error
+      );
+
+      alert(
+        "File Excel gagal dibaca."
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   VALIDATE IMPORT
+========================================= */
+
+function validateImportedStudents(rows) {
+
+  const existingCodes =
+    new Set(
+      studentsData.map(student =>
+        String(student.student_code)
+          .trim()
+          .toUpperCase()
+      )
+    );
+
+
+  const existingNisn =
+    new Set(
+      studentsData
+        .filter(student => student.nisn)
+        .map(student =>
+          String(student.nisn).trim()
+        )
+    );
+
+
+  const fileCodes = new Set();
+  const fileNisn = new Set();
+
+
+  importStudentRows =
+    rows.map((row, index) => {
+
+      const studentCode =
+        normalizeImportText(
+          row["Kode Siswa"]
+        ).toUpperCase();
+
+
+      const displayName =
+        normalizeImportText(
+          row["Nama Siswa"]
+        );
+
+
+      const nisn =
+        normalizeImportText(
+          row["NISN"]
+        );
+
+
+      const className =
+        normalizeImportText(
+          row["Kelas"]
+        );
+
+
+      const academicYear =
+        normalizeImportText(
+          row["Tahun Ajaran"]
+        );
+
+
+      const errors = [];
+      const warnings = [];
+
+
+      /* REQUIRED */
+
+      if (!studentCode) {
+        errors.push("Kode siswa kosong");
+      }
+
+      if (!displayName) {
+        errors.push("Nama siswa kosong");
+      }
+
+      if (!nisn) {
+
+        errors.push("NISN kosong");
+
+      } else if (!/^\d{10}$/.test(nisn)) {
+
+        errors.push(
+          "NISN harus tepat 10 digit"
+        );
+
+      }
+
+
+      if (!className) {
+        errors.push("Kelas kosong");
+      }
+
+      if (!academicYear) {
+        errors.push("Tahun ajaran kosong");
+      }
+
+
+      /* DATABASE DUPLICATE */
+
+      if (
+        studentCode &&
+        existingCodes.has(studentCode)
+      ) {
+
+        errors.push(
+          "Kode siswa sudah terdaftar"
+        );
+
+      }
+
+
+      if (
+        nisn &&
+        existingNisn.has(nisn)
+      ) {
+
+        errors.push(
+          "NISN sudah terdaftar"
+        );
+
+      }
+
+
+      /* DUPLICATE INSIDE EXCEL */
+
+      if (studentCode) {
+
+        if (fileCodes.has(studentCode)) {
+
+          errors.push(
+            "Kode siswa duplikat di Excel"
+          );
+
+        } else {
+
+          fileCodes.add(studentCode);
+
+        }
+
+      }
+
+
+      if (nisn) {
+
+        if (fileNisn.has(nisn)) {
+
+          errors.push(
+            "NISN duplikat di Excel"
+          );
+
+        } else {
+
+          fileNisn.add(nisn);
+
+        }
+
+      }
+
+
+      /* CLASS CHECK */
+
+      const matchingClass =
+        classesData.find(item =>
+
+          String(item.class_name)
+            .trim()
+            .toLowerCase() ===
+          className.toLowerCase()
+
+          &&
+
+          String(item.academic_year || "")
+            .trim()
+            .toLowerCase() ===
+          academicYear.toLowerCase()
+
+        );
+
+
+      if (
+        className &&
+        academicYear &&
+        !matchingClass
+      ) {
+
+        warnings.push(
+          "Kelas baru — akan dibuat saat import"
+        );
+
+      }
+
+
+      return {
+
+        rowNumber: index + 2,
+
+        studentCode,
+        displayName,
+        nisn,
+        className,
+        academicYear,
+
+        existingClassId:
+          matchingClass?.class_id || null,
+
+        errors,
+        warnings,
+
+        valid:
+          errors.length === 0
+
+      };
+
+    });
+
+
+  renderImportPreview();
+
+}
+
+
+/* =========================================
+   RENDER PREVIEW
+========================================= */
+
+function renderImportPreview() {
+
+  const validRows =
+    importStudentRows.filter(
+      row => row.valid
+    );
+
+
+  const invalidRows =
+    importStudentRows.filter(
+      row => !row.valid
+    );
+
+
+  const warningRows =
+    importStudentRows.filter(
+      row =>
+        row.valid &&
+        row.warnings.length > 0
+    );
+
+
+  importSummary.innerHTML = `
+
+    <div class="import-summary-grid">
+
+      <div>
+        <strong>
+          ${importStudentRows.length}
+        </strong>
+        <span>Total Data</span>
+      </div>
+
+      <div>
+        <strong>
+          ✅ ${validRows.length}
+        </strong>
+        <span>Valid</span>
+      </div>
+
+      <div>
+        <strong>
+          ⚠️ ${warningRows.length}
+        </strong>
+        <span>Peringatan</span>
+      </div>
+
+      <div>
+        <strong>
+          ❌ ${invalidRows.length}
+        </strong>
+        <span>Tidak Valid</span>
+      </div>
+
+    </div>
+
+  `;
+
+
+  importPreview.innerHTML =
+    importStudentRows
+      .map(row => {
+
+        const status =
+          row.valid
+            ? (
+                row.warnings.length
+                  ? "⚠️"
+                  : "✅"
+              )
+            : "❌";
+
+
+        const messages = [
+          ...row.errors,
+          ...row.warnings
+        ];
+
+
+        return `
+
+          <article class="import-preview-row">
+
+            <div class="import-preview-status">
+              ${status}
+            </div>
+
+            <div>
+
+              <strong>
+                ${row.displayName || "Tanpa Nama"}
+              </strong>
+
+              <p>
+                ${row.studentCode || "-"}
+                •
+                NISN ${row.nisn || "-"}
+              </p>
+
+              <p>
+                ${row.className || "-"}
+                •
+                ${row.academicYear || "-"}
+              </p>
+
+              ${
+                messages.length
+                  ? `
+                    <small>
+                      ${messages.join(" • ")}
+                    </small>
+                  `
+                  : `
+                    <small>
+                      Data siap diimport
+                    </small>
+                  `
+              }
+
+            </div>
+
+          </article>
+
+        `;
+
+      })
+      .join("");
+
+
+  confirmImportStudents.hidden =
+    validRows.length === 0;
+
+
+  confirmImportStudents.textContent =
+    `Import ${validRows.length} Siswa Valid`;
+
+           }
