@@ -323,3 +323,89 @@ async function initStudentManagement() {
 
 
 initStudentManagement();
+/* =========================================
+   DOWNLOAD EXCEL TEMPLATE
+========================================= */
+
+const downloadTemplateButton =
+  document.getElementById("downloadTemplateButton");
+
+
+downloadTemplateButton.addEventListener("click", () => {
+
+  const templateData = [
+    [
+      "Kode Siswa",
+      "Nama Siswa",
+      "NISN",
+      "Kelas",
+      "Tahun Ajaran"
+    ],
+    [
+      "XIIIPA-001",
+      "Ahmad Fauzan",
+      "1234567890",
+      "XII IPA 1",
+      "2026/2027"
+    ]
+  ];
+
+
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(templateData);
+
+
+  worksheet["!cols"] = [
+    { wch: 18 },
+    { wch: 28 },
+    { wch: 16 },
+    { wch: 20 },
+    { wch: 18 }
+  ];
+
+
+  const instructionData = [
+    ["PETUNJUK IMPORT SISWA MOL-NEXUS"],
+    [""],
+    ["1.", "Jangan mengubah nama kolom pada template."],
+    ["2.", "Kode Siswa wajib unik."],
+    ["3.", "NISN diisi 10 digit dan tidak boleh sama dengan siswa lain."],
+    ["4.", "Nama kelas harus ditulis konsisten, contoh: XII IPA 1."],
+    ["5.", "Tahun ajaran ditulis seperti: 2026/2027."],
+    ["6.", "Hapus baris contoh sebelum mengimpor data sebenarnya."]
+  ];
+
+
+  const instructionSheet =
+    XLSX.utils.aoa_to_sheet(instructionData);
+
+  instructionSheet["!cols"] = [
+    { wch: 8 },
+    { wch: 70 }
+  ];
+
+
+  const workbook =
+    XLSX.utils.book_new();
+
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "DATA SISWA"
+  );
+
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    instructionSheet,
+    "PETUNJUK"
+  );
+
+
+  XLSX.writeFile(
+    workbook,
+    "Template_Import_Siswa_MOL-NEXUS.xlsx"
+  );
+
+});
