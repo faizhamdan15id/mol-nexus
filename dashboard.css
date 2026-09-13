@@ -1605,3 +1605,55 @@ footer {
     width: 100%;
   }
 }
+/* =========================================
+   STUDENT EDITOR FORM
+========================================= */
+
+#studentForm {
+  display: grid;
+  gap: 18px;
+}
+
+#studentForm > label {
+  display: grid;
+  gap: 8px;
+
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#studentForm input[type="text"],
+#studentForm select {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 14px 16px;
+
+  background: #041724;
+  border: 1px solid rgba(34, 211, 238, 0.20);
+  border-radius: 12px;
+
+  color: #ffffff;
+  font: inherit;
+}
+
+#studentForm input:focus,
+#studentForm select:focus {
+  outline: none;
+  border-color: #22d3ee;
+}
+
+#studentForm .formula-save-button {
+  width: 100%;
+  margin-top: 6px;
+}
+
+@media (max-width: 600px) {
+
+  #studentForm input[type="text"],
+  #studentForm select {
+    font-size: 16px;
+  }
+
+}
