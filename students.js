@@ -1115,3 +1115,143 @@ studentModal.addEventListener(
 
   }
 );
+/* =========================================
+   SAVE / UPDATE STUDENT
+========================================= */
+
+studentForm.addEventListener(
+  "submit",
+  async (event) => {
+
+    event.preventDefault();
+
+
+    const studentId =
+      document.getElementById("studentId")
+        .value || null;
+
+
+    const studentCode =
+      document.getElementById("studentCodeInput")
+        .value
+        .trim()
+        .toUpperCase();
+
+
+    const displayName =
+      document.getElementById("studentNameInput")
+        .value
+        .trim();
+
+
+    const nisn =
+      document.getElementById("studentNisnInput")
+        .value
+        .trim();
+
+
+    const classId =
+      document.getElementById("studentClassInput")
+        .value || null;
+
+
+    if (!/^\d{10}$/.test(nisn)) {
+
+      alert("NISN harus tepat 10 digit angka.");
+      return;
+
+    }
+
+
+    const saveButton =
+      studentForm.querySelector(
+        ".formula-save-button"
+      );
+
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Menyimpan...";
+
+
+    try {
+
+      const { error } =
+        await supabaseClient.rpc(
+          "save_student_admin",
+          {
+            p_student_id: studentId,
+            p_student_code: studentCode,
+            p_display_name: displayName,
+            p_nisn: nisn,
+            p_class_id: classId
+          }
+        );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      closeStudentEditor();
+
+      await loadStudents();
+
+
+      alert(
+        studentId
+          ? "Data siswa berhasil diperbarui."
+          : "Siswa berhasil ditambahkan."
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Gagal menyimpan siswa:",
+        error
+      );
+
+
+      let message =
+        error?.message ||
+        "Data siswa gagal disimpan.";
+
+
+      if (
+        message.includes(
+          "students_student_code_key"
+        )
+      ) {
+
+        message =
+          "Kode siswa sudah digunakan.";
+
+      }
+
+
+      if (
+        message.includes(
+          "students_nisn_unique"
+        )
+      ) {
+
+        message =
+          "NISN sudah terdaftar.";
+
+      }
+
+
+      alert(message);
+
+
+    } finally {
+
+      saveButton.disabled = false;
+      saveButton.textContent =
+        "Simpan Siswa";
+
+    }
+
+  }
+);
