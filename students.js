@@ -1032,3 +1032,86 @@ confirmImportStudents.addEventListener(
 
   }
 );
+/* =========================================
+   STUDENT EDITOR MODAL
+========================================= */
+
+const addStudentButton =
+  document.getElementById("addStudentButton");
+
+const studentModal =
+  document.getElementById("studentModal");
+
+const closeStudentModal =
+  document.getElementById("closeStudentModal");
+
+const studentForm =
+  document.getElementById("studentForm");
+
+const studentClassInput =
+  document.getElementById("studentClassInput");
+
+
+function populateStudentClassOptions() {
+
+  studentClassInput.innerHTML = `
+    <option value="">
+      Belum memilih kelas
+    </option>
+
+    ${classesData.map(item => `
+      <option value="${item.class_id}">
+        ${item.class_name}
+        ${item.academic_year
+          ? `• ${item.academic_year}`
+          : ""}
+      </option>
+    `).join("")}
+  `;
+}
+
+
+function openAddStudentModal() {
+
+  studentForm.reset();
+
+  document.getElementById("studentId").value = "";
+
+  document.getElementById("studentModalTitle")
+    .textContent = "Tambah Siswa";
+
+  populateStudentClassOptions();
+
+  studentModal.hidden = false;
+}
+
+
+function closeStudentEditor() {
+
+  studentModal.hidden = true;
+
+}
+
+
+addStudentButton.addEventListener(
+  "click",
+  openAddStudentModal
+);
+
+
+closeStudentModal.addEventListener(
+  "click",
+  closeStudentEditor
+);
+
+
+studentModal.addEventListener(
+  "click",
+  (event) => {
+
+    if (event.target === studentModal) {
+      closeStudentEditor();
+    }
+
+  }
+);
