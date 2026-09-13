@@ -918,3 +918,117 @@ function renderImportPreview() {
     `Import ${validRows.length} Siswa Valid`;
 
            }
+/* =========================================
+   CONFIRM BULK IMPORT
+========================================= */
+
+confirmImportStudents.addEventListener(
+  "click",
+  async () => {
+
+    const validRows =
+      importStudentRows.filter(
+        row => row.valid
+      );
+
+    if (validRows.length === 0) {
+      alert("Tidak ada data siswa valid untuk diimport.");
+      return;
+    }
+
+
+    const confirmed = confirm(
+      `Import ${validRows.length} siswa ke MOL-NEXUS?`
+    );
+
+    if (!confirmed) return;
+
+
+    const payload =
+      validRows.map(row => ({
+        student_code: row.studentCode,
+        display_name: row.displayName,
+        nisn: row.nisn,
+        class_name: row.className,
+        academic_year: row.academicYear
+      }));
+
+
+    confirmImportStudents.disabled = true;
+    confirmImportStudents.textContent =
+      "Mengimport siswa...";
+
+
+    try {
+
+      const { data, error } =
+        await supabaseClient.rpc(
+          "import_students_bulk",
+          {
+            p_rows: payload
+          }
+        );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      const result =
+        Array.isArray(data)
+          ? data[0]
+          : data;
+
+
+      const imported =
+        result?.imported_students ??
+        validRows.length;
+
+      const createdClasses =
+        result?.created_classes ?? 0;
+
+
+      closeStudentImportModal();
+
+      studentExcelInput.value = "";
+      importStudentRows = [];
+
+
+      // Refresh kelas terlebih dahulu
+      await loadClasses();
+
+      // Lalu refresh siswa
+      await loadStudents();
+
+
+      alert(
+        `Import berhasil!\n\n` +
+        `Siswa: ${imported}\n` +
+        `Kelas baru: ${createdClasses}`
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Gagal import siswa:",
+        error
+      );
+
+      alert(
+        error?.message ||
+        "Import siswa gagal."
+      );
+
+
+    } finally {
+
+      confirmImportStudents.disabled = false;
+      confirmImportStudents.textContent =
+        "Import Siswa Valid";
+
+    }
+
+  }
+);
