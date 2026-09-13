@@ -275,6 +275,118 @@
 
 
   <!-- =========================================
+       STUDENT EDITOR MODAL
+  ========================================== -->
+
+  <div
+    id="studentModal"
+    class="formula-modal"
+    hidden
+  >
+
+    <div class="formula-modal-card">
+
+      <div class="formula-modal-header">
+
+        <div>
+
+          <p class="section-label">
+            STUDENT EDITOR
+          </p>
+
+          <h2 id="studentModalTitle">
+            Tambah Siswa
+          </h2>
+
+        </div>
+
+
+        <button
+          id="closeStudentModal"
+          type="button"
+          class="formula-modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="studentForm">
+
+        <input
+          id="studentId"
+          type="hidden"
+        >
+
+
+        <label>
+          Kode Siswa
+
+          <input
+            id="studentCodeInput"
+            type="text"
+            placeholder="Contoh: XIIIPA-001"
+            required
+          >
+        </label>
+
+
+        <label>
+          Nama Siswa
+
+          <input
+            id="studentNameInput"
+            type="text"
+            placeholder="Nama lengkap siswa"
+            required
+          >
+        </label>
+
+
+        <label>
+          NISN
+
+          <input
+            id="studentNisnInput"
+            type="text"
+            inputmode="numeric"
+            maxlength="10"
+            placeholder="10 digit NISN"
+            required
+          >
+        </label>
+
+
+        <label>
+          Kelas
+
+          <select id="studentClassInput">
+
+            <option value="">
+              Belum memilih kelas
+            </option>
+
+          </select>
+
+        </label>
+
+
+        <button
+          type="submit"
+          class="formula-save-button"
+        >
+          Simpan Siswa
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
        IMPORT EXCEL PREVIEW MODAL
   ========================================== -->
 
