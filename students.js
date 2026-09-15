@@ -1,8 +1,7 @@
 "use strict";
 
 /* =========================================
-   MOL-NEXUS
-   STUDENT MANAGEMENT
+   MOL-NEXUS - STUDENT MANAGEMENT
 ========================================= */
 
 const SUPABASE_URL =
@@ -10,7 +9,6 @@ const SUPABASE_URL =
 
 const SUPABASE_ANON_KEY =
   "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
-
 
 const supabaseClient = supabase.createClient(
   SUPABASE_URL,
@@ -62,7 +60,7 @@ const studentClassInput =
   document.getElementById("studentClassInput");
 
 
-/* IMPORT */
+/* IMPORT EXCEL */
 
 const importStudentsButton =
   document.getElementById("importStudentsButton");
@@ -99,7 +97,7 @@ let importStudentRows = [];
 
 
 /* =========================================
-   TEACHER AUTH
+   AUTH
 ========================================= */
 
 async function requireTeacherAuth() {
@@ -109,7 +107,6 @@ async function requireTeacherAuth() {
     error
   } = await supabaseClient.auth.getSession();
 
-
   if (error || !session) {
 
     window.location.replace(
@@ -118,7 +115,6 @@ async function requireTeacherAuth() {
 
     return false;
   }
-
 
   return true;
 }
@@ -141,9 +137,12 @@ function escapeHtml(value) {
 
 function maskNisn(nisn) {
 
-  if (!nisn) return "-";
+  if (!nisn) {
+    return "-";
+  }
 
-  const value = String(nisn);
+  const value =
+    String(nisn);
 
   if (value.length <= 4) {
     return "****";
@@ -162,23 +161,18 @@ function getClassName(classId) {
     return "Belum memiliki kelas";
   }
 
-
   const classData =
     classesData.find(
       item =>
         item.class_id === classId
     );
 
-
   if (!classData) {
     return "Kelas tidak ditemukan";
   }
 
-
   return classData.academic_year
-
     ? `${classData.class_name} • ${classData.academic_year}`
-
     : classData.class_name;
 }
 
@@ -201,33 +195,26 @@ async function loadClasses() {
     data,
     error
   } = await supabaseClient
-
     .from("classes")
-
     .select(`
       class_id,
       class_name,
       academic_year
     `)
-
     .order(
       "class_name",
       { ascending: true }
     );
 
-
   if (error) {
     throw error;
   }
 
-
   classesData =
     data || [];
 
-
   classCountEl.textContent =
     classesData.length;
-
 
   classFilter.innerHTML = `
 
@@ -265,9 +252,7 @@ async function loadStudents() {
     data,
     error
   } = await supabaseClient
-
     .from("students")
-
     .select(`
       student_id,
       student_code,
@@ -277,37 +262,30 @@ async function loadStudents() {
       nisn,
       created_at
     `)
-
     .order(
       "display_name",
       { ascending: true }
     );
 
-
   if (error) {
     throw error;
   }
 
-
   studentsData =
     data || [];
 
-
   studentCountEl.textContent =
     studentsData.length;
-
 
   nisnCountEl.textContent =
     studentsData.filter(
       student => student.nisn
     ).length;
 
-
   unassignedCountEl.textContent =
     studentsData.filter(
       student => !student.class_id
     ).length;
-
 
   renderStudents();
 }
@@ -324,7 +302,6 @@ function renderStudents() {
       .trim()
       .toLowerCase();
 
-
   const selectedClass =
     classFilter.value;
 
@@ -337,18 +314,15 @@ function renderStudents() {
           student.display_name || ""
         ).toLowerCase();
 
-
       const studentCode =
         String(
           student.student_code || ""
         ).toLowerCase();
 
-
       const nisn =
         String(
           student.nisn || ""
         );
-
 
       const matchesSearch =
         !keyword ||
@@ -356,11 +330,9 @@ function renderStudents() {
         studentCode.includes(keyword) ||
         nisn.includes(keyword);
 
-
       const matchesClass =
         !selectedClass ||
         student.class_id === selectedClass;
-
 
       return (
         matchesSearch &&
@@ -370,9 +342,7 @@ function renderStudents() {
     });
 
 
-  if (
-    filteredStudents.length === 0
-  ) {
+  if (filteredStudents.length === 0) {
 
     studentList.innerHTML = `
 
@@ -387,7 +357,6 @@ function renderStudents() {
 
 
   studentList.innerHTML =
-
     filteredStudents
       .map(student => `
 
@@ -403,7 +372,6 @@ function renderStudents() {
 
             </span>
 
-
             <h3>
 
               ${escapeHtml(
@@ -411,7 +379,6 @@ function renderStudents() {
               )}
 
             </h3>
-
 
             <p>
 
@@ -422,7 +389,6 @@ function renderStudents() {
               )}
 
             </p>
-
 
             <p>
 
@@ -472,7 +438,6 @@ studentSearch.addEventListener(
   renderStudents
 );
 
-
 classFilter.addEventListener(
   "change",
   renderStudents
@@ -480,7 +445,7 @@ classFilter.addEventListener(
 
 
 /* =========================================
-   STUDENT CLASS OPTIONS
+   CLASS OPTIONS
 ========================================= */
 
 function populateStudentClassOptions() {
@@ -519,11 +484,9 @@ function openAddStudentModal() {
 
   studentForm.reset();
 
-
   document
     .getElementById("studentId")
     .value = "";
-
 
   document
     .getElementById(
@@ -532,18 +495,17 @@ function openAddStudentModal() {
     .textContent =
       "Tambah Siswa";
 
-
   populateStudentClassOptions();
 
-
-  studentModal.hidden = false;
+  studentModal.hidden =
+    false;
 }
 
 
 function closeStudentEditor() {
 
-  studentModal.hidden = true;
-
+  studentModal.hidden =
+    true;
 }
 
 
@@ -576,127 +538,229 @@ studentModal.addEventListener(
 
 
 /* =========================================
-   EDIT STUDENT
+   STUDENT CARD ACTIONS
+   EDIT + SAFE DELETE
 ========================================= */
 
 studentList.addEventListener(
   "click",
-  event => {
+  async event => {
+
+    /* ===============================
+       EDIT
+    =============================== */
 
     const editButton =
       event.target.closest(
         ".edit-student-button"
       );
 
+    if (editButton) {
 
-    if (!editButton) {
+      const studentId =
+        editButton.dataset.id;
+
+      const student =
+        studentsData.find(
+          item =>
+            item.student_id === studentId
+        );
+
+      if (!student) {
+
+        alert(
+          "Data siswa tidak ditemukan."
+        );
+
+        return;
+      }
+
+      populateStudentClassOptions();
+
+      document
+        .getElementById("studentId")
+        .value =
+          student.student_id;
+
+      document
+        .getElementById(
+          "studentCodeInput"
+        )
+        .value =
+          student.student_code || "";
+
+      document
+        .getElementById(
+          "studentNameInput"
+        )
+        .value =
+          student.display_name || "";
+
+      document
+        .getElementById(
+          "studentNisnInput"
+        )
+        .value =
+          student.nisn || "";
+
+      document
+        .getElementById(
+          "studentClassInput"
+        )
+        .value =
+          student.class_id || "";
+
+      document
+        .getElementById(
+          "studentModalTitle"
+        )
+        .textContent =
+          "Edit Siswa";
+
+      studentModal.hidden =
+        false;
+
       return;
     }
 
 
-    const studentId =
-      editButton.dataset.id;
-
-
-    const student =
-      studentsData.find(
-        item =>
-          item.student_id === studentId
-      );
-
-
-    if (!student) {
-
-      alert(
-        "Data siswa tidak ditemukan."
-      );
-
-      return;
-    }
-
-
-    populateStudentClassOptions();
-
-
-    document
-      .getElementById("studentId")
-      .value =
-        student.student_id;
-
-
-    document
-      .getElementById(
-        "studentCodeInput"
-      )
-      .value =
-        student.student_code || "";
-
-
-    document
-      .getElementById(
-        "studentNameInput"
-      )
-      .value =
-        student.display_name || "";
-
-
-    document
-      .getElementById(
-        "studentNisnInput"
-      )
-      .value =
-        student.nisn || "";
-
-
-    document
-      .getElementById(
-        "studentClassInput"
-      )
-      .value =
-        student.class_id || "";
-
-
-    document
-      .getElementById(
-        "studentModalTitle"
-      )
-      .textContent =
-        "Edit Siswa";
-
-
-    studentModal.hidden = false;
-
-  }
-);
-
-
-/* =========================================
-   DELETE BUTTON
-   BELUM MENGHAPUS DATA
-========================================= */
-
-studentList.addEventListener(
-  "click",
-  event => {
+    /* ===============================
+       DELETE
+    =============================== */
 
     const deleteButton =
       event.target.closest(
         ".delete-student-button"
       );
 
-
     if (!deleteButton) {
       return;
     }
 
 
+    const studentId =
+      deleteButton.dataset.id;
+
     const studentName =
       deleteButton.dataset.name;
 
 
-    alert(
-      `Fitur hapus untuk ${studentName} akan diaktifkan setelah pengecekan relasi data penelitian siswa.`
-    );
+    const confirmed =
+      confirm(
+        `Hapus permanen siswa "${studentName}"?\n\n` +
+        `Siswa hanya dapat dihapus jika belum memiliki ` +
+        `riwayat permainan, attempt, session, atau data analitik.`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    const originalText =
+      deleteButton.textContent;
+
+
+    deleteButton.disabled =
+      true;
+
+    deleteButton.textContent =
+      "Menghapus...";
+
+
+    try {
+
+      const {
+        data,
+        error
+      } = await supabaseClient.rpc(
+        "delete_student_admin",
+        {
+          p_student_id:
+            studentId
+        }
+      );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      if (
+        data !== "DELETED"
+      ) {
+
+        throw new Error(
+          "DELETE_FAILED"
+        );
+
+      }
+
+
+      await loadStudents();
+
+
+      alert(
+        `Siswa "${studentName}" berhasil dihapus.`
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Gagal menghapus siswa:",
+        error
+      );
+
+
+      const message =
+        error?.message || "";
+
+
+      if (
+        message.includes(
+          "STUDENT_HAS_RELATED_DATA"
+        )
+      ) {
+
+        alert(
+          `Siswa "${studentName}" tidak dapat dihapus.\n\n` +
+          `Siswa sudah memiliki riwayat permainan, attempt, ` +
+          `session, atau data analitik MOL-NEXUS.\n\n` +
+          `Data dilindungi agar hasil penelitian tidak hilang.`
+        );
+
+      } else if (
+        message.includes(
+          "STUDENT_NOT_FOUND"
+        )
+      ) {
+
+        alert(
+          "Data siswa sudah tidak ditemukan."
+        );
+
+        await loadStudents();
+
+      } else {
+
+        alert(
+          message ||
+          "Siswa gagal dihapus."
+        );
+
+      }
+
+
+      deleteButton.disabled =
+        false;
+
+      deleteButton.textContent =
+        originalText;
+
+    }
 
   }
 );
@@ -773,7 +837,8 @@ studentForm.addEventListener(
       );
 
 
-    saveButton.disabled = true;
+    saveButton.disabled =
+      true;
 
     saveButton.textContent =
       "Menyimpan...";
@@ -811,18 +876,13 @@ studentForm.addEventListener(
 
       closeStudentEditor();
 
-
       await loadStudents();
 
 
       alert(
-
         studentId
-
           ? "Data siswa berhasil diperbarui."
-
           : "Siswa berhasil ditambahkan."
-
       );
 
 
@@ -868,7 +928,8 @@ studentForm.addEventListener(
 
     } finally {
 
-      saveButton.disabled = false;
+      saveButton.disabled =
+        false;
 
       saveButton.textContent =
         "Simpan Siswa";
@@ -1008,14 +1069,15 @@ downloadTemplateButton.addEventListener(
 
 
 /* =========================================
-   IMPORT EXCEL - OPEN / CLOSE
+   IMPORT EXCEL
 ========================================= */
 
 importStudentsButton.addEventListener(
   "click",
   () => {
 
-    studentExcelInput.value = "";
+    studentExcelInput.value =
+      "";
 
     studentExcelInput.click();
 
@@ -1025,8 +1087,8 @@ importStudentsButton.addEventListener(
 
 function closeStudentImportModal() {
 
-  importStudentModal.hidden = true;
-
+  importStudentModal.hidden =
+    true;
 }
 
 
@@ -1064,8 +1126,9 @@ studentExcelInput.addEventListener(
     const file =
       event.target.files?.[0];
 
-
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
 
     try {
@@ -1087,9 +1150,7 @@ studentExcelInput.addEventListener(
         workbook.SheetNames.includes(
           "DATA SISWA"
         )
-
           ? "DATA SISWA"
-
           : workbook.SheetNames[0];
 
 
@@ -1174,12 +1235,10 @@ function validateImportedStudents(rows) {
     new Set(
 
       studentsData
-
         .filter(
           student =>
             student.nisn
         )
-
         .map(student =>
           String(
             student.nisn
@@ -1235,20 +1294,16 @@ function validateImportedStudents(rows) {
 
 
         if (!studentCode) {
-
           errors.push(
             "Kode siswa kosong"
           );
-
         }
 
 
         if (!displayName) {
-
           errors.push(
             "Nama siswa kosong"
           );
-
         }
 
 
@@ -1270,20 +1325,16 @@ function validateImportedStudents(rows) {
 
 
         if (!className) {
-
           errors.push(
             "Kelas kosong"
           );
-
         }
 
 
         if (!academicYear) {
-
           errors.push(
             "Tahun ajaran kosong"
           );
-
         }
 
 
@@ -1348,7 +1399,9 @@ function validateImportedStudents(rows) {
 
           } else {
 
-            fileNisn.add(nisn);
+            fileNisn.add(
+              nisn
+            );
 
           }
 
@@ -1452,54 +1505,31 @@ function renderImportPreview() {
     <div class="import-summary-grid">
 
       <div>
-
         <strong>
           ${importStudentRows.length}
         </strong>
-
-        <span>
-          Total Data
-        </span>
-
+        <span>Total Data</span>
       </div>
 
-
       <div>
-
         <strong>
           ✅ ${validRows.length}
         </strong>
-
-        <span>
-          Valid
-        </span>
-
+        <span>Valid</span>
       </div>
 
-
       <div>
-
         <strong>
           ⚠️ ${warningRows.length}
         </strong>
-
-        <span>
-          Peringatan
-        </span>
-
+        <span>Peringatan</span>
       </div>
 
-
       <div>
-
         <strong>
           ❌ ${invalidRows.length}
         </strong>
-
-        <span>
-          Tidak Valid
-        </span>
-
+        <span>Tidak Valid</span>
       </div>
 
     </div>
@@ -1508,27 +1538,22 @@ function renderImportPreview() {
 
 
   importPreview.innerHTML =
-
     importStudentRows
       .map(row => {
 
         const status =
           row.valid
-
             ? (
                 row.warnings.length
                   ? "⚠️"
                   : "✅"
               )
-
             : "❌";
 
 
         const messages = [
-
           ...row.errors,
           ...row.warnings
-
         ];
 
 
@@ -1537,11 +1562,8 @@ function renderImportPreview() {
           <article class="import-preview-row">
 
             <div class="import-preview-status">
-
               ${status}
-
             </div>
-
 
             <div>
 
@@ -1553,7 +1575,6 @@ function renderImportPreview() {
                 )}
 
               </strong>
-
 
               <p>
 
@@ -1572,7 +1593,6 @@ function renderImportPreview() {
 
               </p>
 
-
               <p>
 
                 ${escapeHtml(
@@ -1588,7 +1608,6 @@ function renderImportPreview() {
                 )}
 
               </p>
-
 
               ${
                 messages.length
@@ -1661,7 +1680,9 @@ confirmImportStudents.addEventListener(
       );
 
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
 
     const payload =
@@ -1699,14 +1720,11 @@ confirmImportStudents.addEventListener(
         data,
         error
       } = await supabaseClient.rpc(
-
         "import_students_bulk",
-
         {
           p_rows:
             payload
         }
-
       );
 
 
@@ -1738,7 +1756,8 @@ confirmImportStudents.addEventListener(
         "";
 
 
-      importStudentRows = [];
+      importStudentRows =
+        [];
 
 
       await loadClasses();
@@ -1796,7 +1815,9 @@ async function initStudentManagement() {
     await requireTeacherAuth();
 
 
-  if (!authenticated) return;
+  if (!authenticated) {
+    return;
+  }
 
 
   try {
@@ -1826,9 +1847,7 @@ async function initStudentManagement() {
     studentList.innerHTML = `
 
       <p class="state-message error-message">
-
         Gagal memuat data siswa.
-
       </p>
 
     `;
