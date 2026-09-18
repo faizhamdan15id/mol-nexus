@@ -1660,19 +1660,29 @@ document
   }
 
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("questions")
-      .select("*")
-      .eq(
-        "active",
-        true
-      )
-      .limit(100);
-
+const {
+  data,
+  error
+} =
+  await supabaseClient
+    .from("questions")
+    .select(`
+      question_id,
+      question_code,
+      nexus_zone,
+      difficulty,
+      question_type,
+      question_text,
+      origin_concept,
+      target_concept,
+      numeracy_skill,
+      active
+    `)
+    .eq(
+      "active",
+      true
+    )
+    .limit(100);
 
   if (error) {
 
