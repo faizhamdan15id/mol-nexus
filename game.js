@@ -576,32 +576,46 @@ async function loadGamePlayers() {
 
     renderCurrentPlayer();
   }
-if (currentPlayer?.final_nexus_completed === true) {
-  currentQuestion = null;
 
-  setMessage(
-    "🏆 FINAL NEXUS COMPLETED — Selamat! Anda telah menyelesaikan seluruh Nexus Challenge."
-  );
 
-  if (caseZone) {
-    caseZone.textContent = "NEXUS COMPLETE";
+  if (
+    currentPlayer?.final_nexus_completed ===
+    true
+  ) {
+
+    currentQuestion = null;
+
+    setMessage(
+      "🏆 FINAL NEXUS COMPLETED — Selamat! Anda telah menyelesaikan seluruh Nexus Challenge."
+    );
+
+    if (caseZone) {
+
+      caseZone.textContent =
+        "NEXUS COMPLETE";
+    }
+
+    if (caseTitle) {
+
+      caseTitle.textContent =
+        "🏆 FINAL NEXUS COMPLETED";
+    }
+
+    if (caseDifficulty) {
+
+      caseDifficulty.textContent =
+        "NEXUS MASTER";
+    }
+
+    if (caseQuestion) {
+
+      caseQuestion.textContent =
+        "Seluruh Nexus Crystal telah dikumpulkan dan Final Nexus Challenge berhasil diselesaikan.";
+    }
+
+    setSubmitDisabled(true);
   }
 
-  if (caseTitle) {
-    caseTitle.textContent = "🏆 FINAL NEXUS COMPLETED";
-  }
-
-  if (caseDifficulty) {
-    caseDifficulty.textContent = "NEXUS MASTER";
-  }
-
-  if (caseQuestion) {
-    caseQuestion.textContent =
-      "Seluruh Nexus Crystal telah dikumpulkan dan Final Nexus Challenge berhasil diselesaikan.";
-  }
-
-  setSubmitDisabled(true);
-}
 
   return currentPlayers;
 }
@@ -867,6 +881,8 @@ function renderBasicData() {
 /* ============================================================
    END BAGIAN 1
    ============================================================ */
+
+
 /* ============================================================
    13. TURN STATE
    ============================================================ */
@@ -877,6 +893,7 @@ function applyTurnState(roomData) {
     !roomData ||
     !currentPlayer
   ) {
+
     return;
   }
 
@@ -1593,48 +1610,81 @@ function resetAttemptState() {
    ============================================================ */
 
 async function loadQuestion() {
-if (currentPlayer?.final_nexus_completed === true) {
-  currentQuestion = null;
 
-  setMessage(
-    "🏆 FINAL NEXUS COMPLETED — Seluruh Nexus Challenge telah diselesaikan."
-  );
+  /* =========================================
+     FINAL NEXUS ALREADY COMPLETED
+     ========================================= */
 
-  if (caseZone) {
-    caseZone.textContent = "NEXUS COMPLETE";
+  if (
+    currentPlayer?.final_nexus_completed ===
+    true
+  ) {
+
+    currentQuestion = null;
+
+    setMessage(
+      "🏆 FINAL NEXUS COMPLETED — Seluruh Nexus Challenge telah diselesaikan."
+    );
+
+    if (caseZone) {
+
+      caseZone.textContent =
+        "NEXUS COMPLETE";
+    }
+
+    if (caseTitle) {
+
+      caseTitle.textContent =
+        "🏆 FINAL NEXUS COMPLETED";
+    }
+
+    if (caseDifficulty) {
+
+      caseDifficulty.textContent =
+        "NEXUS MASTER";
+    }
+
+    if (caseQuestion) {
+
+      caseQuestion.textContent =
+        "Selamat! Anda telah menyelesaikan seluruh rangkaian MOL-NEXUS.";
+    }
+
+    document
+      .querySelectorAll(
+        ".diagnostic-stage"
+      )
+      .forEach(
+        stage => {
+
+          stage.style.display =
+            "none";
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        ".case-actions"
+      )
+      .forEach(
+        action => {
+
+          action.style.display =
+            "none";
+        }
+      );
+
+
+    setSubmitDisabled(true);
+
+    return null;
   }
 
-  if (caseTitle) {
-    caseTitle.textContent = "🏆 FINAL NEXUS COMPLETED";
-  }
 
-  if (caseDifficulty) {
-    caseDifficulty.textContent = "NEXUS MASTER";
-  }
-
-  if (caseQuestion) {
-    caseQuestion.textContent =
-      "Selamat! Anda telah menyelesaikan seluruh rangkaian MOL-NEXUS.";
-  }
-document
-  .querySelectorAll(".diagnostic-stage")
-  .forEach(stage => {
-    stage.style.display = "none";
-  });
-   document
-  .querySelectorAll(".case-actions")
-  .forEach(action => {
-    action.style.display = "none";
-  });
-  setSubmitDisabled(true);
-
-  return null;
-}
-  /*
-    Privasi multiplayer:
-    soal hanya dirender pada browser
-    siswa yang sedang mendapat giliran.
-  */
+  /* =========================================
+     PRIVASI MULTIPLAYER
+     ========================================= */
 
   if (!isMyTurn) {
 
@@ -1642,10 +1692,24 @@ document
       null;
 
 
+    if (caseZone) {
+
+      caseZone.textContent =
+        "NEXUS";
+    }
+
+
     if (caseTitle) {
 
       caseTitle.textContent =
         "WAITING FOR TURN";
+    }
+
+
+    if (caseDifficulty) {
+
+      caseDifficulty.textContent =
+        "WAITING";
     }
 
 
@@ -1656,57 +1720,262 @@ document
     }
 
 
-    return;
+    setSubmitDisabled(
+      true
+    );
+
+
+    return null;
   }
 
 
-const {
-  data,
-  error
-} =
-  await supabaseClient
-    .from("questions")
-    .select(`
-      question_id,
-      question_code,
-      nexus_zone,
-      difficulty,
-      question_type,
-      question_text,
-      origin_concept,
-      target_concept,
-      numeracy_skill,
-      active
-    `)
-    .eq(
-      "active",
+  /* =========================================
+     VALIDASI SESSION
+     ========================================= */
+
+  if (!sessionToken) {
+
+    console.error(
+      "QUESTION ERROR: SESSION_TOKEN_MISSING"
+    );
+
+
+    setMessage(
+      "Sesi siswa tidak ditemukan."
+    );
+
+
+    setSubmitDisabled(
       true
-    )
-    .limit(100);
+    );
+
+
+    return null;
+  }
+
+
+  if (!room) {
+
+    console.error(
+      "QUESTION ERROR: ROOM_MISSING"
+    );
+
+
+    setMessage(
+      "Room permainan tidak ditemukan."
+    );
+
+
+    setSubmitDisabled(
+      true
+    );
+
+
+    return null;
+  }
+
+
+  /* =========================================
+     AMBIL SOAL MELALUI RPC SECURE
+     ========================================= */
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_student_question",
+      {
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room,
+
+        p_zone:
+          selectedZone || null,
+
+        p_last_question_id:
+          lastQuestionId || null
+      }
+    );
+
+
+  /* =========================================
+     HANDLE ERROR
+     ========================================= */
 
   if (error) {
 
     console.error(
-      "QUESTION ERROR:",
+      "SECURE QUESTION RPC ERROR:",
       error
     );
+
+
+    const errorMessage =
+      String(
+        error.message || ""
+      );
+
+
+    if (
+      errorMessage.includes(
+        "NOT_YOUR_TURN"
+      )
+    ) {
+
+      currentQuestion =
+        null;
+
+
+      if (caseTitle) {
+
+        caseTitle.textContent =
+          "WAITING FOR TURN";
+      }
+
+
+      if (caseQuestion) {
+
+        caseQuestion.textContent =
+          "Menunggu giliran Anda.";
+      }
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return null;
+    }
+
+
+    if (
+      errorMessage.includes(
+        "INVALID_STUDENT_SESSION"
+      )
+    ) {
+
+      setMessage(
+        "Sesi siswa telah berakhir. Silakan login kembali."
+      );
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return null;
+    }
+
+
+    if (
+      errorMessage.includes(
+        "STUDENT_NOT_IN_ROOM"
+      )
+    ) {
+
+      setMessage(
+        "Siswa tidak terdaftar pada room ini."
+      );
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return null;
+    }
+
+
+    if (
+      errorMessage.includes(
+        "ROOM_NOT_FOUND"
+      )
+    ) {
+
+      setMessage(
+        "Room permainan tidak ditemukan."
+      );
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return null;
+    }
+
+
+    if (
+      errorMessage.includes(
+        "ROOM_NOT_PLAYING"
+      )
+    ) {
+
+      setMessage(
+        "Game belum dimulai."
+      );
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return null;
+    }
 
 
     if (caseQuestion) {
 
       caseQuestion.textContent =
-        "Gagal mengambil soal dari database.";
+        "Gagal mengambil soal dari server.";
     }
 
 
-    return;
+    setMessage(
+      "Challenge gagal dimuat."
+    );
+
+
+    setSubmitDisabled(
+      true
+    );
+
+
+    return null;
   }
 
 
-  if (
-    !data ||
-    data.length === 0
-  ) {
+  /* =========================================
+     NORMALISASI HASIL RPC
+     ========================================= */
+
+  const question =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!question) {
+
+    currentQuestion =
+      null;
+
+
+    if (caseZone) {
+
+      caseZone.textContent =
+        "NEXUS";
+    }
+
 
     if (caseTitle) {
 
@@ -1715,98 +1984,74 @@ const {
     }
 
 
+    if (caseDifficulty) {
+
+      caseDifficulty.textContent =
+        "—";
+    }
+
+
     if (caseQuestion) {
 
       caseQuestion.textContent =
-        "Belum ada soal aktif pada database.";
+        "Belum ada soal aktif yang tersedia.";
     }
 
 
-    return;
+    setSubmitDisabled(
+      true
+    );
+
+
+    return null;
   }
 
 
-  let pool =
-    [...data];
-
-
-  /*
-    Jika siswa memilih zona,
-    prioritaskan soal zona tersebut.
-  */
-
-  if (selectedZone) {
-
-    const zoneQuestions =
-      data.filter(
-        question =>
-          normalizeText(
-            question.nexus_zone
-          ) ===
-          normalizeText(
-            selectedZone
-          )
-      );
-
-
-    if (
-      zoneQuestions.length >
-      0
-    ) {
-
-      pool =
-        zoneQuestions;
-    }
-  }
-
-
-  /*
-    Hindari soal yang sama
-    berturut-turut jika ada alternatif.
-  */
-
-  if (
-    pool.length > 1 &&
-    lastQuestionId
-  ) {
-
-    const alternative =
-      pool.filter(
-        question =>
-          question.question_id !==
-          lastQuestionId
-      );
-
-
-    if (
-      alternative.length >
-      0
-    ) {
-
-      pool =
-        alternative;
-    }
-  }
-
+  /* =========================================
+     SET CURRENT QUESTION
+     ========================================= */
 
   currentQuestion =
-    pool[
-      Math.floor(
-        Math.random() *
-        pool.length
-      )
-    ];
+    question;
 
 
   lastQuestionId =
-    currentQuestion.question_id ||
-    currentQuestion.id ||
+    question.question_id ||
     null;
 
+
+  console.log(
+    "SECURE QUESTION LOADED:",
+    {
+
+      question_id:
+        question.question_id,
+
+      question_code:
+        question.question_code,
+
+      nexus_zone:
+        question.nexus_zone,
+
+      difficulty:
+        question.difficulty,
+
+      question_type:
+        question.question_type
+    }
+  );
+
+
+  /* =========================================
+     RENDER QUESTION
+     ========================================= */
 
   renderQuestion(
     currentQuestion
   );
+
+
+  return currentQuestion;
 }
 
 
@@ -2055,6 +2300,8 @@ function initializeHintButton() {
 /* ============================================================
    END BAGIAN 2
    ============================================================ */
+
+
 /* ============================================================
    26. VALIDATE CURRENT ANSWER
    ============================================================ */
@@ -2064,7 +2311,9 @@ function validateCurrentAnswer() {
   if (!isMyTurn) {
 
     return {
+
       valid: false,
+
       message:
         "Sekarang bukan giliran Anda."
     };
@@ -2074,7 +2323,9 @@ function validateCurrentAnswer() {
   if (!currentQuestion) {
 
     return {
+
       valid: false,
+
       message:
         "Belum ada challenge aktif."
     };
@@ -2082,11 +2333,14 @@ function validateCurrentAnswer() {
 
 
   if (
-    selectedPath.length === 0
+    selectedPath.length ===
+    0
   ) {
 
     return {
+
       valid: false,
+
       message:
         "Bangun Nexus Path terlebih dahulu."
     };
@@ -2094,11 +2348,14 @@ function validateCurrentAnswer() {
 
 
   if (
-    selectedFormulas.length === 0
+    selectedFormulas.length ===
+    0
   ) {
 
     return {
+
       valid: false,
+
       message:
         "Pilih formula terlebih dahulu."
     };
@@ -2115,7 +2372,9 @@ function validateCurrentAnswer() {
   if (!rawAnswer) {
 
     return {
+
       valid: false,
+
       message:
         "Masukkan hasil perhitungan."
     };
@@ -2138,7 +2397,9 @@ function validateCurrentAnswer() {
   ) {
 
     return {
+
       valid: false,
+
       message:
         "Jawaban perhitungan harus berupa angka."
     };
@@ -2151,7 +2412,9 @@ function validateCurrentAnswer() {
   ) {
 
     return {
+
       valid: false,
+
       message:
         "Pilih satuan jawaban."
     };
@@ -2159,7 +2422,9 @@ function validateCurrentAnswer() {
 
 
   return {
+
     valid: true,
+
     message: ""
   };
 }
@@ -2300,6 +2565,7 @@ async function saveStudentAttempt() {
       error
     );
 
+
     throw error;
   }
 
@@ -2327,6 +2593,7 @@ async function saveStudentAttempt() {
   return result;
 }
 
+
 /* ============================================================
    28B. AWARD CRYSTAL
    ============================================================ */
@@ -2338,6 +2605,7 @@ async function awardCrystal() {
     !room ||
     !currentQuestion?.question_id
   ) {
+
     return null;
   }
 
@@ -2349,6 +2617,7 @@ async function awardCrystal() {
     await supabaseClient.rpc(
       "award_student_crystal",
       {
+
         p_session_token:
           sessionToken,
 
@@ -2367,6 +2636,7 @@ async function awardCrystal() {
       "CRYSTAL RPC ERROR:",
       error
     );
+
 
     return null;
   }
@@ -2395,6 +2665,8 @@ async function awardCrystal() {
 
   return result;
 }
+
+
 /* ============================================================
    28. ADD ENERGY
    ============================================================ */
@@ -2441,6 +2713,7 @@ async function addEnergy(
       error
     );
 
+
     return false;
   }
 
@@ -2465,15 +2738,22 @@ async function addEnergy(
   return true;
 }
 
+
 /* ============================================================
    FINAL NEXUS ACCESS
    ============================================================ */
 
 async function checkFinalNexusAccess() {
 
-  if (!sessionToken || !room) {
+  if (
+    !sessionToken ||
+    !room
+  ) {
+
     return {
+
       unlocked: false,
+
       total_crystals: 0
     };
   }
@@ -2486,6 +2766,7 @@ async function checkFinalNexusAccess() {
     await supabaseClient.rpc(
       "check_final_nexus_access",
       {
+
         p_session_token:
           sessionToken,
 
@@ -2502,8 +2783,11 @@ async function checkFinalNexusAccess() {
       error
     );
 
+
     return {
+
       unlocked: false,
+
       total_crystals: 0
     };
   }
@@ -2522,100 +2806,154 @@ async function checkFinalNexusAccess() {
 
 
   return result || {
+
     unlocked: false,
+
     total_crystals: 0
   };
 }
 
+
+/* ============================================================
+   LOAD FINAL NEXUS QUESTION
+   ============================================================ */
+
 async function loadFinalNexusQuestion() {
-  if (!sessionToken || !room) {
+
+  if (
+    !sessionToken ||
+    !room
+  ) {
+
     return null;
   }
 
-  const { data, error } = await supabaseClient.rpc(
-    "get_final_nexus_question",
-    {
-      p_session_token: sessionToken,
-      p_room_code: room
-    }
-  );
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_final_nexus_question",
+      {
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room
+      }
+    );
+
 
   if (error) {
+
     console.error(
       "FINAL NEXUS QUESTION ERROR:",
       error
     );
 
+
     setMessage(
       "Final Nexus Challenge gagal dimuat."
     );
 
+
     return null;
   }
+
 
   const question =
     Array.isArray(data)
       ? data[0]
       : data;
 
+
   if (!question) {
+
     setMessage(
       "Soal Final Nexus belum tersedia."
     );
 
+
     return null;
   }
+
 
   console.log(
     "FINAL NEXUS QUESTION:",
     question
   );
 
+
   return question;
 }
+
+
 /* ================================================
    COMPLETE FINAL NEXUS
-================================================ */
+   ================================================ */
 
 async function completeFinalNexus() {
+
   if (
     !sessionToken ||
     !room ||
     !currentQuestion?.question_id
   ) {
+
     return null;
   }
 
-  const { data, error } = await supabaseClient.rpc(
-    "complete_final_nexus",
-    {
-      p_session_token: sessionToken,
-      p_room_code: room,
-      p_question_id: currentQuestion.question_id
-    }
-  );
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "complete_final_nexus",
+      {
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room,
+
+        p_question_id:
+          currentQuestion.question_id
+      }
+    );
+
 
   if (error) {
+
     console.error(
       "COMPLETE FINAL NEXUS ERROR:",
       error
     );
 
+
     return null;
   }
+
 
   const result =
     Array.isArray(data)
       ? data[0]
       : data;
 
+
   console.log(
     "FINAL NEXUS COMPLETION:",
     result
   );
 
+
   return result;
 }
+
+
 /* ============================================================
    29. ADVANCE TURN
    ============================================================ */
@@ -2635,6 +2973,7 @@ async function advanceTurn() {
     await supabaseClient.rpc(
       "next_turn",
       {
+
         p_room_code:
           room
       }
@@ -2675,17 +3014,29 @@ async function advanceTurn() {
 
 async function submitCurrentCase() {
 
-   const isFinalNexus =
-  currentQuestion?.question_type === "FINAL_NEXUS";
-   console.log(
-  "SUBMIT QUESTION DEBUG:",
-  {
-    question_id: currentQuestion?.question_id,
-    question_code: currentQuestion?.question_code,
-    question_type: currentQuestion?.question_type,
-    isFinalNexus
-  }
-);
+  const isFinalNexus =
+    currentQuestion?.question_type ===
+    "FINAL_NEXUS";
+
+
+  console.log(
+    "SUBMIT QUESTION DEBUG:",
+    {
+
+      question_id:
+        currentQuestion?.question_id,
+
+      question_code:
+        currentQuestion?.question_code,
+
+      question_type:
+        currentQuestion?.question_type,
+
+      isFinalNexus
+    }
+  );
+
+
   /*
     Cegah double click.
   */
@@ -2705,6 +3056,7 @@ async function submitCurrentCase() {
     showFeedback(
       validation.message
     );
+
 
     return;
   }
@@ -2752,41 +3104,62 @@ async function submitCurrentCase() {
 
 
     if (finalCorrect) {
-       
-    /* FINAL NEXUS COMPLETION */
-if (isFinalNexus) {
 
-  const completion =
-    await completeFinalNexus();
 
-  if (completion?.completed === true) {
+      /* ======================================================
+         FINAL NEXUS COMPLETION
+         ====================================================== */
 
-    showFeedback(
-      "🏆 FINAL NEXUS COMPLETED!"
-    );
+      if (isFinalNexus) {
 
-    setMessage(
-      "Selamat! Anda berhasil menyelesaikan FINAL NEXUS CHALLENGE."
-    );
+        const completion =
+          await completeFinalNexus();
 
-    console.log(
-      "FINAL NEXUS COMPLETED:",
-      completion
-    );
 
-    setSubmitDisabled(true);
+        if (
+          completion?.completed ===
+          true
+        ) {
 
-    return;
-  }
+          showFeedback(
+            "🏆 FINAL NEXUS COMPLETED!"
+          );
 
-  showFeedback(
-    "Final Nexus berhasil dijawab, tetapi status penyelesaian gagal disimpan."
-  );
 
-  setSubmitDisabled(false);
+          setMessage(
+            "Selamat! Anda berhasil menyelesaikan FINAL NEXUS CHALLENGE."
+          );
 
-  return;
-}
+
+          console.log(
+            "FINAL NEXUS COMPLETED:",
+            completion
+          );
+
+
+          setSubmitDisabled(
+            true
+          );
+
+
+          return;
+        }
+
+
+        showFeedback(
+          "Final Nexus berhasil dijawab, tetapi status penyelesaian gagal disimpan."
+        );
+
+
+        setSubmitDisabled(
+          false
+        );
+
+
+        return;
+      }
+
+
       /*
         REWARD:
 
@@ -2797,11 +3170,13 @@ if (isFinalNexus) {
         Benar setelah retry = +1
       */
 
-      let reward = 1;
+      let reward =
+        1;
 
 
       if (
-        retryCount === 0
+        retryCount ===
+        0
       ) {
 
         reward =
@@ -2815,54 +3190,94 @@ if (isFinalNexus) {
         reward
       );
 
-     const crystalResult =
-  await awardCrystal(); 
-      const finalAccess =
-  await checkFinalNexusAccess();
 
-console.log(
-  "FINAL NEXUS AFTER CRYSTAL:",
-  finalAccess
-); 
+      const crystalResult =
+        await awardCrystal();
+
+
+      console.log(
+        "CRYSTAL RESULT AFTER CLEAR:",
+        crystalResult
+      );
+
+
+      const finalAccess =
+        await checkFinalNexusAccess();
+
+
+      console.log(
+        "FINAL NEXUS AFTER CRYSTAL:",
+        finalAccess
+      );
+
+
       showFeedback(
         `NEXUS CLEAR ✓  +${reward} ENERGY`
       );
-if (finalAccess?.unlocked === true) {
 
-  showFeedback(
-    "4 NEXUS CRYSTALS COMPLETE 💎 — FINAL NEXUS UNLOCKED!"
-  );
 
-  setMessage(
-    "Memuat FINAL NEXUS CHALLENGE..."
-  );
+      if (
+        finalAccess?.unlocked ===
+        true
+      ) {
 
-  const finalQuestion =
-    await loadFinalNexusQuestion();
+        showFeedback(
+          "4 NEXUS CRYSTALS COMPLETE 💎 — FINAL NEXUS UNLOCKED!"
+        );
 
-  if (!finalQuestion) {
-    setSubmitDisabled(false);
-    return;
-  }
 
-  currentQuestion = finalQuestion;
-  selectedZone = null;
+        setMessage(
+          "Memuat FINAL NEXUS CHALLENGE..."
+        );
 
-  console.log(
-    "FINAL NEXUS LOADED:",
-    finalQuestion
-  );
 
-  renderQuestion(finalQuestion);
+        const finalQuestion =
+          await loadFinalNexusQuestion();
 
-  setMessage(
-    "🏆 FINAL NEXUS CHALLENGE — selesaikan tantangan terakhir!"
-  );
 
-  setSubmitDisabled(false);
+        if (!finalQuestion) {
 
-  return;
-}
+          setSubmitDisabled(
+            false
+          );
+
+
+          return;
+        }
+
+
+        currentQuestion =
+          finalQuestion;
+
+
+        selectedZone =
+          null;
+
+
+        console.log(
+          "FINAL NEXUS LOADED:",
+          finalQuestion
+        );
+
+
+        renderQuestion(
+          finalQuestion
+        );
+
+
+        setMessage(
+          "🏆 FINAL NEXUS CHALLENGE — selesaikan tantangan terakhir!"
+        );
+
+
+        setSubmitDisabled(
+          false
+        );
+
+
+        return;
+      }
+
 
       /*
         Beri waktu siswa melihat
@@ -2945,7 +3360,6 @@ if (finalAccess?.unlocked === true) {
        WRONG ANSWER
        ======================================================== */
 
-
     retryCount++;
 
 
@@ -2964,7 +3378,6 @@ if (finalAccess?.unlocked === true) {
       perbaikannya dapat direkam
       pada attempt berikutnya.
     */
-
 
     resetDiagnosticTimers();
 
@@ -3042,6 +3455,7 @@ function initializeZoneButtons() {
                 "Tunggu giliran Anda."
               );
 
+
               return;
             }
 
@@ -3115,7 +3529,8 @@ function initializeGameActions() {
 
 
             if (
-              action === "EVENT"
+              action ===
+              "EVENT"
             ) {
 
               setMessage(
@@ -3124,7 +3539,8 @@ function initializeGameActions() {
 
 
             } else if (
-              action === "DUEL"
+              action ===
+              "DUEL"
             ) {
 
               setMessage(
@@ -3133,7 +3549,8 @@ function initializeGameActions() {
 
 
             } else if (
-              action === "MAP"
+              action ===
+              "MAP"
             ) {
 
               setMessage(
@@ -3142,7 +3559,8 @@ function initializeGameActions() {
 
 
             } else if (
-              action === "HELP"
+              action ===
+              "HELP"
             ) {
 
               setMessage(
@@ -3159,6 +3577,8 @@ function initializeGameActions() {
 /* ============================================================
    END BAGIAN 3
    ============================================================ */
+
+
 /* ============================================================
    34. REALTIME PLAYERS
    ============================================================ */
@@ -3169,6 +3589,7 @@ function subscribePlayers() {
     !room ||
     playersChannel
   ) {
+
     return;
   }
 
@@ -3181,12 +3602,20 @@ function subscribePlayers() {
       .on(
         "postgres_changes",
         {
-          event: "*",
-          schema: "public",
-          table: "room_players",
+
+          event:
+            "*",
+
+          schema:
+            "public",
+
+          table:
+            "room_players",
+
           filter:
             `room_code=eq.${room}`
         },
+
         async function() {
 
           /*
@@ -3237,6 +3666,7 @@ function subscribeRoom() {
     !room ||
     roomChannel
   ) {
+
     return;
   }
 
@@ -3249,12 +3679,20 @@ function subscribeRoom() {
       .on(
         "postgres_changes",
         {
-          event: "UPDATE",
-          schema: "public",
-          table: "game_rooms",
+
+          event:
+            "UPDATE",
+
+          schema:
+            "public",
+
+          table:
+            "game_rooms",
+
           filter:
             `room_code=eq.${room}`
         },
+
         async function(payload) {
 
           console.log(
@@ -3434,9 +3872,11 @@ async function startMolNexusGame() {
     "================================"
   );
 
+
   console.log(
     "MOL-NEXUS GAME CONTROLLER v3.0"
   );
+
 
   console.log(
     "================================"
@@ -3490,6 +3930,7 @@ async function startMolNexusGame() {
     console.log(
       "STUDENT SESSION VALID:",
       {
+
         student_id:
           currentStudentId,
 
@@ -3535,6 +3976,7 @@ async function startMolNexusGame() {
             "lobby.html"
           );
         },
+
         1000
       );
 
@@ -3576,6 +4018,7 @@ async function startMolNexusGame() {
     console.log(
       "ROOM READY:",
       {
+
         room_code:
           roomData.room_code,
 
@@ -3627,6 +4070,7 @@ async function startMolNexusGame() {
     console.log(
       "CURRENT PLAYER READY:",
       {
+
         player_slot:
           currentPlayer.player_slot,
 
@@ -3709,12 +4153,15 @@ async function startMolNexusGame() {
       "================================"
     );
 
+
     console.log(
       "MOL-NEXUS GAME READY v3.0"
     );
 
+
     console.log(
       {
+
         room:
           room,
 
@@ -3734,6 +4181,7 @@ async function startMolNexusGame() {
           isMyTurn
       }
     );
+
 
     console.log(
       "================================"
@@ -3782,6 +4230,7 @@ async function startMolNexusGame() {
           "student-login.html"
         );
       },
+
       1200
     );
   }
