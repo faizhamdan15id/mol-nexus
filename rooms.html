@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOL-NEXUS | Room Permainan</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="rooms.css">
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MOL-NEXUS</p>
+      <h1>Room Permainan</h1>
+      <p class="subtitle">
+        Teacher Multiplayer Control Center
+      </p>
+    </div>
+
+    <div class="system-status">
+      <span class="status-dot"></span>
+      ROOM CONTROL ONLINE
+    </div>
+  </header>
+
+  <nav class="teacher-nav">
+    <a href="dashboard.html" class="nav-link">
+      📊 Dashboard
+    </a>
+
+    <a href="rooms.html" class="nav-link active">
+      🎮 Room
+    </a>
+
+    <a href="students.html" class="nav-link">
+      👥 Siswa
+    </a>
+
+    <a href="question-bank.html" class="nav-link">
+      📚 Bank Soal
+    </a>
+
+    <a href="formula-bank.html" class="nav-link">
+      🧪 Bank Rumus
+    </a>
+  </nav>
+
+
+  <main class="dashboard">
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Total Room</span>
+        <strong id="totalRooms">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Waiting</span>
+        <strong id="waitingRooms">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Playing</span>
+        <strong id="playingRooms">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Pemain Online</span>
+        <strong id="totalPlayers">0</strong>
+      </article>
+    </section>
+
+
+    <section class="panel">
+
+      <div class="panel-heading room-panel-heading">
+        <div>
+          <p class="section-label">
+            MULTIPLAYER CONTROL
+          </p>
+
+          <h2>
+            Daftar Room MOL-NEXUS
+          </h2>
+        </div>
+
+        <div class="room-heading-actions">
+          <button
+            id="refreshRoomsButton"
+            class="room-secondary-button"
+            type="button"
+          >
+            ↻ Refresh
+          </button>
+
+          <button
+            id="createRoomButton"
+            class="room-primary-button"
+            type="button"
+          >
+            + Buat Room
+          </button>
+        </div>
+      </div>
+
+
+      <div class="room-toolbar">
+        <input
+          id="roomSearch"
+          type="search"
+          placeholder="Cari kode room..."
+          autocomplete="off"
+        >
+
+        <select id="roomStatusFilter">
+          <option value="">Semua Status</option>
+          <option value="WAITING">WAITING</option>
+          <option value="PLAYING">PLAYING</option>
+          <option value="COMPLETED">COMPLETED</option>
+        </select>
+      </div>
+
+
+      <div
+        id="roomState"
+        class="state-message"
+      >
+        Memuat room permainan...
+      </div>
+
+      <div
+        id="roomList"
+        class="room-grid"
+      ></div>
+
+    </section>
+
+  </main>
+
+
+  <div
+    id="roomModal"
+    class="formula-modal"
+    hidden
+  >
+    <div class="formula-modal-card">
+
+      <div class="formula-modal-header">
+        <div>
+          <p class="section-label">
+            NEW MULTIPLAYER ROOM
+          </p>
+
+          <h2>
+            Buat Room Baru
+          </h2>
+        </div>
+
+        <button
+          id="closeRoomModal"
+          class="formula-modal-close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+
+
+      <form id="roomForm">
+
+        <label>
+          Kode Room
+          <input
+            id="roomCodeInput"
+            type="text"
+            maxlength="20"
+            placeholder="Contoh: KELAS12A"
+            required
+          >
+          <small>
+            4–20 karakter: huruf, angka, _ atau -
+          </small>
+        </label>
+
+
+        <label>
+          Kapasitas Pemain
+          <select
+            id="maxPlayersInput"
+            required
+          >
+            <option value="2">2 Pemain</option>
+            <option value="3">3 Pemain</option>
+            <option value="4" selected>4 Pemain</option>
+          </select>
+        </label>
+
+
+        <label>
+          Mode Permainan
+          <select id="gameModeInput">
+            <option value="STANDARD NEXUS">
+              STANDARD NEXUS
+            </option>
+          </select>
+        </label>
+
+
+        <button
+          id="saveRoomButton"
+          class="formula-save-button"
+          type="submit"
+        >
+          Buat Room
+        </button>
+
+      </form>
+
+    </div>
+  </div>
+
+
+  <div
+    id="playerModal"
+    class="formula-modal"
+    hidden
+  >
+    <div class="formula-modal-card room-player-modal-card">
+
+      <div class="formula-modal-header">
+        <div>
+          <p class="section-label">
+            ROOM MONITOR
+          </p>
+
+          <h2 id="playerModalTitle">
+            Pemain
+          </h2>
+        </div>
+
+        <button
+          id="closePlayerModal"
+          class="formula-modal-close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+
+      <div
+        id="playerList"
+        class="room-player-list"
+      ></div>
+
+    </div>
+  </div>
+
+
+  <footer>
+    MOL-NEXUS • Multiplayer Chemistry Learning Analytics System
+  </footer>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <script src="rooms.js"></script>
+
+</body>
+</html>
