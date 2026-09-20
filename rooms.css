@@ -335,3 +335,57 @@
     font-size: 16px;
   }
 }
+
+
+/* =========================================================
+   PLAYER CONTROL + RESET ACTIONS
+========================================================= */
+
+.room-reset-ready-button {
+  border: 1px solid rgba(255, 209, 102, 0.38);
+  background: rgba(255, 209, 102, 0.08);
+  color: #ffd166;
+}
+
+.room-reset-room-button {
+  border: 1px solid rgba(180, 140, 255, 0.38);
+  background: rgba(180, 140, 255, 0.08);
+  color: #b48cff;
+}
+
+.room-kick-button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px 14px;
+
+  border: 1px solid rgba(255, 101, 119, 0.38);
+  border-radius: 12px;
+
+  background: rgba(255, 101, 119, 0.08);
+  color: #ff6577;
+
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.room-kick-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 101, 119, 0.68);
+  background: rgba(255, 101, 119, 0.14);
+}
+
+.room-kick-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.room-player-lock-note {
+  margin-top: 13px;
+  color: #71859a;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
