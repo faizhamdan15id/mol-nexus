@@ -464,6 +464,14 @@ async function renderPlayers() {
         me.is_ready;
 
 
+    const allJoinedPlayersReady =
+        safePlayers.length >= 2 &&
+        safePlayers.every(
+            player =>
+                player.is_ready === true
+        );
+
+
     if (isReady) {
 
         readyButton.textContent =
@@ -474,7 +482,9 @@ async function renderPlayers() {
         );
 
         statusText.textContent =
-            "READY — WAITING FOR OTHER PLAYERS";
+            allJoinedPlayersReady
+                ? "ALL PLAYERS READY — WAITING FOR TEACHER TO START"
+                : "READY — WAITING FOR OTHER PLAYERS";
 
     } else {
 
@@ -489,10 +499,6 @@ async function renderPlayers() {
             "WAITING FOR OTHER PLAYERS";
 
     }
-
-
-    // Setelah render, cek apakah game bisa dimulai.
-    await tryStartGame();
 }
 
 
@@ -567,54 +573,15 @@ readyButton.addEventListener(
 
 
 // ============================================================
-// 10. TRY START GAME — SECURE RPC
+// 10. TEACHER-CONTROLLED START
 // ============================================================
-
-async function tryStartGame() {
-
-    if (
-        !sessionToken ||
-        !room ||
-        gameRedirectStarted
-    ) {
-
-        return;
-    }
-
-
-    const { data, error } =
-        await supabaseClient.rpc(
-           "try_start_room", 
-            {
-                p_session_token:
-                    sessionToken,
-
-                p_room_code:
-                    room
-            }
-        );
-
-
-    if (error) {
-
-        console.error(
-            "START GAME ERROR:",
-            error
-        );
-
-        return;
-    }
-
-
-    if (data === true) {
-
-        statusText.textContent =
-            "ALL PLAYERS READY — INITIALIZING NEXUS...";
-
-        goToGame();
-
-    }
-}
+//
+// Siswa hanya mengubah status READY.
+// Perubahan room menjadi PLAYING dilakukan guru
+// melalui Dashboard Guru (rooms.html).
+//
+// Lobby menunggu realtime update game_rooms.
+// ============================================================
 
 
 // ============================================================
