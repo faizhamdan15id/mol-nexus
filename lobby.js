@@ -456,6 +456,32 @@ async function renderPlayers() {
 
 
     if (!me) {
+
+        statusText.textContent =
+            "ANDA TIDAK LAGI TERDAFTAR DI ROOM INI";
+
+        readyButton.disabled =
+            true;
+
+        sessionStorage.removeItem(
+            "mol_nexus_room"
+        );
+
+        sessionStorage.removeItem(
+            "mol_nexus_player_slot"
+        );
+
+        setTimeout(
+            function () {
+
+                window.location.replace(
+                    "index.html"
+                );
+
+            },
+            1200
+        );
+
         return;
     }
 
