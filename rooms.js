@@ -79,6 +79,7 @@ const playerList =
 
 let roomsData = [];
 let refreshTimer = null;
+let currentPlayerModalRoom = null;
 
 
 function escapeHTML(value) {
@@ -256,6 +257,18 @@ function renderRooms() {
             status === "WAITING" ||
             status === "PLAYING";
 
+          const canResetReady =
+            status === "WAITING" &&
+            readyCount > 0;
+
+          const canResetRoom =
+            status !== "PLAYING" &&
+            (
+              playerCount > 0 ||
+              status === "COMPLETED" ||
+              room.active_session === true
+            );
+
 
           return `
             <article class="room-card">
@@ -360,6 +373,23 @@ function renderRooms() {
                 }
 
                 ${
+                  canResetReady
+                    ? `
+                      <button
+                        type="button"
+                        class="room-action-button room-reset-ready-button"
+                        data-action="reset-ready"
+                        data-room="${escapeHTML(
+                          room.room_code
+                        )}"
+                      >
+                        ↺ Reset READY
+                      </button>
+                    `
+                    : ""
+                }
+
+                ${
                   canEnd
                     ? `
                       <button
@@ -371,6 +401,23 @@ function renderRooms() {
                         )}"
                       >
                         ■ Akhiri Room
+                      </button>
+                    `
+                    : ""
+                }
+
+                ${
+                  canResetRoom
+                    ? `
+                      <button
+                        type="button"
+                        class="room-action-button room-reset-room-button"
+                        data-action="reset-room"
+                        data-room="${escapeHTML(
+                          room.room_code
+                        )}"
+                      >
+                        ♻ Reset Room
                       </button>
                     `
                     : ""
@@ -452,6 +499,20 @@ async function loadRooms(
 async function loadPlayers(
   roomCode
 ) {
+
+  currentPlayerModalRoom =
+    roomCode;
+
+  const roomData =
+    roomsData.find(
+      room =>
+        room.room_code === roomCode
+    );
+
+  const roomStatus =
+    normalizeStatus(
+      roomData?.status
+    );
 
   playerModalTitle.textContent =
     `Pemain • ${roomCode}`;
@@ -596,6 +657,33 @@ async function loadPlayers(
 
               </div>
 
+              ${
+                roomStatus === "WAITING"
+                  ? `
+                    <button
+                      type="button"
+                      class="room-kick-button"
+                      data-player-action="kick"
+                      data-room="${escapeHTML(
+                        roomCode
+                      )}"
+                      data-student-id="${escapeHTML(
+                        player.student_id
+                      )}"
+                      data-player-name="${escapeHTML(
+                        player.player_name
+                      )}"
+                    >
+                      ⛔ Keluarkan Pemain
+                    </button>
+                  `
+                  : `
+                    <p class="room-player-lock-note">
+                      Kontrol pemain dikunci saat game berlangsung.
+                    </p>
+                  `
+              }
+
             </article>
           `;
         }
@@ -603,6 +691,182 @@ async function loadPlayers(
       .join("");
 }
 
+
+async function kickPlayer(
+  roomCode,
+  studentId,
+  playerName,
+  button
+) {
+
+  const confirmed =
+    confirm(
+      `Keluarkan "${playerName}" dari room ${roomCode}?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const oldText =
+    button.textContent;
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    "Mengeluarkan...";
+
+  const { error } =
+    await supabaseClient.rpc(
+      "admin_kick_room_player",
+      {
+        p_room_code:
+          roomCode,
+        p_student_id:
+          studentId
+      }
+    );
+
+  if (error) {
+    console.error(
+      "KICK PLAYER ERROR:",
+      error
+    );
+    alert(
+      error.message ||
+      "Pemain gagal dikeluarkan."
+    );
+    button.disabled = false;
+    button.textContent = oldText;
+    return;
+  }
+
+  await loadRooms(true);
+  await loadPlayers(roomCode);
+}
+
+
+async function resetReady(
+  roomCode,
+  button
+) {
+
+  const confirmed =
+    confirm(
+      `Reset status READY semua pemain di room ${roomCode}?`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const oldText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Mereset...";
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "admin_reset_room_ready",
+      {
+        p_room_code:
+          roomCode
+      }
+    );
+
+  if (error) {
+    console.error(
+      "RESET READY ERROR:",
+      error
+    );
+    alert(
+      error.message ||
+      "Status READY gagal direset."
+    );
+    button.disabled = false;
+    button.textContent = oldText;
+    return;
+  }
+
+  await loadRooms(true);
+
+  if (
+    currentPlayerModalRoom === roomCode
+  ) {
+    await loadPlayers(roomCode);
+  }
+
+  alert(
+    `${Number(data || 0)} status READY berhasil direset.`
+  );
+}
+
+
+async function resetRoom(
+  roomCode,
+  button
+) {
+
+  const confirmed =
+    confirm(
+      `RESET ROOM ${roomCode}?\n\nSemua pemain akan dikeluarkan dan room kembali WAITING. Riwayat attempt penelitian yang sudah tersimpan tidak dihapus.`
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const oldText = button.textContent;
+  button.disabled = true;
+  button.textContent = "Resetting...";
+
+  const { error } =
+    await supabaseClient.rpc(
+      "admin_reset_room",
+      {
+        p_room_code:
+          roomCode
+      }
+    );
+
+  if (error) {
+    console.error(
+      "RESET ROOM ERROR:",
+      error
+    );
+
+    let message =
+      error.message ||
+      "Room gagal direset.";
+
+    if (
+      message.includes(
+        "ROOM_MUST_BE_ENDED_FIRST"
+      )
+    ) {
+      message =
+        "Game masih PLAYING. Akhiri Room terlebih dahulu sebelum reset.";
+    }
+
+    alert(message);
+    button.disabled = false;
+    button.textContent = oldText;
+    return;
+  }
+
+  if (
+    currentPlayerModalRoom === roomCode
+  ) {
+    playerModal.hidden = true;
+    currentPlayerModalRoom = null;
+  }
+
+  await loadRooms(true);
+
+  alert(
+    `Room ${roomCode} siap digunakan untuk pertandingan baru.`
+  );
+}
 
 async function startRoom(
   roomCode,
@@ -777,6 +1041,19 @@ roomList.addEventListener(
 
 
     if (
+      action === "reset-ready"
+    ) {
+
+      await resetReady(
+        roomCode,
+        button
+      );
+
+      return;
+    }
+
+
+    if (
       action === "end"
     ) {
 
@@ -784,10 +1061,51 @@ roomList.addEventListener(
         roomCode,
         button
       );
+
+      return;
+    }
+
+
+    if (
+      action === "reset-room"
+    ) {
+
+      await resetRoom(
+        roomCode,
+        button
+      );
     }
   }
 );
 
+
+playerList.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        "[data-player-action]"
+      );
+
+    if (!button) {
+      return;
+    }
+
+    if (
+      button.dataset.playerAction ===
+      "kick"
+    ) {
+
+      await kickPlayer(
+        button.dataset.room,
+        button.dataset.studentId,
+        button.dataset.playerName,
+        button
+      );
+    }
+  }
+);
 
 createRoomButton.addEventListener(
   "click",
@@ -822,6 +1140,9 @@ closePlayerModal.addEventListener(
 
     playerModal.hidden =
       true;
+
+    currentPlayerModalRoom =
+      null;
   }
 );
 
@@ -853,6 +1174,9 @@ playerModal.addEventListener(
 
       playerModal.hidden =
         true;
+
+      currentPlayerModalRoom =
+        null;
     }
   }
 );
