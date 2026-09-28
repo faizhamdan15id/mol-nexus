@@ -232,7 +232,7 @@
 <script>
   /*
    * MOL-NEXUS Teacher Authentication
-   * Gunakan publishable key yang sama dengan frontend MOL-NEXUS.
+   * Supabase Auth + teacher allowlist verification.
    */
 
   const SUPABASE_URL =
@@ -242,81 +242,226 @@
     "sb_publishable_IHtv0ZDrEQ7584lyNvbCWg_WFUW65oE";
 
   const molNexusAuth =
-    supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
 
-  const loginForm = document.getElementById("loginForm");
-  const loginButton = document.getElementById("loginButton");
-  const message = document.getElementById("message");
+  const loginForm =
+    document.getElementById("loginForm");
+
+  const loginButton =
+    document.getElementById("loginButton");
+
+  const message =
+    document.getElementById("message");
+
+
+  async function isAuthorizedTeacher() {
+
+    const {
+      data,
+      error
+    } =
+      await molNexusAuth.rpc(
+        "is_mol_nexus_teacher"
+      );
+
+    if (error) {
+
+      console.error(
+        "Teacher allowlist check failed:",
+        error
+      );
+
+      return false;
+    }
+
+    return data === true;
+  }
+
 
   async function checkExistingSession() {
 
     const {
       data: { session }
-    } = await molNexusAuth.auth.getSession();
+    } =
+      await molNexusAuth.auth.getSession();
 
-    if (session) {
-      window.location.replace("dashboard.html");
+
+    if (!session) {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+      if (
+        params.get("denied") === "1"
+      ) {
+
+        message.textContent =
+          "Akun tersebut tidak memiliki akses guru MOL-NEXUS.";
+
+        message.className =
+          "error";
+      }
+
+      return;
     }
+
+
+    const allowed =
+      await isAuthorizedTeacher();
+
+
+    if (allowed) {
+
+      window.location.replace(
+        "dashboard.html"
+      );
+
+      return;
+    }
+
+
+    await molNexusAuth.auth.signOut();
+
+    message.textContent =
+      "Akun ini berhasil login, tetapi tidak terdaftar sebagai guru MOL-NEXUS.";
+
+    message.className =
+      "error";
   }
+
 
   checkExistingSession();
 
-  loginForm.addEventListener("submit", async (event) => {
 
-    event.preventDefault();
+  loginForm.addEventListener(
+    "submit",
+    async event => {
 
-    message.textContent = "";
-    message.className = "";
+      event.preventDefault();
 
-    loginButton.disabled = true;
-    loginButton.textContent = "AUTHENTICATING...";
+      message.textContent = "";
+      message.className = "";
 
-    const email =
-      document.getElementById("email").value.trim();
-
-    const password =
-      document.getElementById("password").value;
-
-    try {
-
-      const { data, error } =
-        await molNexusAuth.auth.signInWithPassword({
-          email,
-          password
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data.session) {
-        throw new Error("Sesi autentikasi tidak berhasil dibuat.");
-      }
-
-      message.textContent =
-        "✓ Authentication successful. Opening Smart Analytics...";
-
-      message.className = "success";
-
-      setTimeout(() => {
-        window.location.replace("dashboard.html");
-      }, 600);
-
-    } catch (error) {
-
-      console.error("Teacher authentication failed.");
-
-      message.textContent =
-        "Akses ditolak. Periksa kembali email dan password.";
-
-      message.className = "error";
-
-      loginButton.disabled = false;
+      loginButton.disabled = true;
       loginButton.textContent =
-        "ACCESS SMART ANALYTICS →";
-    }
+        "AUTHENTICATING...";
 
-  });
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await molNexusAuth.auth.signInWithPassword(
+            {
+              email,
+              password
+            }
+          );
+
+
+        if (error) {
+          throw error;
+        }
+
+
+        if (!data.session) {
+
+          throw new Error(
+            "Sesi autentikasi tidak berhasil dibuat."
+          );
+        }
+
+
+        const allowed =
+          await isAuthorizedTeacher();
+
+
+        if (!allowed) {
+
+          await molNexusAuth.auth.signOut();
+
+          throw new Error(
+            "TEACHER_ACCESS_REQUIRED"
+          );
+        }
+
+
+        message.textContent =
+          "✓ Authentication successful. Opening Smart Analytics...";
+
+        message.className =
+          "success";
+
+
+        setTimeout(
+          () => {
+
+            window.location.replace(
+              "dashboard.html"
+            );
+
+          },
+          600
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Teacher authentication failed:",
+          error
+        );
+
+
+        if (
+          String(
+            error?.message || ""
+          ).includes(
+            "TEACHER_ACCESS_REQUIRED"
+          )
+        ) {
+
+          message.textContent =
+            "Akses ditolak. Akun ini tidak terdaftar sebagai guru MOL-NEXUS.";
+
+        } else {
+
+          message.textContent =
+            "Akses ditolak. Periksa kembali email dan password.";
+        }
+
+
+        message.className =
+          "error";
+
+        loginButton.disabled =
+          false;
+
+        loginButton.textContent =
+          "ACCESS SMART ANALYTICS →";
+      }
+    }
+  );
 </script>
 
 </body>
