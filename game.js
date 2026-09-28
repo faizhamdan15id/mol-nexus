@@ -266,12 +266,22 @@ const FORMULA_LIBRARY = [
 
   {
     id: "GAS_TO_MOL",
-    label: "n = V / 22.4"
+    label: "n = V / Vm"
   },
 
   {
     id: "MOL_TO_GAS",
-    label: "V = n × 22.4"
+    label: "V = n × Vm"
+  },
+
+  {
+    id: "IDEAL_GAS_TO_MOL",
+    label: "n = P × V / (R × T)"
+  },
+
+  {
+    id: "MOL_TO_IDEAL_GAS_VOLUME",
+    label: "V = n × R × T / P"
   },
 
   {
