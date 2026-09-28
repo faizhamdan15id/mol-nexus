@@ -80,14 +80,9 @@ if (!sessionToken) {
 
 if (!room) {
 
-    alert(
-        "DEBUG ROOM KOSONG\n" +
-        "TOKEN: " + (sessionToken ? "ADA" : "TIDAK ADA") +
-        "\nROOM: " + room
+    window.location.replace(
+        "student-access.html"
     );
-
-    // DEBUG: jangan redirect dulu
-    // window.location.replace("index.html");
 
 }
 
@@ -474,9 +469,7 @@ async function renderPlayers() {
         setTimeout(
             function () {
 
-                window.location.replace(
-                    "index.html"
-                );
+                window.location.replace("student-access.html");
 
             },
             1200
@@ -672,9 +665,7 @@ leaveButton.addEventListener(
         );
 
 
-        window.location.replace(
-            "index.html"
-        );
+        window.location.replace("student-access.html");
 
     }
 );
