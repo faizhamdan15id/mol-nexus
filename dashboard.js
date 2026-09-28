@@ -27,22 +27,66 @@ const supabaseClient =
 ========================================================= */
 
 async function requireTeacherAuth() {
+
   try {
+
     const {
       data: { session },
       error
-    } = await supabaseClient.auth.getSession();
+    } =
+      await supabaseClient.auth.getSession();
 
     if (error || !session) {
-      window.location.replace("teacher-login.html");
+
+      window.location.replace(
+        "teacher-login.html"
+      );
+
       return false;
     }
+
+
+    const {
+      data: isTeacher,
+      error: teacherError
+    } =
+      await supabaseClient.rpc(
+        "is_mol_nexus_teacher"
+      );
+
+
+    if (
+      teacherError ||
+      isTeacher !== true
+    ) {
+
+      console.warn(
+        "TEACHER ACCESS DENIED"
+      );
+
+      await supabaseClient.auth.signOut();
+
+      window.location.replace(
+        "teacher-login.html?denied=1"
+      );
+
+      return false;
+    }
+
 
     return true;
 
   } catch (error) {
-    console.error("Authentication check failed.");
-    window.location.replace("teacher-login.html");
+
+    console.error(
+      "Teacher authorization check failed:",
+      error
+    );
+
+    window.location.replace(
+      "teacher-login.html"
+    );
+
     return false;
   }
 }
