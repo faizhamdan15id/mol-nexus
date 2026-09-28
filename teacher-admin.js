@@ -295,7 +295,40 @@ async function invokeTeacherAdmin(
 
 
   if (error) {
-    throw error;
+
+    let detail = null;
+
+
+    try {
+
+      if (
+        error.context &&
+        typeof error.context.json ===
+          "function"
+      ) {
+
+        detail =
+          await error.context.json();
+      }
+
+    } catch {
+      detail = null;
+    }
+
+
+    const failure =
+      new Error(
+        detail?.error ||
+        error.message ||
+        "EDGE_FUNCTION_ERROR"
+      );
+
+
+    failure.payload =
+      detail;
+
+
+    throw failure;
   }
 
 
