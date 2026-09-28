@@ -1688,3 +1688,282 @@ footer {
 
   cursor: pointer;
 }
+
+
+/* =========================================================
+   FINAL ANALYTICS OVERVIEW
+========================================================= */
+
+.analytics-overview-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.overview-panel {
+  margin-top: 0;
+}
+
+.panel-caption {
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   DASHBOARD FILTERS
+========================================================= */
+
+.dashboard-tools {
+  display: grid;
+  grid-template-columns:
+    minmax(220px, 2fr)
+    repeat(3, minmax(145px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dashboard-tools input,
+.dashboard-tools select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+
+  border:
+    1px solid
+    rgba(34, 220, 255, 0.18);
+
+  border-radius: 12px;
+
+  background:
+    rgba(4, 20, 32, 0.82);
+
+  color: var(--text);
+
+  font: inherit;
+}
+
+.dashboard-tools input::placeholder {
+  color: var(--muted-2);
+}
+
+.dashboard-tools input:focus,
+.dashboard-tools select:focus {
+  outline: none;
+
+  border-color:
+    rgba(34, 220, 255, 0.62);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(34, 220, 255, 0.08);
+}
+
+.dashboard-updated {
+  margin:
+    4px
+    0
+    20px;
+
+  color: var(--muted-2);
+
+  font-size: 0.76rem;
+}
+
+
+/* =========================================================
+   PROFILE DISTRIBUTION
+========================================================= */
+
+.profile-distribution {
+  display: grid;
+  gap: 15px;
+}
+
+.distribution-row {
+  display: grid;
+  gap: 9px;
+}
+
+.distribution-label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.distribution-label div {
+  min-width: 0;
+}
+
+.distribution-label strong,
+.distribution-label small {
+  display: block;
+}
+
+.distribution-label strong {
+  color: var(--text);
+  font-size: 0.86rem;
+}
+
+.distribution-label small {
+  overflow: hidden;
+  margin-top: 2px;
+
+  color: var(--muted-2);
+
+  font-size: 0.72rem;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.distribution-meter {
+  width: 100%;
+  height: 7px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255, 255, 255, 0.07);
+}
+
+.distribution-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #18c9f3,
+      #3ee5bd
+    );
+
+  transition:
+    width 0.25s ease;
+}
+
+
+/* =========================================================
+   NEXUS PERFORMANCE
+========================================================= */
+
+.nexus-performance {
+  display: grid;
+  gap: 18px;
+}
+
+.nexus-performance-row {
+  display: grid;
+  gap: 8px;
+}
+
+.nexus-performance-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.nexus-performance-label span {
+  color: var(--muted);
+  font-size: 0.79rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.nexus-performance-label strong {
+  color: var(--cyan);
+  font-size: 0.93rem;
+}
+
+
+/* =========================================================
+   STUDENT SNAPSHOT EXTRAS
+========================================================= */
+
+.student-class-label {
+  margin-top: 6px;
+
+  color: var(--muted-2);
+
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.student-weakness {
+  margin-top: 14px;
+  padding: 10px 12px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.06);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  color: var(--muted-2);
+
+  font-size: 0.76rem;
+}
+
+.student-weakness strong {
+  color: var(--text);
+}
+
+.detail-section-title {
+  margin:
+    20px
+    0
+    10px;
+
+  color: var(--muted);
+
+  font-size: 0.76rem;
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   FINAL DASHBOARD RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .analytics-overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-tools {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 600px) {
+
+  .dashboard-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-tools input,
+  .dashboard-tools select {
+    font-size: 16px;
+  }
+
+  .distribution-label small {
+    white-space: normal;
+  }
+}
