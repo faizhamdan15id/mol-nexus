@@ -77,6 +77,11 @@ let lastQuestionId = null;
 let playersChannel = null;
 let roomChannel = null;
 
+let turnDeadlineAtMs = null;
+let serverClockOffsetMs = 0;
+let turnTimerInterval = null;
+let timeoutAdvancePending = false;
+
 
 /* ============================================================
    3. DOM HELPERS
@@ -108,6 +113,15 @@ const currentPlayerName =
 
 const turnStatus =
   $("turnStatus");
+
+const turnTimerBox =
+  $("turnTimerBox");
+
+const turnTimer =
+  $("turnTimer");
+
+const turnTimerNote =
+  $("turnTimerNote");
 
 const gameMessage =
   $("gameMessage");
@@ -894,6 +908,408 @@ function renderBasicData() {
 
 
 /* ============================================================
+   TURN TIMER
+   ============================================================ */
+
+function formatTurnTime(
+  remainingMs
+) {
+
+  const totalSeconds =
+    Math.max(
+      0,
+      Math.ceil(
+        remainingMs / 1000
+      )
+    );
+
+
+  const minutes =
+    Math.floor(
+      totalSeconds / 60
+    );
+
+
+  const seconds =
+    totalSeconds % 60;
+
+
+  return (
+    String(minutes)
+      .padStart(
+        2,
+        "0"
+      ) +
+    ":" +
+    String(seconds)
+      .padStart(
+        2,
+        "0"
+      )
+  );
+}
+
+
+function getEstimatedServerNowMs() {
+
+  return (
+    Date.now() +
+    serverClockOffsetMs
+  );
+}
+
+
+function renderTurnTimer() {
+
+  if (
+    !turnTimer ||
+    !turnTimerBox
+  ) {
+
+    return;
+  }
+
+
+  turnTimerBox.classList.remove(
+    "warning",
+    "danger",
+    "inactive"
+  );
+
+
+  if (
+    !Number.isFinite(
+      turnDeadlineAtMs
+    )
+  ) {
+
+    turnTimer.textContent =
+      "--:--";
+
+
+    turnTimerBox.classList.add(
+      "inactive"
+    );
+
+
+    if (turnTimerNote) {
+
+      turnTimerNote.textContent =
+        "Menunggu timer giliran";
+    }
+
+
+    return;
+  }
+
+
+  const remainingMs =
+    turnDeadlineAtMs -
+    getEstimatedServerNowMs();
+
+
+  turnTimer.textContent =
+    formatTurnTime(
+      remainingMs
+    );
+
+
+  if (
+    remainingMs <= 15000
+  ) {
+
+    turnTimerBox.classList.add(
+      "danger"
+    );
+
+
+  } else if (
+    remainingMs <= 60000
+  ) {
+
+    turnTimerBox.classList.add(
+      "warning"
+    );
+  }
+
+
+  if (turnTimerNote) {
+
+    turnTimerNote.textContent =
+      isMyTurn
+        ? "Selesaikan challenge sebelum waktu habis"
+        : `Sisa waktu Player ${currentTurn}`;
+  }
+
+
+  if (
+    remainingMs <= 0 &&
+    !timeoutAdvancePending
+  ) {
+
+    void expireTurnIfNeeded();
+  }
+}
+
+
+async function syncTurnTimer() {
+
+  if (
+    !sessionToken ||
+    !room
+  ) {
+
+    return null;
+  }
+
+
+  const requestStartedAt =
+    Date.now();
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_turn_state",
+      {
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "TURN TIMER SYNC ERROR:",
+      error
+    );
+
+
+    return null;
+  }
+
+
+  const state =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!state) {
+
+    return null;
+  }
+
+
+  const responseReceivedAt =
+    Date.now();
+
+
+  const midpointClientTime =
+    requestStartedAt +
+    (
+      responseReceivedAt -
+      requestStartedAt
+    ) / 2;
+
+
+  const serverNowMs =
+    Date.parse(
+      state.server_now
+    );
+
+
+  if (
+    Number.isFinite(
+      serverNowMs
+    )
+  ) {
+
+    serverClockOffsetMs =
+      serverNowMs -
+      midpointClientTime;
+  }
+
+
+  currentTurn =
+    Number(
+      state.current_turn ||
+      currentTurn ||
+      1
+    );
+
+
+  const deadlineMs =
+    Date.parse(
+      state.turn_deadline_at
+    );
+
+
+  turnDeadlineAtMs =
+    Number.isFinite(
+      deadlineMs
+    )
+      ? deadlineMs
+      : null;
+
+
+  renderTurnTimer();
+
+
+  return state;
+}
+
+
+async function expireTurnIfNeeded() {
+
+  if (
+    timeoutAdvancePending ||
+    !sessionToken ||
+    !room
+  ) {
+
+    return;
+  }
+
+
+  timeoutAdvancePending =
+    true;
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "expire_turn_if_needed",
+        {
+
+          p_session_token:
+            sessionToken,
+
+          p_room_code:
+            room
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "TURN TIMEOUT ERROR:",
+        error
+      );
+
+
+      return;
+    }
+
+
+    const result =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      result?.expired ===
+      true
+    ) {
+
+      currentQuestion =
+        null;
+
+
+      showFeedback(
+        "⏱ Waktu 5 menit habis. Giliran berpindah ke pemain berikutnya."
+      );
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      resetAttemptState();
+
+
+      await loadGamePlayers();
+
+
+      const roomData =
+        await loadGameRoom();
+
+
+      if (roomData) {
+
+        applyTurnState(
+          roomData
+        );
+      }
+    }
+
+
+    await syncTurnTimer();
+
+
+    if (
+      result?.expired === true &&
+      isMyTurn
+    ) {
+
+      await loadQuestion();
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "TURN TIMEOUT HANDLER ERROR:",
+      error
+    );
+
+
+  } finally {
+
+    timeoutAdvancePending =
+      false;
+  }
+}
+
+
+function startTurnTimerLoop() {
+
+  if (
+    turnTimerInterval
+  ) {
+
+    clearInterval(
+      turnTimerInterval
+    );
+  }
+
+
+  turnTimerInterval =
+    setInterval(
+      renderTurnTimer,
+      250
+    );
+
+
+  renderTurnTimer();
+}
+
+
+/* ============================================================
    13. TURN STATE
    ============================================================ */
 
@@ -912,6 +1328,28 @@ function applyTurnState(roomData) {
     Number(
       roomData.current_turn || 1
     );
+
+
+  if (
+    roomData.turn_deadline_at
+  ) {
+
+    const deadlineMs =
+      Date.parse(
+        roomData.turn_deadline_at
+      );
+
+
+    turnDeadlineAtMs =
+      Number.isFinite(
+        deadlineMs
+      )
+        ? deadlineMs
+        : turnDeadlineAtMs;
+  }
+
+
+  renderTurnTimer();
 
 
   const mySlot =
@@ -3017,6 +3455,9 @@ async function advanceTurn() {
   );
 
 
+  await syncTurnTimer();
+
+
   return true;
 }
 
@@ -3741,6 +4182,9 @@ function subscribeRoom() {
           );
 
 
+          await syncTurnTimer();
+
+
           /*
             Jika sebelumnya bukan giliran
             siswa ini, lalu sekarang menjadi
@@ -4108,6 +4552,11 @@ async function startMolNexusGame() {
     );
 
 
+    await syncTurnTimer();
+
+    startTurnTimerLoop();
+
+
     /* ========================================================
        STEP 6
        START REALTIME
@@ -4257,6 +4706,14 @@ async function startMolNexusGame() {
 window.addEventListener(
   "beforeunload",
   function() {
+
+    if (turnTimerInterval) {
+
+      clearInterval(
+        turnTimerInterval
+      );
+    }
+
 
     if (playersChannel) {
 
