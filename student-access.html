@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#061522">
+
+  <title>MOL-NEXUS | Student Room Access</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #030b14;
+      --panel: rgba(7, 27, 44, .92);
+      --border: rgba(37, 216, 244, .20);
+      --text: #f4fbff;
+      --muted: #8fa7b8;
+      --cyan: #25d8f4;
+      --green: #42e6af;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(
+          circle at 50% 5%,
+          rgba(37, 216, 244, .16),
+          transparent 38%
+        ),
+        linear-gradient(
+          180deg,
+          #061522,
+          #030b14 58%,
+          #020810
+        );
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .25;
+      background-image:
+        linear-gradient(
+          rgba(63, 180, 208, .07) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(63, 180, 208, .07) 1px,
+          transparent 1px
+        );
+      background-size: 42px 42px;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 560px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+      margin-bottom: 26px;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(37, 216, 244, .45);
+      border-radius: 50%;
+      background:
+        radial-gradient(
+          circle,
+          rgba(37, 216, 244, .18),
+          transparent 64%
+        );
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 35px;
+      height: 13px;
+      border: 1px solid rgba(66, 230, 175, .58);
+      border-radius: 50%;
+      transform:
+        translate(-50%, -50%)
+        rotate(35deg);
+    }
+
+    .brand-mark::after {
+      transform:
+        translate(-50%, -50%)
+        rotate(-35deg);
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 1.25rem;
+      letter-spacing: .08em;
+    }
+
+    .brand-copy strong span {
+      color: var(--cyan);
+    }
+
+    .brand-copy small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .72rem;
+      letter-spacing: .08em;
+    }
+
+    .card {
+      padding: 30px;
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(10, 38, 58, .95),
+          rgba(5, 20, 33, .97)
+        );
+      box-shadow:
+        0 28px 80px rgba(0, 0, 0, .42);
+      backdrop-filter: blur(18px);
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .14em;
+    }
+
+    h1 {
+      margin-top: 8px;
+      font-size: 1.9rem;
+      letter-spacing: -.035em;
+    }
+
+    .intro {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.65;
+    }
+
+    .form {
+      display: grid;
+      gap: 18px;
+      margin-top: 26px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: #a9bdca;
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+
+    input {
+      width: 100%;
+      height: 52px;
+      padding: 0 15px;
+      border: 1px solid rgba(37, 216, 244, .18);
+      border-radius: 12px;
+      outline: none;
+      background: #061927;
+      color: #ffffff;
+      font: inherit;
+    }
+
+    input:focus {
+      border-color: var(--cyan);
+      box-shadow:
+        0 0 0 3px rgba(37, 216, 244, .08);
+    }
+
+    #studentName {
+      color: #cce7f2;
+      background: rgba(255, 255, 255, .025);
+    }
+
+    #roomCode {
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-weight: 900;
+    }
+
+    #joinButton {
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      color: #03151a;
+      background:
+        linear-gradient(
+          90deg,
+          var(--cyan),
+          var(--green)
+        );
+      font: inherit;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+
+    #joinButton:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    .message {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      color: transparent;
+      font-size: .82rem;
+      line-height: 1.55;
+    }
+
+    .message.error,
+    .message.success {
+      padding: 12px 14px;
+      border-radius: 11px;
+    }
+
+    .message.error {
+      color: #ffb6bd;
+      border: 1px solid rgba(255, 70, 90, .25);
+      background: rgba(255, 70, 90, .08);
+    }
+
+    .message.success {
+      color: #a9ffe1;
+      border: 1px solid rgba(63, 255, 193, .22);
+      background: rgba(63, 255, 193, .07);
+    }
+
+    .note {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, .06);
+      color: #728b9d;
+      font-size: .75rem;
+      line-height: 1.6;
+    }
+
+    .back {
+      display: inline-flex;
+      margin-top: 18px;
+      color: #8ca6b8;
+      font-size: .78rem;
+      text-decoration: none;
+    }
+
+    .back:hover {
+      color: var(--cyan);
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 16px;
+      }
+
+      .card {
+        padding: 22px 18px;
+        border-radius: 22px;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <div class="brand">
+
+      <div
+        class="brand-mark"
+        aria-hidden="true"
+      ></div>
+
+      <div class="brand-copy">
+
+        <strong>
+          MOL<span>-NEXUS</span>
+        </strong>
+
+        <small>
+          STUDENT ACCESS
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <section class="card">
+
+      <p class="eyebrow">
+        NEXUS ROOM
+      </p>
+
+      <h1>
+        Masuk ke Room Permainan
+      </h1>
+
+      <p class="intro">
+        Identitas siswa sudah diverifikasi.
+        Masukkan kode room yang diberikan guru untuk bergabung ke Multiplayer Lobby.
+      </p>
+
+
+      <div class="form">
+
+        <label>
+          NAMA SISWA
+
+          <input
+            id="studentName"
+            type="text"
+            readonly
+            aria-readonly="true"
+          >
+        </label>
+
+
+        <label>
+          KODE ROOM
+
+          <input
+            id="roomCode"
+            type="text"
+            maxlength="20"
+            autocomplete="off"
+            placeholder="Contoh: KIMIA01"
+          >
+        </label>
+
+
+        <button
+          id="joinButton"
+          type="button"
+          disabled
+        >
+          <span>JOIN NEXUS →</span>
+        </button>
+
+
+        <div
+          id="message"
+          class="message"
+          aria-live="polite"
+        ></div>
+
+      </div>
+
+
+      <p class="note">
+        🔒 Nama siswa berasal dari session terverifikasi.
+        Room Code hanya digunakan untuk bergabung ke sesi permainan aktif.
+      </p>
+
+
+      <a
+        class="back"
+        href="student-login.html"
+      >
+        ← Login dengan siswa lain
+      </a>
+
+    </section>
+
+  </main>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
