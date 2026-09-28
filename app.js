@@ -58,7 +58,7 @@ async function validateStudentAccess() {
 
     /*
     Jika tidak punya token Student Login,
-    jangan izinkan masuk melalui index.html langsung.
+    jangan izinkan masuk ke halaman Room Access secara langsung.
     */
 
     if (!sessionToken) {
