@@ -1,152 +1,848 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOL-NEXUS</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#061522"
+  >
+
+  <title>MOL-NEXUS | Chemistry Learning System</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #030b14;
+      --panel: rgba(7, 27, 44, .88);
+      --panel-2: rgba(8, 32, 49, .72);
+      --border: rgba(65, 198, 226, .18);
+      --border-strong: rgba(65, 198, 226, .42);
+      --text: #f4fbff;
+      --muted: #93a9ba;
+      --cyan: #25d8f4;
+      --green: #42e6af;
+      --blue: #70a9ff;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .38);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(
+          circle at 50% -15%,
+          rgba(37, 216, 244, .15),
+          transparent 36%
+        ),
+        radial-gradient(
+          circle at 85% 25%,
+          rgba(66, 230, 175, .08),
+          transparent 28%
+        ),
+        linear-gradient(
+          180deg,
+          #061522 0%,
+          #030b14 56%,
+          #020810 100%
+        );
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .28;
+      background-image:
+        linear-gradient(
+          rgba(63, 180, 208, .07) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(63, 180, 208, .07) 1px,
+          transparent 1px
+        );
+      background-size: 42px 42px;
+      mask-image:
+        linear-gradient(
+          to bottom,
+          black,
+          transparent 88%
+        );
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 30px 0 34px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 8px 2px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border:
+        1px solid
+        rgba(37, 216, 244, .42);
+      border-radius: 50%;
+      background:
+        radial-gradient(
+          circle,
+          rgba(37, 216, 244, .22),
+          rgba(37, 216, 244, .03) 60%,
+          transparent 62%
+        );
+      box-shadow:
+        0 0 25px
+        rgba(37, 216, 244, .12);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 32px;
+      height: 12px;
+      border:
+        1px solid
+        rgba(66, 230, 175, .55);
+      border-radius: 50%;
+      transform:
+        translate(-50%, -50%)
+        rotate(35deg);
+    }
+
+    .brand-mark::after {
+      transform:
+        translate(-50%, -50%)
+        rotate(-35deg);
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-size: 1rem;
+      letter-spacing: .08em;
+    }
+
+    .brand-copy strong span {
+      color: var(--cyan);
+    }
+
+    .brand-copy small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .7rem;
+      letter-spacing: .08em;
+    }
+
+    .network-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border:
+        1px solid
+        rgba(66, 230, 175, .16);
+      border-radius: 999px;
+      background:
+        rgba(66, 230, 175, .045);
+      color: #aef4d9;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow:
+        0 0 14px
+        rgba(66, 230, 175, .8);
+    }
+
+    .hero {
+      min-height: calc(100vh - 150px);
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1.1fr)
+        minmax(420px, .9fr);
+      align-items: center;
+      gap: 70px;
+      padding: 72px 0 60px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 22px;
+      color: var(--cyan);
+      font-size: .74rem;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 28px;
+      height: 1px;
+      background: var(--cyan);
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size:
+        clamp(
+          3.1rem,
+          8vw,
+          6.7rem
+        );
+      line-height: .9;
+      letter-spacing: -.06em;
+    }
+
+    h1 span {
+      color: var(--cyan);
+    }
+
+    .hero-subtitle {
+      max-width: 680px;
+      margin-top: 26px;
+      color: #c4d1dc;
+      font-size:
+        clamp(
+          1rem,
+          2vw,
+          1.18rem
+        );
+      line-height: 1.75;
+    }
+
+    .hero-subtitle strong {
+      color: var(--text);
+    }
+
+    .nexus-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 28px;
+    }
+
+    .nexus-tag {
+      padding: 8px 11px;
+      border:
+        1px solid
+        rgba(255, 255, 255, .08);
+      border-radius: 10px;
+      background:
+        rgba(255, 255, 255, .025);
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .07em;
+    }
+
+    .access-panel {
+      position: relative;
+      padding: 25px;
+      border:
+        1px solid
+        var(--border);
+      border-radius: 26px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(10, 38, 58, .92),
+          rgba(5, 20, 33, .94)
+        );
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .access-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(37, 216, 244, .07),
+          transparent 34%,
+          rgba(66, 230, 175, .03)
+        );
+    }
+
+    .access-head {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .access-head small {
+      color: var(--cyan);
+      font-size: .7rem;
+      font-weight: 900;
+      letter-spacing: .14em;
+    }
+
+    .access-head h2 {
+      margin-top: 8px;
+      font-size: 1.45rem;
+      letter-spacing: -.02em;
+    }
+
+    .access-head p {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.55;
+    }
+
+    .role-grid {
+      position: relative;
+      display: grid;
+      gap: 13px;
+    }
+
+    .role-card {
+      display: grid;
+      grid-template-columns:
+        48px
+        minmax(0, 1fr)
+        auto;
+      align-items: center;
+      gap: 15px;
+      padding: 18px;
+      border:
+        1px solid
+        rgba(255, 255, 255, .075);
+      border-radius: 18px;
+      background:
+        rgba(255, 255, 255, .025);
+      transition:
+        transform .18s ease,
+        border-color .18s ease,
+        background .18s ease;
+    }
+
+    .role-card:hover {
+      transform:
+        translateY(-2px);
+      border-color:
+        var(--border-strong);
+      background:
+        rgba(37, 216, 244, .055);
+    }
+
+    .role-icon {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background:
+        rgba(37, 216, 244, .08);
+      font-size: 1.35rem;
+    }
+
+    .role-card.student .role-icon {
+      background:
+        rgba(66, 230, 175, .08);
+    }
+
+    .role-copy strong {
+      display: block;
+      font-size: .96rem;
+    }
+
+    .role-copy span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .76rem;
+      line-height: 1.45;
+    }
+
+    .role-arrow {
+      color: var(--cyan);
+      font-size: 1.3rem;
+    }
+
+    .role-card.student .role-arrow {
+      color: var(--green);
+    }
+
+    .security-note {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 17px;
+      border-top:
+        1px solid
+        rgba(255, 255, 255, .06);
+      color: #7890a3;
+      font-size: .72rem;
+      line-height: 1.55;
+    }
+
+    .research-strip {
+      display: grid;
+      grid-template-columns:
+        repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .research-item {
+      padding: 16px 18px;
+      border:
+        1px solid
+        rgba(255, 255, 255, .055);
+      border-radius: 15px;
+      background:
+        rgba(255, 255, 255, .018);
+    }
+
+    .research-item strong {
+      display: block;
+      color: #d7e8f2;
+      font-size: .78rem;
+    }
+
+    .research-item span {
+      display: block;
+      margin-top: 4px;
+      color: #71899b;
+      font-size: .7rem;
+      line-height: 1.4;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 2px 8px;
+      border-top:
+        1px solid
+        rgba(255, 255, 255, .05);
+      color: #61798c;
+      font-size: .68rem;
+      letter-spacing: .04em;
+    }
+
+    @media (
+      max-width: 900px
+    ) {
+
+      .hero {
+        min-height: auto;
+        grid-template-columns: 1fr;
+        gap: 42px;
+        padding:
+          64px
+          0
+          46px;
+      }
+
+      .hero-copy {
+        max-width: 760px;
+      }
+
+      .access-panel {
+        max-width: 680px;
+      }
+
+      .research-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (
+      max-width: 600px
+    ) {
+
+      .page {
+        width:
+          min(
+            100% - 24px,
+            1180px
+          );
+        padding-top: 18px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .brand-copy small {
+        display: none;
+      }
+
+      .network-status {
+        padding: 8px 10px;
+        font-size: .62rem;
+      }
+
+      .hero {
+        padding-top: 52px;
+      }
+
+      h1 {
+        font-size:
+          clamp(
+            3rem,
+            17vw,
+            4.6rem
+          );
+      }
+
+      .hero-subtitle {
+        margin-top: 20px;
+      }
+
+      .access-panel {
+        padding: 18px;
+        border-radius: 22px;
+      }
+
+      .role-card {
+        grid-template-columns:
+          44px
+          minmax(0, 1fr)
+          auto;
+        gap: 12px;
+        padding: 15px;
+      }
+
+      .role-icon {
+        width: 44px;
+        height: 44px;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 6px;
+      }
+    }
+  </style>
 </head>
+
 
 <body>
 
-<div class="background-grid"></div>
+  <main class="page">
 
-<main class="app">
+    <header class="topbar">
 
-    <section class="brand">
+      <div class="brand">
 
-        <div class="atom-logo">
-            <div class="nucleus"></div>
-            <div class="orbit orbit-1"></div>
-            <div class="orbit orbit-2"></div>
-            <div class="orbit orbit-3"></div>
+        <div
+          class="brand-mark"
+          aria-hidden="true"
+        ></div>
+
+        <div class="brand-copy">
+
+          <strong>
+            MOL<span>-NEXUS</span>
+          </strong>
+
+          <small>
+            CHEMISTRY LEARNING SYSTEM
+          </small>
+
         </div>
 
-        <p class="system-label">
-            STOICHIOMETRY LEARNING SYSTEM
+      </div>
+
+
+      <div class="network-status">
+
+        <span class="status-dot"></span>
+
+        NEXUS ONLINE
+
+      </div>
+
+    </header>
+
+
+    <section class="hero">
+
+      <div class="hero-copy">
+
+        <div class="eyebrow">
+          Multiplayer Chemistry Learning
+        </div>
+
+        <h1>
+          MOL<span>-NEXUS</span>
+        </h1>
+
+        <p class="hero-subtitle">
+
+          <strong>
+            Digital Board Game & Smart Analytics
+          </strong>
+
+          untuk pembelajaran stoikiometri,
+          pemetaan proses kognitif,
+          dan literasi numerasi kimia.
+
         </p>
 
-        <h1>MOL<span>-NEXUS</span></h1>
 
-        <p class="tagline">
-            MASTER STOICHIOMETRY.<br>
-            CONNECT KNOWLEDGE.
-        </p>
+        <div class="nexus-tags">
 
-    </section>
-
-    <section class="login-card">
-
-        <div class="card-top">
-            <span class="status-dot"></span>
-            <span>NEXUS ACCESS TERMINAL</span>
-        </div>
-
-        <h2>ENTER THE NEXUS</h2>
-
-        <p class="description">
-            Masukkan identitas pemain dan kode room
-            untuk bergabung ke permainan.
-        </p>
-
-        <div class="input-group">
-
-            <label for="studentName">
-                NAMA / KODE SISWA
-            </label>
-
-            <div class="input-box">
-
-                <span class="icon">◉</span>
-
-                <input
-                    id="studentName"
-                    type="text"
-                    placeholder="Contoh: Ahmad / S001"
-                    autocomplete="off"
-                >
-
-            </div>
-
-        </div>
-
-        <div class="input-group">
-
-            <label for="roomCode">
-                ROOM CODE
-            </label>
-
-            <div class="input-box">
-
-                <span class="icon">◈</span>
-
-                <input
-                    id="roomCode"
-                    type="text"
-                    placeholder="Contoh: NEXUS01"
-                    maxlength="20"
-                    autocomplete="off"
-                >
-
-            </div>
-
-        </div>
-
-        <div id="message" class="message"></div>
-
-        <button id="joinButton" class="join-button">
-            <span>JOIN NEXUS</span>
-            <span class="arrow">→</span>
-        </button>
-
-        <div class="system-status">
-
-            <div>
-                <span class="status-dot"></span>
-                SYSTEM ONLINE
-            </div>
-
-            <div>v1.0</div>
-
-        </div>
-
-    </section>
-
-    <section class="nexus-info">
-
-        <div class="nexus-item mass">
-            <span>⚖</span>
+          <span class="nexus-tag">
             MASS
-        </div>
+          </span>
 
-        <div class="nexus-item particle">
-            <span>⚛</span>
+          <span class="nexus-tag">
             PARTICLE
-        </div>
+          </span>
 
-        <div class="nexus-item gas">
-            <span>◌</span>
+          <span class="nexus-tag">
             GAS
+          </span>
+
+          <span class="nexus-tag">
+            SOLUTION
+          </span>
+
+          <span class="nexus-tag">
+            SMART ANALYTICS
+          </span>
+
         </div>
 
-        <div class="nexus-item solution">
-            <span>⚗</span>
-            SOLUTION
+      </div>
+
+
+      <section
+        class="access-panel"
+        aria-label="Pilihan akses MOL-NEXUS"
+      >
+
+        <div class="access-head">
+
+          <small>
+            NEXUS ACCESS
+          </small>
+
+          <h2>
+            Pilih akses Anda
+          </h2>
+
+          <p>
+            Masuk sebagai guru untuk mengelola
+            pembelajaran atau sebagai siswa
+            untuk memulai permainan.
+          </p>
+
         </div>
+
+
+        <div class="role-grid">
+
+          <a
+            class="role-card teacher"
+            href="teacher-login.html"
+          >
+
+            <div class="role-icon">
+              👨‍🏫
+            </div>
+
+            <div class="role-copy">
+
+              <strong>
+                Login Guru
+              </strong>
+
+              <span>
+                Dashboard, Room, Siswa,
+                Bank Soal, Bank Rumus,
+                dan Smart Analytics.
+              </span>
+
+            </div>
+
+            <span class="role-arrow">
+              →
+            </span>
+
+          </a>
+
+
+          <a
+            class="role-card student"
+            href="student-login.html"
+          >
+
+            <div class="role-icon">
+              🎮
+            </div>
+
+            <div class="role-copy">
+
+              <strong>
+                Login Siswa
+              </strong>
+
+              <span>
+                Masuk ke akun siswa,
+                bergabung ke Nexus Room,
+                lalu mulai bermain.
+              </span>
+
+            </div>
+
+            <span class="role-arrow">
+              →
+            </span>
+
+          </a>
+
+        </div>
+
+
+        <div class="security-note">
+
+          <span>
+            🔒
+          </span>
+
+          <span>
+            Akses guru dan siswa menggunakan
+            jalur autentikasi terpisah.
+            Data diagnostik dan kunci jawaban
+            diproses melalui sistem server MOL-NEXUS.
+          </span>
+
+        </div>
+
+      </section>
 
     </section>
+
+
+    <section class="research-strip">
+
+      <div class="research-item">
+
+        <strong>
+          Multiplayer Learning
+        </strong>
+
+        <span>
+          Permainan 2–4 siswa dengan
+          pergantian giliran dan Nexus Crystal.
+        </span>
+
+      </div>
+
+
+      <div class="research-item">
+
+        <strong>
+          Diagnostic Engine
+        </strong>
+
+        <span>
+          Memetakan Path, Formula,
+          Calculation, Unit,
+          dan pola respons siswa.
+        </span>
+
+      </div>
+
+
+      <div class="research-item">
+
+        <strong>
+          Smart Analytics
+        </strong>
+
+        <span>
+          Profil P0–P5 dan rekomendasi
+          intervensi untuk guru.
+        </span>
+
+      </div>
+
+    </section>
+
 
     <footer>
-        MOL-NEXUS RESEARCH PROTOTYPE
+
+      <span>
+        MOL-NEXUS • Research Prototype
+      </span>
+
+      <span>
+        Secure Multiplayer Chemistry Learning
+      </span>
+
     </footer>
 
-</main>
-
-<!-- SUPABASE JS -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- MOL-NEXUS -->
-<script src="app.js"></script>
+  </main>
 
 </body>
 </html>
