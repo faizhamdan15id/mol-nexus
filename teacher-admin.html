@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>
+    MOL-NEXUS | Guru & Akses
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="dashboard.css"
+  >
+
+  <style>
+    .admin-heading-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .admin-primary-button {
+      padding: 12px 16px;
+      border: 1px solid #22d3ee;
+      border-radius: 12px;
+      background: rgba(34, 211, 238, .12);
+      color: #22d3ee;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .admin-primary-button:hover {
+      background: rgba(34, 211, 238, .18);
+    }
+
+    .teacher-admin-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .teacher-admin-card {
+      padding: 20px;
+      border: 1px solid rgba(34, 211, 238, .16);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .025);
+    }
+
+    .teacher-admin-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .teacher-admin-head h3 {
+      margin: 5px 0 0;
+      color: #fff;
+    }
+
+    .teacher-code {
+      color: #22d3ee;
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+
+    .teacher-admin-email {
+      margin-top: 9px;
+      color: #94a3b8;
+      word-break: break-word;
+    }
+
+    .teacher-admin-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .teacher-badge {
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, .20);
+      background: rgba(148, 163, 184, .06);
+      color: #cbd5e1;
+      font-size: .68rem;
+      font-weight: 800;
+    }
+
+    .teacher-badge.super {
+      border-color: rgba(34, 211, 238, .32);
+      background: rgba(34, 211, 238, .09);
+      color: #67e8f9;
+    }
+
+    .teacher-badge.active {
+      border-color: rgba(34, 197, 94, .30);
+      background: rgba(34, 197, 94, .08);
+      color: #86efac;
+    }
+
+    .teacher-badge.inactive {
+      border-color: rgba(239, 68, 68, .30);
+      background: rgba(239, 68, 68, .08);
+      color: #fca5a5;
+    }
+
+    .teacher-admin-actions {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .teacher-admin-actions button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(34, 211, 238, .22);
+      background: rgba(34, 211, 238, .07);
+      color: #bfeef7;
+      font: inherit;
+      font-size: .76rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .teacher-admin-actions button.danger {
+      border-color: rgba(239, 68, 68, .28);
+      background: rgba(239, 68, 68, .07);
+      color: #fca5a5;
+    }
+
+    .teacher-admin-actions button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    #teacherAdminForm,
+    #passwordResetForm {
+      display: grid;
+      gap: 16px;
+    }
+
+    #teacherAdminForm label,
+    #passwordResetForm label {
+      display: grid;
+      gap: 8px;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    #teacherAdminForm input,
+    #passwordResetForm input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px 16px;
+      border: 1px solid rgba(34, 211, 238, .20);
+      border-radius: 12px;
+      background: #041724;
+      color: #fff;
+      font: inherit;
+    }
+
+    .admin-note {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid rgba(34, 211, 238, .12);
+      border-radius: 12px;
+      background: rgba(34, 211, 238, .04);
+      color: #8fa8b8;
+      font-size: .78rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 760px) {
+      .teacher-admin-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-heading-actions {
+        width: 100%;
+      }
+
+      .admin-primary-button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .teacher-admin-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+
+    <div>
+      <p class="eyebrow">
+        MOL-NEXUS
+      </p>
+
+      <h1>
+        Guru & Akses
+      </h1>
+
+      <p class="subtitle">
+        Super Admin Control Center
+      </p>
+    </div>
+
+
+    <div class="system-status">
+      <span class="status-dot"></span>
+      SUPER ADMIN
+    </div>
+
+  </header>
+
+
+  <nav class="teacher-nav">
+
+    <a
+      href="dashboard.html"
+      class="nav-link"
+    >
+      📊 Dashboard
+    </a>
+
+    <a
+      href="rooms.html"
+      class="nav-link"
+    >
+      🎮 Room
+    </a>
+
+    <a
+      href="students.html"
+      class="nav-link"
+    >
+      👥 Siswa
+    </a>
+
+    <a
+      href="question-bank.html"
+      class="nav-link"
+    >
+      📚 Bank Soal
+    </a>
+
+    <a
+      href="formula-bank.html"
+      class="nav-link"
+    >
+      🧪 Bank Rumus
+    </a>
+
+    <a
+      href="teacher-admin.html"
+      class="nav-link active"
+      data-super-admin-link="1"
+    >
+      🛡️ Guru & Akses
+    </a>
+
+    <button
+      id="teacherLogoutButton"
+      class="nav-link nav-logout"
+      type="button"
+    >
+      ↪ Logout
+    </button>
+
+  </nav>
+
+
+  <main class="dashboard">
+
+    <section class="summary-grid">
+
+      <article class="summary-card">
+        <span>Total Guru</span>
+        <strong id="totalTeachers">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Guru Aktif</span>
+        <strong id="activeTeachers">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Nonaktif</span>
+        <strong id="inactiveTeachers">0</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Super Admin</span>
+        <strong id="superAdminCount">0</strong>
+      </article>
+
+    </section>
+
+
+    <section class="panel">
+
+      <div class="panel-heading">
+
+        <div>
+          <p class="section-label">
+            TEACHER ACCESS MANAGEMENT
+          </p>
+
+          <h2>
+            Akun Guru MOL-NEXUS
+          </h2>
+
+          <p class="panel-caption">
+            Buat akun guru, atur status akses, dan reset password awal guru.
+          </p>
+        </div>
+
+
+        <div class="admin-heading-actions">
+
+          <button
+            id="refreshTeachersButton"
+            type="button"
+            class="admin-primary-button"
+          >
+            ↻ Refresh
+          </button>
+
+          <button
+            id="addTeacherButton"
+            type="button"
+            class="admin-primary-button"
+          >
+            + Tambah Guru
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="teacherAdminState"
+        class="state-message"
+      >
+        Memuat data guru...
+      </div>
+
+
+      <div
+        id="teacherAdminList"
+        class="teacher-admin-grid"
+      ></div>
+
+
+      <p class="admin-note">
+        Akun SUPER_ADMIN dilindungi dari penonaktifan dan reset password melalui halaman ini.
+        Guru biasa tidak dapat membuka menu Guru & Akses.
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <div
+    id="teacherAdminModal"
+    class="formula-modal"
+    hidden
+  >
+
+    <div class="formula-modal-card">
+
+      <div class="formula-modal-header">
+
+        <div>
+          <p class="section-label">
+            NEW TEACHER ACCOUNT
+          </p>
+
+          <h2>
+            Tambah Guru
+          </h2>
+        </div>
+
+
+        <button
+          id="closeTeacherAdminModal"
+          type="button"
+          class="formula-modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="teacherAdminForm">
+
+        <label>
+          Kode Guru
+          <input
+            id="teacherCodeInput"
+            type="text"
+            maxlength="24"
+            placeholder="Contoh: TCH-002"
+          >
+        </label>
+
+        <label>
+          Nama Guru
+          <input
+            id="teacherNameInput"
+            type="text"
+            placeholder="Nama lengkap guru"
+            required
+          >
+        </label>
+
+        <label>
+          Email Login
+          <input
+            id="teacherEmailInput"
+            type="email"
+            autocomplete="off"
+            placeholder="guru@sekolah.sch.id"
+            required
+          >
+        </label>
+
+        <label>
+          Password Awal
+          <input
+            id="teacherPasswordInput"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            placeholder="Minimal 8 karakter"
+            required
+          >
+        </label>
+
+
+        <button
+          id="saveTeacherButton"
+          type="submit"
+          class="formula-save-button"
+        >
+          Buat Akun Guru
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="passwordResetModal"
+    class="formula-modal"
+    hidden
+  >
+
+    <div class="formula-modal-card">
+
+      <div class="formula-modal-header">
+
+        <div>
+          <p class="section-label">
+            RESET TEACHER PASSWORD
+          </p>
+
+          <h2 id="passwordResetTitle">
+            Reset Password
+          </h2>
+        </div>
+
+
+        <button
+          id="closePasswordResetModal"
+          type="button"
+          class="formula-modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form id="passwordResetForm">
+
+        <input
+          id="passwordResetTeacherId"
+          type="hidden"
+        >
+
+        <label>
+          Password Baru
+          <input
+            id="newTeacherPasswordInput"
+            type="password"
+            minlength="8"
+            autocomplete="new-password"
+            placeholder="Minimal 8 karakter"
+            required
+          >
+        </label>
+
+
+        <button
+          id="confirmPasswordResetButton"
+          type="submit"
+          class="formula-save-button"
+        >
+          Simpan Password Baru
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <footer>
+    MOL-NEXUS • Super Admin Access Management
+  </footer>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <script src="teacher-shell.js"></script>
+  <script src="teacher-admin.js"></script>
+
+</body>
+</html>
