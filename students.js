@@ -102,12 +102,60 @@ let importStudentRows = [];
 
 async function requireTeacherAuth() {
 
-  const {
-    data: { session },
-    error
-  } = await supabaseClient.auth.getSession();
+  try {
 
-  if (error || !session) {
+    const {
+      data: { session },
+      error
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (error || !session) {
+
+      window.location.replace(
+        "teacher-login.html"
+      );
+
+      return false;
+    }
+
+
+    const {
+      data: isTeacher,
+      error: teacherError
+    } =
+      await supabaseClient.rpc(
+        "is_mol_nexus_teacher"
+      );
+
+
+    if (
+      teacherError ||
+      isTeacher !== true
+    ) {
+
+      console.warn(
+        "TEACHER ACCESS DENIED"
+      );
+
+      await supabaseClient.auth.signOut();
+
+      window.location.replace(
+        "teacher-login.html?denied=1"
+      );
+
+      return false;
+    }
+
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "Teacher authorization check failed:",
+      error
+    );
 
     window.location.replace(
       "teacher-login.html"
@@ -115,8 +163,6 @@ async function requireTeacherAuth() {
 
     return false;
   }
-
-  return true;
 }
 
 
