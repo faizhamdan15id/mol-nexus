@@ -22,10 +22,6 @@
 
 <body>
 
-  <!-- =========================================
-       TOPBAR
-  ========================================== -->
-
   <header class="topbar">
 
     <div>
@@ -55,10 +51,6 @@
 
   </header>
 
-
-  <!-- =========================================
-       TEACHER NAVIGATION
-  ========================================== -->
 
   <nav class="teacher-nav">
 
@@ -100,16 +92,7 @@
   </nav>
 
 
-  <!-- =========================================
-       MAIN DASHBOARD
-  ========================================== -->
-
   <main class="dashboard">
-
-
-    <!-- =========================================
-         RINGKASAN KELAS
-    ========================================== -->
 
     <section class="summary-grid">
 
@@ -167,9 +150,63 @@
     </section>
 
 
-    <!-- =========================================
-         PROFIL DIAGNOSTIK SISWA
-    ========================================== -->
+    <section class="analytics-overview-grid">
+
+      <article class="panel overview-panel">
+
+        <div class="panel-heading">
+
+          <div>
+
+            <p class="section-label">
+              PROFILE DISTRIBUTION
+            </p>
+
+            <h2>
+              Peta Profil P0–P5
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="profileDistribution"
+          class="profile-distribution"
+        ></div>
+
+      </article>
+
+
+      <article class="panel overview-panel">
+
+        <div class="panel-heading">
+
+          <div>
+
+            <p class="section-label">
+              NEXUS PERFORMANCE
+            </p>
+
+            <h2>
+              Akurasi per Nexus
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="nexusPerformance"
+          class="nexus-performance"
+        ></div>
+
+      </article>
+
+    </section>
+
 
     <section class="panel">
 
@@ -185,6 +222,10 @@
             Profil Diagnostik Siswa
           </h2>
 
+          <p class="panel-caption">
+            Menampilkan snapshot diagnostik terbaru setiap siswa.
+          </p>
+
         </div>
 
 
@@ -196,6 +237,60 @@
         </button>
 
       </div>
+
+
+      <div class="dashboard-tools">
+
+        <input
+          id="dashboardStudentSearch"
+          type="search"
+          placeholder="Cari nama atau kode siswa..."
+          autocomplete="off"
+        >
+
+
+        <select id="dashboardClassFilter">
+
+          <option value="">
+            Semua Kelas
+          </option>
+
+        </select>
+
+
+        <select id="dashboardProfileFilter">
+
+          <option value="">
+            Semua Profil
+          </option>
+
+          <option value="P0">P0</option>
+          <option value="P1">P1</option>
+          <option value="P2">P2</option>
+          <option value="P3">P3</option>
+          <option value="P4">P4</option>
+          <option value="P5">P5</option>
+
+        </select>
+
+
+        <select id="dashboardEvidenceFilter">
+
+          <option value="">
+            Semua Evidence
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <p class="dashboard-updated">
+        Terakhir diperbarui:
+        <span id="dashboardUpdatedAt">
+          —
+        </span>
+      </p>
 
 
       <div
@@ -220,10 +315,6 @@
 
     </section>
 
-
-    <!-- =========================================
-         DETAIL DIAGNOSTIK
-    ========================================== -->
 
     <section
       id="diagnosticPanel"
@@ -260,10 +351,6 @@
   </main>
 
 
-  <!-- =========================================
-       FOOTER
-  ========================================== -->
-
   <footer>
 
     MOL-NEXUS • Multiplayer Chemistry
@@ -271,10 +358,6 @@
 
   </footer>
 
-
-  <!-- =========================================
-       SCRIPT
-  ========================================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
