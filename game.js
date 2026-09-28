@@ -2971,8 +2971,11 @@ async function advanceTurn() {
     error
   } =
     await supabaseClient.rpc(
-      "next_turn",
+      "next_turn_secure",
       {
+
+        p_session_token:
+          sessionToken,
 
         p_room_code:
           room
