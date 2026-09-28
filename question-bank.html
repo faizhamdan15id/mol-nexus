@@ -77,14 +77,46 @@
     </p>
 
     <h2>Daftar Soal MOL-NEXUS</h2>
+
+    <p class="panel-caption">
+      Tambahkan soal satu per satu atau import massal dari Excel.
+    </p>
   </div>
 
-  <button
-    id="addQuestionButton"
-    type="button"
-  >
-    + Tambah Soal
-  </button>
+  <div class="question-heading-actions">
+
+    <button
+      id="downloadQuestionTemplateButton"
+      type="button"
+      class="student-action-button secondary"
+    >
+      ⬇ Template Excel
+    </button>
+
+    <button
+      id="importQuestionsButton"
+      type="button"
+      class="student-action-button"
+    >
+      ⬆ Import Excel
+    </button>
+
+    <button
+      id="addQuestionButton"
+      type="button"
+      class="student-action-button"
+    >
+      + Tambah Soal
+    </button>
+
+    <input
+      id="questionExcelInput"
+      type="file"
+      accept=".xlsx,.xls"
+      hidden
+    >
+
+  </div>
 
 </div>
 
@@ -97,6 +129,66 @@
     </section>
 
   </main>
+  <!-- BULK QUESTION IMPORT MODAL -->
+<div
+  id="importQuestionModal"
+  class="formula-modal"
+  hidden
+>
+  <div class="formula-modal-card question-import-modal-card">
+
+    <div class="formula-modal-header">
+
+      <div>
+        <p class="section-label">
+          BULK QUESTION IMPORT
+        </p>
+
+        <h2>
+          Preview Import Soal
+        </h2>
+
+        <p class="panel-caption">
+          Hanya baris valid yang akan dikirim ke database.
+        </p>
+      </div>
+
+      <button
+        id="closeImportQuestionModal"
+        type="button"
+        class="formula-modal-close"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="questionImportSummary">
+
+      <p class="state-message">
+        Pilih file Excel untuk mulai import.
+      </p>
+
+    </div>
+
+    <div
+      id="questionImportPreview"
+      class="question-import-preview"
+    ></div>
+
+    <button
+      id="confirmImportQuestions"
+      type="button"
+      class="student-action-button"
+      hidden
+    >
+      Import Soal Valid
+    </button>
+
+  </div>
+</div>
+
+
   <!-- QUESTION EDITOR MODAL -->
 <div id="questionModal" class="formula-modal" hidden>
 
@@ -287,7 +379,9 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="teacher-shell.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script src="teacher-shell.js"></script>
 <script src="question-bank.js"></script>
 </body>
 </html>
