@@ -5760,7 +5760,17 @@ async function startMolNexusGame() {
        LOAD PERSONAL CHALLENGE
        ======================================================== */
 
-    if (isMyTurn) {
+    if (
+      isSuddenDeathActive
+    ) {
+
+      /*
+        Challenge Sudden Death sudah
+        dimuat oleh loadLeaderboard().
+      */
+
+
+    } else if (isMyTurn) {
 
       await loadQuestion();
 
