@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="style.css">
 
   <!-- GAME STYLE -->
-  <link rel="stylesheet" href="game.css?v=3.1">
+  <link rel="stylesheet" href="game.css?v=3.2">
 </head>
 
 
@@ -521,6 +521,28 @@
 
 
         <div
+          id="pathContext"
+          class="path-context"
+        >
+          <div>
+            <small>START</small>
+            <strong id="pathStartConcept">—</strong>
+          </div>
+
+          <span>→</span>
+
+          <div>
+            <small>TARGET</small>
+            <strong id="pathTargetConcept">—</strong>
+          </div>
+        </div>
+
+        <p class="path-instruction">
+          Klik jalur dari besaran yang diketahui sampai besaran yang ditanyakan.
+          Jangan menambahkan node setelah TARGET.
+        </p>
+
+        <div
           id="pathBuilder"
           class="path-builder"
         >
@@ -530,7 +552,8 @@
             data-path="MASS"
             type="button"
           >
-            MASSA
+            <strong>MASSA</strong>
+            <small>g / kg</small>
           </button>
 
           <button
@@ -538,7 +561,8 @@
             data-path="MOL"
             type="button"
           >
-            MOL
+            <strong>MOL</strong>
+            <small>jumlah zat</small>
           </button>
 
           <button
@@ -546,7 +570,8 @@
             data-path="PARTICLE"
             type="button"
           >
-            PARTIKEL
+            <strong>PARTIKEL</strong>
+            <small>atom / molekul / ion</small>
           </button>
 
           <button
@@ -554,7 +579,8 @@
             data-path="GAS"
             type="button"
           >
-            GAS
+            <strong>GAS</strong>
+            <small>volume gas</small>
           </button>
 
           <button
@@ -562,7 +588,26 @@
             data-path="SOLUTION"
             type="button"
           >
-            LARUTAN
+            <strong>LARUTAN</strong>
+            <small>M / volume larutan</small>
+          </button>
+
+          <button
+            class="path-block"
+            data-path="VOLUME_ML"
+            type="button"
+          >
+            <strong>VOLUME mL</strong>
+            <small>mililiter</small>
+          </button>
+
+          <button
+            class="path-block"
+            data-path="VOLUME_L"
+            type="button"
+          >
+            <strong>VOLUME L</strong>
+            <small>liter</small>
           </button>
 
         </div>
@@ -780,7 +825,7 @@
   <!-- ===================================================== -->
 
   
-<script src="./game.js?v=3.1"></script>
+<script src="./game.js?v=3.2"></script>
 
 </body>
     </html>
