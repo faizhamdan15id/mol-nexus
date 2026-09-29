@@ -82,6 +82,9 @@ let serverClockOffsetMs = 0;
 let turnTimerInterval = null;
 let timeoutAdvancePending = false;
 
+let isSuddenDeathActive = false;
+let suddenDeathQuestionLoading = false;
+
 
 /* ============================================================
    3. DOM HELPERS
@@ -467,12 +470,11 @@ function renderLeaderboard(
 
 
   } else if (
-    roomCompleted &&
     tieBreakRequired
   ) {
 
     leaderboardState.textContent =
-      "TIE";
+      "SUDDEN DEATH";
 
 
     leaderboardChampion.hidden =
@@ -486,7 +488,7 @@ function renderLeaderboard(
     leaderboardChampion.innerHTML =
       `
         <span class="champion-label">
-          ⚔ SUDDEN DEATH REQUIRED
+          ⚔ SUDDEN DEATH NEXUS
         </span>
 
         <strong>
@@ -494,13 +496,13 @@ function renderLeaderboard(
         </strong>
 
         <small>
-          Dua atau lebih pemain memiliki hasil identik pada seluruh kriteria penentuan pemenang.
+          Pemain dengan hasil identik mendapat challenge yang sama. Jawaban benar pertama menjadi pemenang.
         </small>
       `;
 
 
     setMessage(
-      "⚔ Hasil akhir seri. Sudden Death Nexus diperlukan."
+      "⚔ SUDDEN DEATH NEXUS aktif."
     );
 
 
@@ -685,7 +687,495 @@ async function loadLeaderboard() {
   );
 
 
+  const tieBreakRequired =
+    rows.some(
+      row =>
+        row.tie_break_required ===
+        true
+    );
+
+
+  const roomCompleted =
+    rows.some(
+      row =>
+        row.room_completed ===
+        true
+    );
+
+
+  if (
+    tieBreakRequired &&
+    !roomCompleted
+  ) {
+
+    await activateSuddenDeath();
+
+  } else if (
+    roomCompleted
+  ) {
+
+    isSuddenDeathActive =
+      false;
+  }
+
+
   return rows;
+}
+
+
+/* ============================================================
+   SUDDEN DEATH NEXUS
+   ============================================================ */
+
+async function activateSuddenDeath() {
+
+  if (
+    suddenDeathQuestionLoading ||
+    (
+      isSuddenDeathActive &&
+      currentQuestion?.question_type ===
+        "SUDDEN_DEATH"
+    )
+  ) {
+
+    return;
+  }
+
+
+  suddenDeathQuestionLoading =
+    true;
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "get_sudden_death_question",
+        {
+
+          p_session_token:
+            sessionToken,
+
+          p_room_code:
+            room
+        }
+      );
+
+
+    if (error) {
+
+      const message =
+        String(
+          error.message || ""
+        );
+
+
+      if (
+        message.includes(
+          "NOT_TIEBREAK_PARTICIPANT"
+        )
+      ) {
+
+        isSuddenDeathActive =
+          false;
+
+        isMyTurn =
+          false;
+
+
+        if (turnStatus) {
+
+          turnStatus.textContent =
+            "SUDDEN DEATH";
+        }
+
+
+        setMessage(
+          "Sudden Death sedang dimainkan oleh pemain yang seri. Menunggu pemenang."
+        );
+
+
+        setSubmitDisabled(
+          true
+        );
+
+
+        return;
+      }
+
+
+      console.error(
+        "SUDDEN DEATH QUESTION ERROR:",
+        error
+      );
+
+
+      return;
+    }
+
+
+    const question =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (!question) {
+
+      return;
+    }
+
+
+    isSuddenDeathActive =
+      true;
+
+    isMyTurn =
+      true;
+
+    currentQuestion =
+      question;
+
+    selectedZone =
+      null;
+
+
+    turnDeadlineAtMs =
+      null;
+
+    renderTurnTimer();
+
+
+    renderQuestion(
+      question
+    );
+
+
+    questionStartTime =
+      nowMs();
+
+
+    if (turnStatus) {
+
+      turnStatus.textContent =
+        "⚔ SUDDEN DEATH";
+    }
+
+
+    if (caseZone) {
+
+      caseZone.textContent =
+        "SUDDEN DEATH NEXUS";
+    }
+
+
+    if (caseDifficulty) {
+
+      caseDifficulty.textContent =
+        "TIEBREAKER";
+    }
+
+
+    setMessage(
+      "⚔ Challenge sama untuk pemain yang seri. Jawaban benar pertama menjadi NEXUS CHAMPION."
+    );
+
+
+    showFeedback(
+      "SUDDEN DEATH — selesaikan dengan tepat secepat mungkin."
+    );
+
+
+    setSubmitDisabled(
+      false
+    );
+
+
+  } finally {
+
+    suddenDeathQuestionLoading =
+      false;
+  }
+}
+
+
+async function submitSuddenDeathCase() {
+
+  if (isSubmitting) {
+
+    return;
+  }
+
+
+  const validation =
+    validateCurrentAnswer();
+
+
+  if (!validation.valid) {
+
+    showFeedback(
+      validation.message
+    );
+
+
+    return;
+  }
+
+
+  isSubmitting =
+    true;
+
+
+  setSubmitDisabled(
+    true
+  );
+
+
+  try {
+
+    finalizeDiagnosticTimers();
+
+
+    const selectedFormulaText =
+      selectedFormulas
+        .map(
+          formulaIdToLabel
+        )
+        .join("; ");
+
+
+    const rawAnswer =
+      String(
+        calculationAnswer.value
+      )
+        .trim()
+        .replace(
+          ",",
+          "."
+        );
+
+
+    const numericAnswer =
+      Number(
+        rawAnswer
+      );
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "submit_sudden_death_attempt",
+        {
+
+          p_session_token:
+            sessionToken,
+
+          p_room_code:
+            room,
+
+          p_question_id:
+            currentQuestion.question_id,
+
+          p_selected_path:
+            [...selectedPath],
+
+          p_selected_formula:
+            selectedFormulaText,
+
+          p_student_answer:
+            numericAnswer,
+
+          p_selected_unit:
+            unitAnswer.value,
+
+          p_response_time_ms:
+            getTotalResponseTime()
+        }
+      );
+
+
+    if (error) {
+
+      const message =
+        String(
+          error.message || ""
+        );
+
+
+      if (
+        message.includes(
+          "TIEBREAK_NOT_ACTIVE"
+        )
+      ) {
+
+        await loadLeaderboard();
+
+        return;
+      }
+
+
+      throw error;
+    }
+
+
+    const result =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (!result) {
+
+      throw new Error(
+        "EMPTY_SUDDEN_DEATH_RESULT"
+      );
+    }
+
+
+    if (
+      result.is_winner ===
+      true
+    ) {
+
+      showFeedback(
+        "🏆 SUDDEN DEATH CLEAR — ANDA NEXUS CHAMPION!"
+      );
+
+
+      setMessage(
+        "🏆 Anda memenangkan SUDDEN DEATH NEXUS."
+      );
+
+
+      isSuddenDeathActive =
+        false;
+
+
+      await loadGamePlayers();
+
+      await loadLeaderboard();
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return;
+    }
+
+
+    if (
+      result.final_correct ===
+      true
+    ) {
+
+      showFeedback(
+        "Jawaban benar, tetapi pemenang Sudden Death sudah ditentukan."
+      );
+
+
+      await loadLeaderboard();
+
+
+      setSubmitDisabled(
+        true
+      );
+
+
+      return;
+    }
+
+
+    let retryFeedback =
+      "SUDDEN DEATH belum tepat. Periksa kembali jawaban.";
+
+
+    if (
+      result.path_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "PATH belum tepat. Mulai dari " +
+        conceptLabel(
+          currentQuestion?.origin_concept
+        ) +
+        " lalu susun jalur sesuai besaran yang ditanyakan.";
+
+
+    } else if (
+      result.formula_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "PATH tepat. FORMULA belum sesuai.";
+
+
+    } else if (
+      result.calculation_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "PATH dan FORMULA tepat. Periksa perhitungan.";
+
+
+    } else if (
+      result.unit_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "Perhitungan tepat. Periksa UNIT.";
+    }
+
+
+    showFeedback(
+      retryFeedback
+    );
+
+
+    retryCount++;
+
+    attemptSequence++;
+
+    resetDiagnosticTimers();
+
+
+    setSubmitDisabled(
+      false
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "SUDDEN DEATH SUBMIT ERROR:",
+      error
+    );
+
+
+    showFeedback(
+      "Sudden Death gagal dikirim. Silakan coba lagi."
+    );
+
+
+    setSubmitDisabled(
+      false
+    );
+
+
+  } finally {
+
+    isSubmitting =
+      false;
+  }
 }
 
 
@@ -1776,6 +2266,39 @@ function applyTurnState(roomData) {
 
       turnStatus.textContent =
         "GAME COMPLETED";
+    }
+
+
+    setSubmitDisabled(
+      true
+    );
+
+
+    return;
+  }
+
+
+  if (
+    String(
+      roomData.status || ""
+    ).toUpperCase() ===
+    "TIEBREAK"
+  ) {
+
+    isMyTurn =
+      false;
+
+
+    turnDeadlineAtMs =
+      null;
+
+    renderTurnTimer();
+
+
+    if (turnStatus) {
+
+      turnStatus.textContent =
+        "SUDDEN DEATH";
     }
 
 
@@ -4043,6 +4566,15 @@ async function advanceTurn() {
    ============================================================ */
 
 async function submitCurrentCase() {
+
+  if (
+    currentQuestion?.question_type ===
+    "SUDDEN_DEATH"
+  ) {
+
+    return submitSuddenDeathCase();
+  }
+
 
   const isFinalNexus =
     currentQuestion?.question_type ===
