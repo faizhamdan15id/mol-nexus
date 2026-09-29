@@ -4706,8 +4706,6 @@ async function submitCurrentCase() {
 
           await loadGamePlayers();
 
-          await loadLeaderboard();
-
 
           const completedRoomData =
             await loadGameRoom();
@@ -4721,6 +4719,9 @@ async function submitCurrentCase() {
               completedRoomData
             );
           }
+
+
+          await loadLeaderboard();
 
 
           return;
@@ -5257,8 +5258,6 @@ function subscribePlayers() {
 
           await loadGamePlayers();
 
-          await loadLeaderboard();
-
 
           const roomData =
             await loadGameRoom();
@@ -5270,6 +5269,9 @@ function subscribePlayers() {
               roomData
             );
           }
+
+
+          await loadLeaderboard();
         }
       )
       .subscribe(
@@ -5359,6 +5361,14 @@ function subscribeRoom() {
           await syncTurnTimer();
 
           await loadLeaderboard();
+
+
+          if (
+            isSuddenDeathActive
+          ) {
+
+            return;
+          }
 
 
           /*
@@ -5671,8 +5681,6 @@ async function startMolNexusGame() {
 
     await loadGamePlayers();
 
-    await loadLeaderboard();
-
 
     /*
       currentPlayer harus ditemukan
@@ -5729,6 +5737,8 @@ async function startMolNexusGame() {
       roomData
     );
 
+
+    await loadLeaderboard();
 
     await syncTurnTimer();
 
