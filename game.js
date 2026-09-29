@@ -144,9 +144,6 @@ const selectedPathElement =
 const pathStartConcept =
   $("pathStartConcept");
 
-const pathTargetConcept =
-  $("pathTargetConcept");
-
 const calculationAnswer =
   $("calculationAnswer");
 
@@ -1482,25 +1479,14 @@ function renderPathContext(
   }
 
 
-  if (pathTargetConcept) {
-
-    pathTargetConcept.textContent =
-      conceptLabel(
-        target
-      );
-  }
-
-
   document
     .querySelectorAll(
       ".path-block"
     )
     .forEach(
       button => {
-
         button.classList.remove(
-          "path-start",
-          "path-target"
+          "path-start"
         );
 
 
@@ -1514,16 +1500,6 @@ function renderPathContext(
           );
         }
 
-
-        if (
-          button.dataset.path ===
-          target
-        ) {
-
-          button.classList.add(
-            "path-target"
-          );
-        }
       }
     );
 }
@@ -3943,11 +3919,7 @@ async function submitCurrentCase() {
         conceptLabel(
           currentQuestion?.origin_concept
         ) +
-        " dan berhenti di " +
-        conceptLabel(
-          currentQuestion?.target_concept
-        ) +
-        ". Jangan menambahkan node setelah TARGET.";
+        " lalu susun jalur sesuai besaran yang ditanyakan pada soal.";
 
 
     } else if (
