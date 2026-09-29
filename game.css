@@ -1509,3 +1509,239 @@ body.game-body {
     grid-template-columns: repeat(2, 1fr);
   }
    }
+
+
+/* =========================================================
+   NEXUS LEADERBOARD
+   ========================================================= */
+
+.leaderboard-panel {
+  padding: 22px;
+  margin-bottom: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(5, 26, 43, .94),
+      rgba(2, 13, 25, .96)
+    );
+  border: 1px solid rgba(32, 223, 243, .12);
+  border-radius: 16px;
+}
+
+.leaderboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.leaderboard-header small {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cyan);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.leaderboard-header h2 {
+  margin: 0;
+  color: #eefaff;
+  font-size: 18px;
+}
+
+.leaderboard-state {
+  padding: 7px 10px;
+  border: 1px solid rgba(32, 223, 243, .22);
+  border-radius: 999px;
+  color: var(--cyan);
+  background: rgba(32, 223, 243, .07);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.leaderboard-rule {
+  margin: 10px 0 16px;
+  color: #71859a;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 8px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(0, 1.4fr)
+    repeat(4, minmax(76px, .7fr));
+  gap: 10px;
+  align-items: center;
+
+  padding: 12px;
+
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid rgba(255, 255, 255, .055);
+  border-radius: 12px;
+}
+
+.leaderboard-row.me {
+  border-color: rgba(32, 223, 243, .25);
+  background: rgba(32, 223, 243, .045);
+}
+
+.leaderboard-row.winner {
+  border-color: rgba(255, 199, 74, .42);
+  background: rgba(255, 199, 74, .065);
+  box-shadow: 0 0 22px rgba(255, 199, 74, .08);
+}
+
+.leaderboard-rank {
+  display: grid;
+  place-items: center;
+
+  width: 34px;
+  height: 34px;
+
+  border-radius: 10px;
+  color: var(--cyan);
+  background: rgba(32, 223, 243, .07);
+  border: 1px solid rgba(32, 223, 243, .14);
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.leaderboard-row.winner .leaderboard-rank {
+  color: #ffd76a;
+  border-color: rgba(255, 199, 74, .35);
+  background: rgba(255, 199, 74, .08);
+}
+
+.leaderboard-player {
+  min-width: 0;
+}
+
+.leaderboard-player strong {
+  display: block;
+  overflow: hidden;
+  color: #e6f1f7;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-player small {
+  display: block;
+  margin-top: 4px;
+  color: #71859a;
+  font-size: 7px;
+}
+
+.leaderboard-metric {
+  text-align: center;
+}
+
+.leaderboard-metric strong {
+  display: block;
+  color: #dceaf2;
+  font-size: 11px;
+}
+
+.leaderboard-metric small {
+  display: block;
+  margin-top: 3px;
+  color: #61758a;
+  font-size: 7px;
+  letter-spacing: .5px;
+}
+
+.leaderboard-champion {
+  margin-bottom: 14px;
+  padding: 17px;
+
+  border: 1px solid rgba(255, 199, 74, .36);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 199, 74, .12),
+      transparent 70%
+    ),
+    rgba(255, 199, 74, .035);
+
+  text-align: center;
+}
+
+.leaderboard-champion .champion-label {
+  color: #ffd76a;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.leaderboard-champion strong {
+  display: block;
+  margin-top: 6px;
+  color: #fff3bd;
+  font-size: 20px;
+}
+
+.leaderboard-champion small {
+  display: block;
+  margin-top: 6px;
+  color: #9b8d68;
+  font-size: 8px;
+}
+
+.leaderboard-champion.tie {
+  border-color: rgba(174, 120, 255, .36);
+  background: rgba(174, 120, 255, .05);
+}
+
+.leaderboard-champion.tie .champion-label,
+.leaderboard-champion.tie strong {
+  color: #c7a7ff;
+}
+
+.leaderboard-empty {
+  color: #71859a;
+  font-size: 9px;
+}
+
+@media (max-width: 760px) {
+
+  .leaderboard-row {
+    grid-template-columns:
+      38px
+      minmax(0, 1fr)
+      repeat(2, minmax(64px, .7fr));
+  }
+
+  .leaderboard-row .leaderboard-metric:nth-last-child(-n+2) {
+    display: none;
+  }
+}
+
+@media (max-width: 470px) {
+
+  .leaderboard-header {
+    flex-direction: column;
+  }
+
+  .leaderboard-row {
+    grid-template-columns:
+      34px
+      minmax(0, 1fr)
+      64px;
+  }
+
+  .leaderboard-row .leaderboard-metric:not(:first-of-type) {
+    display: none;
+  }
+}
