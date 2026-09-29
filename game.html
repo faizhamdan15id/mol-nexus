@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="style.css">
 
   <!-- GAME STYLE -->
-  <link rel="stylesheet" href="game.css?v=3.3">
+  <link rel="stylesheet" href="game.css?v=3.4">
 </head>
 
 
@@ -766,6 +766,62 @@
 
 
     <!-- =================================================== -->
+    <!-- NEXUS LEADERBOARD                                  -->
+    <!-- =================================================== -->
+
+    <section
+      id="leaderboardPanel"
+      class="leaderboard-panel"
+    >
+
+      <div class="leaderboard-header">
+
+        <div>
+          <small>
+            MULTIPLAYER RANKING
+          </small>
+
+          <h2>
+            🏆 NEXUS LEADERBOARD
+          </h2>
+        </div>
+
+        <div
+          id="leaderboardState"
+          class="leaderboard-state"
+        >
+          LIVE
+        </div>
+
+      </div>
+
+
+      <p class="leaderboard-rule">
+        Pemenang final ditentukan setelah semua pemain menyelesaikan FINAL NEXUS:
+        Energy → Benar Percobaan Pertama → Waktu Aktif → Hint/Retry.
+      </p>
+
+
+      <div
+        id="leaderboardChampion"
+        class="leaderboard-champion"
+        hidden
+      ></div>
+
+
+      <div
+        id="leaderboardList"
+        class="leaderboard-list"
+      >
+        <p class="leaderboard-empty">
+          Menyiapkan ranking pemain...
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- =================================================== -->
     <!-- GAME ACTION BAR                                     -->
     <!-- =================================================== -->
 
@@ -817,7 +873,7 @@
   <!-- ===================================================== -->
 
   
-<script src="./game.js?v=3.3"></script>
+<script src="./game.js?v=3.4"></script>
 
 </body>
     </html>
