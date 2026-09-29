@@ -1,6 +1,6 @@
 /* ============================================================
    MOL-NEXUS GAME CONTROLLER
-   Version 3.0 CLEAN
+   Version 3.4
    Multiplayer + Supabase + Secure Student Session
    ============================================================ */
 
@@ -159,6 +159,15 @@ const submitCaseButton =
 const caseFeedback =
   $("caseFeedback");
 
+const leaderboardState =
+  $("leaderboardState");
+
+const leaderboardChampion =
+  $("leaderboardChampion");
+
+const leaderboardList =
+  $("leaderboardList");
+
 
 /* ============================================================
    4. UTILITIES
@@ -252,6 +261,431 @@ function setSubmitDisabled(
     submitCaseButton.disabled =
       disabled;
   }
+}
+
+
+/* ============================================================
+   NEXUS LEADERBOARD
+   ============================================================ */
+
+function formatLeaderboardTime(
+  milliseconds
+) {
+
+  const totalSeconds =
+    Math.max(
+      0,
+      Math.round(
+        Number(
+          milliseconds || 0
+        ) / 1000
+      )
+    );
+
+
+  const hours =
+    Math.floor(
+      totalSeconds / 3600
+    );
+
+
+  const minutes =
+    Math.floor(
+      (
+        totalSeconds % 3600
+      ) / 60
+    );
+
+
+  const seconds =
+    totalSeconds % 60;
+
+
+  if (hours > 0) {
+
+    return (
+      String(hours) +
+      ":" +
+      String(minutes)
+        .padStart(
+          2,
+          "0"
+        ) +
+      ":" +
+      String(seconds)
+        .padStart(
+          2,
+          "0"
+        )
+    );
+  }
+
+
+  return (
+    String(minutes)
+      .padStart(
+        2,
+        "0"
+      ) +
+    ":" +
+    String(seconds)
+      .padStart(
+        2,
+        "0"
+      )
+  );
+}
+
+
+function renderLeaderboard(
+  rows
+) {
+
+  if (
+    !leaderboardList ||
+    !leaderboardState ||
+    !leaderboardChampion
+  ) {
+
+    return;
+  }
+
+
+  const leaderboardRows =
+    Array.isArray(rows)
+      ? rows
+      : [];
+
+
+  if (
+    leaderboardRows.length === 0
+  ) {
+
+    leaderboardState.textContent =
+      "LIVE";
+
+    leaderboardChampion.hidden =
+      true;
+
+    leaderboardList.innerHTML =
+      '<p class="leaderboard-empty">Belum ada data ranking.</p>';
+
+    return;
+  }
+
+
+  const roomCompleted =
+    leaderboardRows.some(
+      row =>
+        row.room_completed ===
+        true
+    );
+
+
+  const tieBreakRequired =
+    leaderboardRows.some(
+      row =>
+        row.tie_break_required ===
+        true
+    );
+
+
+  const winner =
+    leaderboardRows.find(
+      row =>
+        row.is_winner ===
+        true
+    ) ||
+    null;
+
+
+  if (roomCompleted) {
+
+    isMyTurn =
+      false;
+
+    setSubmitDisabled(
+      true
+    );
+
+
+    turnDeadlineAtMs =
+      null;
+
+    renderTurnTimer();
+  }
+
+
+  if (
+    roomCompleted &&
+    winner
+  ) {
+
+    leaderboardState.textContent =
+      "FINAL";
+
+
+    leaderboardChampion.hidden =
+      false;
+
+    leaderboardChampion.classList.remove(
+      "tie"
+    );
+
+
+    leaderboardChampion.innerHTML =
+      `
+        <span class="champion-label">
+          🏆 NEXUS CHAMPION
+        </span>
+
+        <strong>
+          ${escapeHTML(
+            winner.player_name
+          )}
+        </strong>
+
+        <small>
+          ⚡ ${Number(
+            winner.nexus_energy || 0
+          )} Energy
+          •
+          ${Number(
+            winner.first_attempt_correct || 0
+          )} First-Try Correct
+          •
+          ${formatLeaderboardTime(
+            winner.total_active_time_ms
+          )} Active Time
+        </small>
+      `;
+
+
+    setMessage(
+      `🏆 NEXUS CHAMPION: ${winner.player_name}`
+    );
+
+
+  } else if (
+    roomCompleted &&
+    tieBreakRequired
+  ) {
+
+    leaderboardState.textContent =
+      "TIE";
+
+
+    leaderboardChampion.hidden =
+      false;
+
+    leaderboardChampion.classList.add(
+      "tie"
+    );
+
+
+    leaderboardChampion.innerHTML =
+      `
+        <span class="champion-label">
+          ⚔ SUDDEN DEATH REQUIRED
+        </span>
+
+        <strong>
+          NEXUS TIE
+        </strong>
+
+        <small>
+          Dua atau lebih pemain memiliki hasil identik pada seluruh kriteria penentuan pemenang.
+        </small>
+      `;
+
+
+    setMessage(
+      "⚔ Hasil akhir seri. Sudden Death Nexus diperlukan."
+    );
+
+
+  } else {
+
+    leaderboardState.textContent =
+      "LIVE";
+
+    leaderboardChampion.hidden =
+      true;
+  }
+
+
+  leaderboardList.innerHTML =
+    leaderboardRows
+      .map(
+        row => {
+
+          const isMe =
+            row.student_id ===
+            currentStudentId;
+
+
+          const rowClass = [
+            "leaderboard-row",
+            isMe
+              ? "me"
+              : "",
+            row.is_winner
+              ? "winner"
+              : ""
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+
+          const progressLabel =
+            row.final_nexus_completed
+              ? "FINAL NEXUS ✓"
+              : `CRYSTAL ${Number(
+                  row.crystals_count || 0
+                )}/4`;
+
+
+          const rankLabel =
+            row.is_winner
+              ? "🏆"
+              : "#" +
+                String(
+                  row.ranking_position ||
+                  "-"
+                );
+
+
+          return `
+
+            <article class="${rowClass}">
+
+              <div class="leaderboard-rank">
+                ${rankLabel}
+              </div>
+
+
+              <div class="leaderboard-player">
+
+                <strong>
+                  ${escapeHTML(
+                    row.player_name ||
+                    "PLAYER"
+                  )}
+                  ${isMe ? " • YOU" : ""}
+                </strong>
+
+                <small>
+                  PLAYER ${Number(
+                    row.player_slot || 0
+                  )}
+                  •
+                  ${progressLabel}
+                </small>
+
+              </div>
+
+
+              <div class="leaderboard-metric">
+                <strong>
+                  ⚡ ${Number(
+                    row.nexus_energy || 0
+                  )}
+                </strong>
+                <small>ENERGY</small>
+              </div>
+
+
+              <div class="leaderboard-metric">
+                <strong>
+                  ${Number(
+                    row.first_attempt_correct || 0
+                  )}
+                </strong>
+                <small>FIRST TRY</small>
+              </div>
+
+
+              <div class="leaderboard-metric">
+                <strong>
+                  ${formatLeaderboardTime(
+                    row.total_active_time_ms
+                  )}
+                </strong>
+                <small>ACTIVE TIME</small>
+              </div>
+
+
+              <div class="leaderboard-metric">
+                <strong>
+                  ${Number(
+                    row.assistance_count || 0
+                  )}
+                </strong>
+                <small>HINT/RETRY</small>
+              </div>
+
+            </article>
+
+          `;
+
+        }
+      )
+      .join("");
+}
+
+
+async function loadLeaderboard() {
+
+  if (
+    !sessionToken ||
+    !room
+  ) {
+
+    return [];
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "get_room_leaderboard",
+      {
+
+        p_session_token:
+          sessionToken,
+
+        p_room_code:
+          room
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "LEADERBOARD ERROR:",
+      error
+    );
+
+
+    return [];
+  }
+
+
+  const rows =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  renderLeaderboard(
+    rows
+  );
+
+
+  return rows;
 }
 
 
@@ -3666,7 +4100,7 @@ async function submitCurrentCase() {
 
 
           setMessage(
-            "Selamat! Anda berhasil menyelesaikan FINAL NEXUS CHALLENGE."
+            "FINAL NEXUS selesai. Menunggu hasil pemain lain..."
           );
 
 
@@ -3679,6 +4113,25 @@ async function submitCurrentCase() {
           setSubmitDisabled(
             true
           );
+
+
+          await loadGamePlayers();
+
+          await loadLeaderboard();
+
+
+          const completedRoomData =
+            await loadGameRoom();
+
+
+          if (
+            completedRoomData
+          ) {
+
+            applyTurnState(
+              completedRoomData
+            );
+          }
 
 
           return;
@@ -4215,6 +4668,8 @@ function subscribePlayers() {
 
           await loadGamePlayers();
 
+          await loadLeaderboard();
+
 
           const roomData =
             await loadGameRoom();
@@ -4313,6 +4768,8 @@ function subscribeRoom() {
 
 
           await syncTurnTimer();
+
+          await loadLeaderboard();
 
 
           /*
@@ -4461,7 +4918,7 @@ async function startMolNexusGame() {
 
 
   console.log(
-    "MOL-NEXUS GAME CONTROLLER v3.0"
+    "MOL-NEXUS GAME CONTROLLER v3.4"
   );
 
 
@@ -4625,6 +5082,8 @@ async function startMolNexusGame() {
 
     await loadGamePlayers();
 
+    await loadLeaderboard();
+
 
     /*
       currentPlayer harus ditemukan
@@ -4747,7 +5206,7 @@ async function startMolNexusGame() {
 
 
     console.log(
-      "MOL-NEXUS GAME READY v3.0"
+      "MOL-NEXUS GAME READY v3.4"
     );
 
 
