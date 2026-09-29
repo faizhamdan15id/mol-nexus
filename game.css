@@ -980,6 +980,34 @@ body.game-body {
   background: rgba(32,223,243,.10);
 }
 
+.path-block.path-start {
+  border-color: rgba(32,223,243,.45);
+}
+
+.path-block.path-start::after {
+  content: "START";
+  margin-top: 5px;
+  color: var(--cyan);
+  font-size: 6px;
+  letter-spacing: 1px;
+}
+
+.path-block.path-target {
+  border-color: rgba(80,220,160,.45);
+}
+
+.path-block.path-target::after {
+  content: "TARGET";
+  margin-top: 5px;
+  color: var(--green);
+  font-size: 6px;
+  letter-spacing: 1px;
+}
+
+.path-block.path-start.path-target::after {
+  content: "START / TARGET";
+}
+
 .selected-path {
   margin-top: 10px;
 
