@@ -141,6 +141,12 @@ const caseQuestion =
 const selectedPathElement =
   $("selectedPath");
 
+const pathStartConcept =
+  $("pathStartConcept");
+
+const pathTargetConcept =
+  $("pathTargetConcept");
+
 const calculationAnswer =
   $("calculationAnswer");
 
@@ -1425,6 +1431,104 @@ function applyTurnState(roomData) {
    14. PATH BUILDER
    ============================================================ */
 
+function conceptLabel(
+  value
+) {
+
+  const labels = {
+    MASS: "MASSA",
+    MOL: "MOL",
+    PARTICLE: "PARTIKEL",
+    GAS: "VOLUME GAS",
+    SOLUTION: "LARUTAN",
+    VOLUME_ML: "VOLUME mL",
+    VOLUME_L: "VOLUME L"
+  };
+
+
+  return (
+    labels[
+      String(
+        value || ""
+      ).toUpperCase()
+    ] ||
+    String(
+      value || "—"
+    ).toUpperCase()
+  );
+}
+
+
+function renderPathContext(
+  question
+) {
+
+  const origin =
+    question?.origin_concept ||
+    null;
+
+
+  const target =
+    question?.target_concept ||
+    null;
+
+
+  if (pathStartConcept) {
+
+    pathStartConcept.textContent =
+      conceptLabel(
+        origin
+      );
+  }
+
+
+  if (pathTargetConcept) {
+
+    pathTargetConcept.textContent =
+      conceptLabel(
+        target
+      );
+  }
+
+
+  document
+    .querySelectorAll(
+      ".path-block"
+    )
+    .forEach(
+      button => {
+
+        button.classList.remove(
+          "path-start",
+          "path-target"
+        );
+
+
+        if (
+          button.dataset.path ===
+          origin
+        ) {
+
+          button.classList.add(
+            "path-start"
+          );
+        }
+
+
+        if (
+          button.dataset.path ===
+          target
+        ) {
+
+          button.classList.add(
+            "path-target"
+          );
+        }
+      }
+    );
+}
+
+
 function renderSelectedPath() {
 
   if (!selectedPathElement) {
@@ -2571,6 +2675,11 @@ function renderQuestion(
     caseQuestion.textContent =
       text;
   }
+
+
+  renderPathContext(
+    question
+  );
 
 
   resetAttemptState();
@@ -3820,8 +3929,57 @@ async function submitCurrentCase() {
     attemptSequence++;
 
 
+    let retryFeedback =
+      "NEXUS UNSTABLE — periksa kembali jawaban lalu coba lagi.";
+
+
+    if (
+      result.path_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "PATH belum tepat. Mulai dari " +
+        conceptLabel(
+          currentQuestion?.origin_concept
+        ) +
+        " dan berhenti di " +
+        conceptLabel(
+          currentQuestion?.target_concept
+        ) +
+        ". Jangan menambahkan node setelah TARGET.";
+
+
+    } else if (
+      result.formula_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "PATH sudah tepat, tetapi FORMULA belum sesuai. Periksa urutan rumus yang menghubungkan setiap node.";
+
+
+    } else if (
+      result.calculation_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "PATH dan FORMULA sudah tepat. Periksa kembali perhitungan numeriknya.";
+
+
+    } else if (
+      result.unit_correct !==
+      true
+    ) {
+
+      retryFeedback =
+        "Perhitungan sudah tepat. Periksa kembali UNIT jawaban.";
+    }
+
+
     showFeedback(
-      "NEXUS UNSTABLE — periksa kembali PATH, FORMULA, perhitungan, atau UNIT lalu coba lagi."
+      retryFeedback
     );
 
 
