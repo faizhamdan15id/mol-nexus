@@ -1788,6 +1788,36 @@ function applyTurnState(roomData) {
   }
 
 
+  if (
+    currentPlayer.final_nexus_completed ===
+    true
+  ) {
+
+    isMyTurn =
+      false;
+
+
+    if (turnStatus) {
+
+      turnStatus.textContent =
+        "FINAL COMPLETE";
+    }
+
+
+    setMessage(
+      "Final Nexus Anda selesai. Menunggu pemain lain menyelesaikan permainan."
+    );
+
+
+    setSubmitDisabled(
+      true
+    );
+
+
+    return;
+  }
+
+
   currentTurn =
     Number(
       roomData.current_turn || 1
