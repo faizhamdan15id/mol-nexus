@@ -873,14 +873,15 @@ body.game-body {
 
 .path-context {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1fr)
-    auto
-    minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 10px;
 
   margin-bottom: 10px;
+}
+
+.path-context-start-only {
+  max-width: 220px;
 }
 
 .path-context > div {
@@ -889,11 +890,6 @@ body.game-body {
   background: rgba(32,223,243,.045);
   border: 1px solid rgba(32,223,243,.14);
   border-radius: 10px;
-}
-
-.path-context > div:last-child {
-  border-color: rgba(80, 220, 160, .18);
-  background: rgba(80, 220, 160, .045);
 }
 
 .path-context small {
@@ -909,11 +905,6 @@ body.game-body {
 .path-context strong {
   color: #dcecf7;
   font-size: 11px;
-}
-
-.path-context > span {
-  color: var(--cyan);
-  font-size: 18px;
 }
 
 .path-instruction {
@@ -990,22 +981,6 @@ body.game-body {
   color: var(--cyan);
   font-size: 6px;
   letter-spacing: 1px;
-}
-
-.path-block.path-target {
-  border-color: rgba(80,220,160,.45);
-}
-
-.path-block.path-target::after {
-  content: "TARGET";
-  margin-top: 5px;
-  color: var(--green);
-  font-size: 6px;
-  letter-spacing: 1px;
-}
-
-.path-block.path-start.path-target::after {
-  content: "START / TARGET";
 }
 
 .selected-path {
