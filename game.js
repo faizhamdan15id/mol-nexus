@@ -1761,6 +1761,33 @@ function applyTurnState(roomData) {
   }
 
 
+  if (
+    String(
+      roomData.status || ""
+    ).toUpperCase() ===
+    "COMPLETED"
+  ) {
+
+    isMyTurn =
+      false;
+
+
+    if (turnStatus) {
+
+      turnStatus.textContent =
+        "GAME COMPLETED";
+    }
+
+
+    setSubmitDisabled(
+      true
+    );
+
+
+    return;
+  }
+
+
   currentTurn =
     Number(
       roomData.current_turn || 1
