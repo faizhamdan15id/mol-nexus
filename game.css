@@ -871,6 +871,59 @@ body.game-body {
    PATH + FORMULA
    ========================================================= */
 
+.path-context {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 10px;
+}
+
+.path-context > div {
+  padding: 10px 12px;
+
+  background: rgba(32,223,243,.045);
+  border: 1px solid rgba(32,223,243,.14);
+  border-radius: 10px;
+}
+
+.path-context > div:last-child {
+  border-color: rgba(80, 220, 160, .18);
+  background: rgba(80, 220, 160, .045);
+}
+
+.path-context small {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #718096;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.path-context strong {
+  color: #dcecf7;
+  font-size: 11px;
+}
+
+.path-context > span {
+  color: var(--cyan);
+  font-size: 18px;
+}
+
+.path-instruction {
+  margin: 0 0 12px;
+
+  color: #7f91a5;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
 .path-builder,
 .formula-builder {
   display: flex;
@@ -893,6 +946,28 @@ body.game-body {
   border-radius: 9px;
 
   cursor: pointer;
+}
+
+.path-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 112px;
+  text-align: left;
+}
+
+.path-block strong {
+  color: inherit;
+  font-size: 10px;
+  letter-spacing: .3px;
+}
+
+.path-block small {
+  margin-top: 3px;
+  color: #66798e;
+  font-size: 7px;
+  font-weight: 600;
 }
 
 .path-block:hover,
