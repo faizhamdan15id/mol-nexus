@@ -15,7 +15,7 @@
 
   <link
     rel="stylesheet"
-    href="dashboard.css"
+    href="dashboard.css?v=2.0"
   >
 </head>
 
@@ -137,6 +137,167 @@
         </strong>
 
       </article>
+
+    </section>
+
+
+    <section class="panel live-monitor-panel">
+
+      <div class="panel-heading live-monitor-heading">
+
+        <div>
+
+          <p class="section-label">
+            LIVE CLASSROOM MONITOR
+          </p>
+
+          <h2>
+            🔴 Real-time Multiplayer Monitor
+          </h2>
+
+          <p class="panel-caption">
+            Pantau giliran, timer, Nexus, Energy, Crystal, attempt, dan proses jawaban siswa tanpa menampilkan kunci jawaban.
+          </p>
+
+        </div>
+
+
+        <div class="live-monitor-controls">
+
+          <select
+            id="liveRoomSelect"
+            aria-label="Pilih room yang dipantau"
+          >
+            <option value="">
+              Memuat room...
+            </option>
+          </select>
+
+          <button
+            id="refreshLiveMonitor"
+            type="button"
+          >
+            ↻ Refresh Live
+          </button>
+
+          <span
+            id="liveConnectionState"
+            class="live-connection-badge"
+          >
+            ● CONNECTING
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="liveRoomOverview"
+        class="live-room-overview"
+      >
+
+        <div class="live-overview-card">
+          <span>Room</span>
+          <strong id="liveRoomCode">—</strong>
+        </div>
+
+        <div class="live-overview-card">
+          <span>Status</span>
+          <strong id="liveRoomStatus">—</strong>
+        </div>
+
+        <div class="live-overview-card">
+          <span>Giliran</span>
+          <strong id="liveCurrentTurn">—</strong>
+        </div>
+
+        <div class="live-overview-card live-timer-card">
+          <span>Sisa Waktu</span>
+          <strong id="liveTurnCountdown">--:--</strong>
+        </div>
+
+        <div class="live-overview-card">
+          <span>Pemain</span>
+          <strong id="livePlayerCount">0</strong>
+        </div>
+
+      </div>
+
+
+      <div class="live-monitor-layout">
+
+        <div>
+
+          <div class="live-section-heading">
+
+            <div>
+              <p class="section-label">
+                LIVE PLAYERS
+              </p>
+
+              <h3>
+                Aktivitas Pemain
+              </h3>
+            </div>
+
+            <small id="liveUpdatedAt">
+              —
+            </small>
+
+          </div>
+
+
+          <div
+            id="livePlayerGrid"
+            class="live-player-grid"
+          >
+
+            <div class="state-message">
+              Menunggu data room...
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <aside class="live-event-panel">
+
+          <div class="live-section-heading">
+
+            <div>
+              <p class="section-label">
+                EVENT STREAM
+              </p>
+
+              <h3>
+                Aktivitas Terbaru
+              </h3>
+            </div>
+
+          </div>
+
+
+          <div
+            id="liveEventFeed"
+            class="live-event-feed"
+          >
+
+            <div class="state-message">
+              Belum ada aktivitas.
+            </div>
+
+          </div>
+
+        </aside>
+
+      </div>
+
+
+      <p class="live-monitor-note">
+        🔒 Live Monitor tidak menampilkan kunci jawaban, expected path, atau jawaban benar. Data proses berasal dari server MOL-NEXUS.
+      </p>
 
     </section>
 
@@ -356,7 +517,7 @@
 
   <script src="teacher-shell.js"></script>
 
-  <script src="dashboard.js"></script>
+  <script src="dashboard.js?v=2.0"></script>
 
 </body>
 
