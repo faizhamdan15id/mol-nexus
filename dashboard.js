@@ -142,6 +142,39 @@ const dashboardEvidenceFilterEl =
 const dashboardUpdatedAtEl =
   document.getElementById("dashboardUpdatedAt");
 
+const liveRoomSelectEl =
+  document.getElementById("liveRoomSelect");
+
+const refreshLiveMonitorEl =
+  document.getElementById("refreshLiveMonitor");
+
+const liveConnectionStateEl =
+  document.getElementById("liveConnectionState");
+
+const liveRoomCodeEl =
+  document.getElementById("liveRoomCode");
+
+const liveRoomStatusEl =
+  document.getElementById("liveRoomStatus");
+
+const liveCurrentTurnEl =
+  document.getElementById("liveCurrentTurn");
+
+const liveTurnCountdownEl =
+  document.getElementById("liveTurnCountdown");
+
+const livePlayerCountEl =
+  document.getElementById("livePlayerCount");
+
+const livePlayerGridEl =
+  document.getElementById("livePlayerGrid");
+
+const liveEventFeedEl =
+  document.getElementById("liveEventFeed");
+
+const liveUpdatedAtEl =
+  document.getElementById("liveUpdatedAt");
+
 
 /* =========================================================
    3. LOCAL DATA
@@ -150,6 +183,12 @@ const dashboardUpdatedAtEl =
 let dashboardData = [];
 let allDashboardData = [];
 let classesData = [];
+
+let liveMonitorData = null;
+let liveMonitorRefreshTimer = null;
+let liveMonitorCountdownTimer = null;
+let liveMonitorBusy = false;
+let liveServerClockOffsetMs = 0;
 
 
 /* =========================================================
@@ -1906,6 +1945,1146 @@ function renderNexusPerformance() {
 
 
 /* =========================================================
+   LIVE MULTIPLAYER MONITOR
+========================================================= */
+
+function liveBooleanMark(value) {
+
+  if (value === true) {
+    return "✓";
+  }
+
+  if (value === false) {
+    return "✕";
+  }
+
+  return "—";
+}
+
+
+function liveBooleanClass(value) {
+
+  if (value === true) {
+    return "ok";
+  }
+
+  if (value === false) {
+    return "bad";
+  }
+
+  return "neutral";
+}
+
+
+function formatLiveDuration(milliseconds) {
+
+  const totalSeconds =
+    Math.max(
+      0,
+      Math.round(
+        safeNumber(
+          milliseconds
+        ) / 1000
+      )
+    );
+
+
+  const minutes =
+    Math.floor(
+      totalSeconds / 60
+    );
+
+
+  const seconds =
+    totalSeconds % 60;
+
+
+  return (
+    String(minutes)
+      .padStart(2, "0") +
+    ":" +
+    String(seconds)
+      .padStart(2, "0")
+  );
+}
+
+
+function formatLiveClock(value) {
+
+  if (!value) {
+    return "—";
+  }
+
+
+  const date =
+    new Date(value);
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "—";
+  }
+
+
+  return date.toLocaleTimeString(
+    "id-ID",
+    {
+      hour:
+        "2-digit",
+      minute:
+        "2-digit",
+      second:
+        "2-digit"
+    }
+  );
+}
+
+
+function liveEstimatedServerNow() {
+
+  return (
+    Date.now() +
+    liveServerClockOffsetMs
+  );
+}
+
+
+function renderLiveCountdown() {
+
+  if (
+    !liveTurnCountdownEl
+  ) {
+    return;
+  }
+
+
+  const room =
+    liveMonitorData?.room;
+
+
+  if (!room) {
+
+    liveTurnCountdownEl.textContent =
+      "--:--";
+
+    return;
+  }
+
+
+  const status =
+    String(
+      room.status || ""
+    ).toUpperCase();
+
+
+  if (status === "TIEBREAK") {
+
+    liveTurnCountdownEl.textContent =
+      "SUDDEN";
+
+    return;
+  }
+
+
+  if (status === "COMPLETED") {
+
+    liveTurnCountdownEl.textContent =
+      "SELESAI";
+
+    return;
+  }
+
+
+  if (
+    status !== "PLAYING" ||
+    !room.turn_deadline_at
+  ) {
+
+    liveTurnCountdownEl.textContent =
+      "--:--";
+
+    return;
+  }
+
+
+  const deadline =
+    Date.parse(
+      room.turn_deadline_at
+    );
+
+
+  if (
+    !Number.isFinite(
+      deadline
+    )
+  ) {
+
+    liveTurnCountdownEl.textContent =
+      "--:--";
+
+    return;
+  }
+
+
+  const remaining =
+    Math.max(
+      0,
+      deadline -
+      liveEstimatedServerNow()
+    );
+
+
+  const totalSeconds =
+    Math.ceil(
+      remaining / 1000
+    );
+
+
+  const minutes =
+    Math.floor(
+      totalSeconds / 60
+    );
+
+
+  const seconds =
+    totalSeconds % 60;
+
+
+  liveTurnCountdownEl.textContent =
+    String(minutes)
+      .padStart(2, "0") +
+    ":" +
+    String(seconds)
+      .padStart(2, "0");
+
+
+  liveTurnCountdownEl.classList.toggle(
+    "warning",
+    remaining <= 60000 &&
+    remaining > 15000
+  );
+
+
+  liveTurnCountdownEl.classList.toggle(
+    "danger",
+    remaining <= 15000
+  );
+}
+
+
+function renderLiveRoomSelect(
+  rooms,
+  selectedRoomCode
+) {
+
+  if (!liveRoomSelectEl) {
+    return;
+  }
+
+
+  const rows =
+    Array.isArray(rooms)
+      ? rooms
+      : [];
+
+
+  if (!rows.length) {
+
+    liveRoomSelectEl.innerHTML = `
+      <option value="">
+        Tidak ada room aktif
+      </option>
+    `;
+
+    liveRoomSelectEl.value =
+      "";
+
+    return;
+  }
+
+
+  liveRoomSelectEl.innerHTML =
+    rows
+      .map(
+        room => `
+
+          <option
+            value="${escapeHTML(
+              room.room_code
+            )}"
+          >
+            ${escapeHTML(
+              room.room_code
+            )}
+            •
+            ${escapeHTML(
+              String(
+                room.status ||
+                "WAITING"
+              ).toUpperCase()
+            )}
+            •
+            ${safeNumber(
+              room.player_count
+            )}/${safeNumber(
+              room.max_players
+            )}
+          </option>
+
+        `
+      )
+      .join("");
+
+
+  const exists =
+    rows.some(
+      room =>
+        room.room_code ===
+        selectedRoomCode
+    );
+
+
+  liveRoomSelectEl.value =
+    exists
+      ? selectedRoomCode
+      : rows[0].room_code;
+}
+
+
+function liveStageLabel(player) {
+
+  if (
+    player.final_nexus_completed ===
+    true
+  ) {
+
+    return "FINAL COMPLETE";
+  }
+
+
+  const questionTime =
+    player.question_served_at
+      ? new Date(
+          player.question_served_at
+        ).getTime()
+      : 0;
+
+
+  const attemptTime =
+    player.last_attempt_at
+      ? new Date(
+          player.last_attempt_at
+        ).getTime()
+      : 0;
+
+
+  if (
+    player.is_current_turn ===
+      true &&
+    questionTime >
+      attemptTime
+  ) {
+
+    return "SEDANG MENGERJAKAN";
+  }
+
+
+  if (
+    player.is_current_turn ===
+    true
+  ) {
+
+    return "GILIRAN AKTIF";
+  }
+
+
+  return "MENUNGGU";
+}
+
+
+function renderLivePlayers(players) {
+
+  if (!livePlayerGridEl) {
+    return;
+  }
+
+
+  const rows =
+    Array.isArray(players)
+      ? players
+      : [];
+
+
+  if (!rows.length) {
+
+    livePlayerGridEl.innerHTML = `
+      <div class="state-message">
+        Belum ada pemain di room ini.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  livePlayerGridEl.innerHTML =
+    rows
+      .map(
+        player => {
+
+          const stage =
+            liveStageLabel(
+              player
+            );
+
+
+          const zone =
+            player.current_zone ||
+            player.last_question_zone ||
+            "—";
+
+
+          const questionCode =
+            player.current_question_code ||
+            player.last_question_code ||
+            "—";
+
+
+          const activeClass =
+            player.is_current_turn
+              ? " active-turn"
+              : "";
+
+
+          const finalClass =
+            player.final_nexus_completed
+              ? " final-complete"
+              : "";
+
+
+          return `
+
+            <article
+              class="live-player-card${activeClass}${finalClass}"
+            >
+
+              <div class="live-player-card-top">
+
+                <div>
+
+                  <span class="live-player-slot">
+                    PLAYER ${safeNumber(
+                      player.player_slot
+                    )}
+                    •
+                    RANK #${safeNumber(
+                      player.live_rank
+                    ) || "—"}
+                  </span>
+
+                  <h3>
+                    ${escapeHTML(
+                      player.player_name ||
+                      "Siswa"
+                    )}
+                  </h3>
+
+                </div>
+
+
+                <span
+                  class="live-stage-badge"
+                >
+                  ${escapeHTML(
+                    stage
+                  )}
+                </span>
+
+              </div>
+
+
+              <div class="live-player-stats">
+
+                <div>
+                  <span>Energy</span>
+                  <strong>
+                    ⚡ ${safeNumber(
+                      player.nexus_energy
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Crystal</span>
+                  <strong>
+                    💎 ${safeNumber(
+                      player.crystals_count
+                    )}/4
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Attempt</span>
+                  <strong>
+                    ${safeNumber(
+                      player.total_attempts
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>First Try</span>
+                  <strong>
+                    ${safeNumber(
+                      player.first_attempt_correct
+                    )}
+                  </strong>
+                </div>
+
+              </div>
+
+
+              <div class="live-question-strip">
+
+                <span>
+                  Nexus
+                  <strong>
+                    ${escapeHTML(
+                      zone
+                    )}
+                  </strong>
+                </span>
+
+                <span>
+                  Soal
+                  <strong>
+                    ${escapeHTML(
+                      questionCode
+                    )}
+                  </strong>
+                </span>
+
+                <span>
+                  Active Time
+                  <strong>
+                    ${formatLiveDuration(
+                      player.total_active_time_ms
+                    )}
+                  </strong>
+                </span>
+
+              </div>
+
+
+              <div class="live-stage-results">
+
+                <span
+                  class="${liveBooleanClass(
+                    player.last_path_correct
+                  )}"
+                >
+                  PATH
+                  <strong>
+                    ${liveBooleanMark(
+                      player.last_path_correct
+                    )}
+                  </strong>
+                </span>
+
+                <span
+                  class="${liveBooleanClass(
+                    player.last_formula_correct
+                  )}"
+                >
+                  FORMULA
+                  <strong>
+                    ${liveBooleanMark(
+                      player.last_formula_correct
+                    )}
+                  </strong>
+                </span>
+
+                <span
+                  class="${liveBooleanClass(
+                    player.last_calculation_correct
+                  )}"
+                >
+                  CALC
+                  <strong>
+                    ${liveBooleanMark(
+                      player.last_calculation_correct
+                    )}
+                  </strong>
+                </span>
+
+                <span
+                  class="${liveBooleanClass(
+                    player.last_unit_correct
+                  )}"
+                >
+                  UNIT
+                  <strong>
+                    ${liveBooleanMark(
+                      player.last_unit_correct
+                    )}
+                  </strong>
+                </span>
+
+              </div>
+
+
+              <p class="live-player-meta">
+                Hint/Retry:
+                <strong>
+                  ${safeNumber(
+                    player.assistance_count
+                  )}
+                </strong>
+                •
+                Last activity:
+                <strong>
+                  ${formatLiveClock(
+                    player.last_attempt_at ||
+                    player.question_served_at
+                  )}
+                </strong>
+              </p>
+
+            </article>
+
+          `;
+
+        }
+      )
+      .join("");
+}
+
+
+function liveEventText(event) {
+
+  const payload =
+    event?.event_payload ||
+    {};
+
+
+  const player =
+    event?.player_name ||
+    "SYSTEM";
+
+
+  if (
+    event?.event_type ===
+    "QUESTION_SERVED"
+  ) {
+
+    return (
+      player +
+      " menerima challenge " +
+      String(
+        payload.nexus_zone ||
+        "NEXUS"
+      ) +
+      " (" +
+      String(
+        payload.question_code ||
+        "soal"
+      ) +
+      ")."
+    );
+  }
+
+
+  if (
+    event?.event_type ===
+    "TURN_TIMEOUT"
+  ) {
+
+    return (
+      player +
+      " kehabisan waktu. Giliran berpindah ke Player " +
+      String(
+        payload.next_slot ||
+        "berikutnya"
+      ) +
+      "."
+    );
+  }
+
+
+  if (
+    event?.event_type ===
+    "ATTEMPT_RESULT"
+  ) {
+
+    if (
+      payload.final_correct ===
+      true
+    ) {
+
+      return (
+        player +
+        " menyelesaikan challenge " +
+        String(
+          payload.nexus_zone ||
+          ""
+        ) +
+        " dengan benar."
+      );
+    }
+
+
+    const stages = [
+      "PATH " +
+      liveBooleanMark(
+        payload.path_correct
+      ),
+      "FORMULA " +
+      liveBooleanMark(
+        payload.formula_correct
+      ),
+      "CALC " +
+      liveBooleanMark(
+        payload.calculation_correct
+      ),
+      "UNIT " +
+      liveBooleanMark(
+        payload.unit_correct
+      )
+    ];
+
+
+    return (
+      player +
+      " submit attempt • " +
+      stages.join(" • ")
+    );
+  }
+
+
+  return (
+    player +
+    " • " +
+    String(
+      event?.event_type ||
+      "EVENT"
+    )
+  );
+}
+
+
+function renderLiveEvents(events) {
+
+  if (!liveEventFeedEl) {
+    return;
+  }
+
+
+  const rows =
+    Array.isArray(events)
+      ? events
+      : [];
+
+
+  if (!rows.length) {
+
+    liveEventFeedEl.innerHTML = `
+      <div class="state-message">
+        Belum ada aktivitas pada session ini.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  liveEventFeedEl.innerHTML =
+    rows
+      .slice(0, 20)
+      .map(
+        event => `
+
+          <article class="live-event-item">
+
+            <span class="live-event-time">
+              ${escapeHTML(
+                formatLiveClock(
+                  event.created_at
+                )
+              )}
+            </span>
+
+            <p>
+              ${escapeHTML(
+                liveEventText(
+                  event
+                )
+              )}
+            </p>
+
+          </article>
+
+        `
+      )
+      .join("");
+}
+
+
+function renderLiveMonitor(data) {
+
+  liveMonitorData =
+    data ||
+    null;
+
+
+  const room =
+    data?.room ||
+    null;
+
+
+  const players =
+    Array.isArray(
+      data?.players
+    )
+      ? data.players
+      : [];
+
+
+  renderLiveRoomSelect(
+    data?.rooms || [],
+    data?.selected_room_code || ""
+  );
+
+
+  if (!room) {
+
+    if (liveRoomCodeEl) {
+      liveRoomCodeEl.textContent = "—";
+    }
+
+    if (liveRoomStatusEl) {
+      liveRoomStatusEl.textContent = "NO ROOM";
+    }
+
+    if (liveCurrentTurnEl) {
+      liveCurrentTurnEl.textContent = "—";
+    }
+
+    if (livePlayerCountEl) {
+      livePlayerCountEl.textContent = "0";
+    }
+
+    renderLivePlayers([]);
+
+    renderLiveEvents([]);
+
+    renderLiveCountdown();
+
+    return;
+  }
+
+
+  if (liveRoomCodeEl) {
+
+    liveRoomCodeEl.textContent =
+      room.room_code ||
+      "—";
+  }
+
+
+  if (liveRoomStatusEl) {
+
+    liveRoomStatusEl.textContent =
+      String(
+        room.status ||
+        "—"
+      ).toUpperCase();
+  }
+
+
+  if (livePlayerCountEl) {
+
+    livePlayerCountEl.textContent =
+      safeNumber(
+        room.player_count
+      ) +
+      "/" +
+      safeNumber(
+        room.max_players
+      );
+  }
+
+
+  const currentPlayer =
+    players.find(
+      player =>
+        safeNumber(
+          player.player_slot
+        ) ===
+        safeNumber(
+          room.current_turn
+        )
+    );
+
+
+  if (liveCurrentTurnEl) {
+
+    liveCurrentTurnEl.textContent =
+      currentPlayer
+        ? (
+            "P" +
+            safeNumber(
+              currentPlayer.player_slot
+            ) +
+            " • " +
+            currentPlayer.player_name
+          )
+        : (
+            room.status ===
+            "TIEBREAK"
+              ? "SUDDEN DEATH"
+              : "—"
+          );
+  }
+
+
+  renderLivePlayers(
+    players
+  );
+
+
+  renderLiveEvents(
+    data?.events || []
+  );
+
+
+  renderLiveCountdown();
+}
+
+
+async function loadLiveMonitor(
+  forceRoomCode = null
+) {
+
+  if (
+    liveMonitorBusy
+  ) {
+    return;
+  }
+
+
+  liveMonitorBusy =
+    true;
+
+
+  try {
+
+    if (liveConnectionStateEl) {
+
+      liveConnectionStateEl.textContent =
+        "● SYNCING";
+
+      liveConnectionStateEl.classList.add(
+        "syncing"
+      );
+    }
+
+
+    const requestedRoom =
+      forceRoomCode !== null
+        ? forceRoomCode
+        : (
+            liveRoomSelectEl?.value ||
+            null
+          );
+
+
+    const requestStart =
+      Date.now();
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "admin_live_monitor",
+        {
+          p_room_code:
+            requestedRoom ||
+            null
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const requestEnd =
+      Date.now();
+
+
+    if (
+      data?.server_now
+    ) {
+
+      const serverNow =
+        Date.parse(
+          data.server_now
+        );
+
+
+      if (
+        Number.isFinite(
+          serverNow
+        )
+      ) {
+
+        liveServerClockOffsetMs =
+          serverNow -
+          (
+            requestStart +
+            (
+              requestEnd -
+              requestStart
+            ) / 2
+          );
+      }
+    }
+
+
+    renderLiveMonitor(
+      data
+    );
+
+
+    if (liveConnectionStateEl) {
+
+      liveConnectionStateEl.textContent =
+        "● LIVE • 2s";
+
+      liveConnectionStateEl.classList.remove(
+        "syncing",
+        "error"
+      );
+    }
+
+
+    if (liveUpdatedAtEl) {
+
+      liveUpdatedAtEl.textContent =
+        "Update " +
+        new Date()
+          .toLocaleTimeString(
+            "id-ID",
+            {
+              hour:
+                "2-digit",
+              minute:
+                "2-digit",
+              second:
+                "2-digit"
+            }
+          );
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "LIVE MONITOR ERROR:",
+      error
+    );
+
+
+    if (liveConnectionStateEl) {
+
+      liveConnectionStateEl.textContent =
+        "● CONNECTION ERROR";
+
+      liveConnectionStateEl.classList.remove(
+        "syncing"
+      );
+
+      liveConnectionStateEl.classList.add(
+        "error"
+      );
+    }
+
+
+  } finally {
+
+    liveMonitorBusy =
+      false;
+  }
+}
+
+
+function startLiveMonitor() {
+
+  if (liveMonitorRefreshTimer) {
+
+    clearInterval(
+      liveMonitorRefreshTimer
+    );
+  }
+
+
+  if (liveMonitorCountdownTimer) {
+
+    clearInterval(
+      liveMonitorCountdownTimer
+    );
+  }
+
+
+  liveMonitorRefreshTimer =
+    setInterval(
+      () => {
+        loadLiveMonitor();
+      },
+      2000
+    );
+
+
+  liveMonitorCountdownTimer =
+    setInterval(
+      renderLiveCountdown,
+      250
+    );
+}
+
+
+function stopLiveMonitor() {
+
+  if (liveMonitorRefreshTimer) {
+
+    clearInterval(
+      liveMonitorRefreshTimer
+    );
+
+    liveMonitorRefreshTimer =
+      null;
+  }
+
+
+  if (liveMonitorCountdownTimer) {
+
+    clearInterval(
+      liveMonitorCountdownTimer
+    );
+
+    liveMonitorCountdownTimer =
+      null;
+  }
+}
+
+
+/* =========================================================
    14. STATES
 ========================================================= */
 
@@ -1963,6 +3142,36 @@ dashboardEvidenceFilterEl?.addEventListener(
 );
 
 
+liveRoomSelectEl?.addEventListener(
+  "change",
+  () => {
+
+    loadLiveMonitor(
+      liveRoomSelectEl.value ||
+      null
+    );
+  }
+);
+
+
+refreshLiveMonitorEl?.addEventListener(
+  "click",
+  () => {
+
+    loadLiveMonitor(
+      liveRoomSelectEl?.value ||
+      null
+    );
+  }
+);
+
+
+window.addEventListener(
+  "beforeunload",
+  stopLiveMonitor
+);
+
+
 /* =========================================================
    16. INITIALIZE
 ========================================================= */
@@ -1978,7 +3187,13 @@ document.addEventListener(
       return;
     }
 
-    loadDashboard();
+    await Promise.all([
+      loadDashboard(),
+      loadLiveMonitor()
+    ]);
+
+
+    startLiveMonitor();
 
   }
 );
