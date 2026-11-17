@@ -274,7 +274,7 @@
         error
       );
 
-      return false;
+      throw new Error("TEACHER_CHECK_UNAVAILABLE");
     }
 
     return data === true;
@@ -335,7 +335,12 @@
   }
 
 
-  checkExistingSession();
+  checkExistingSession().catch(error => {
+    console.error("Teacher session validation failed:", error);
+    message.textContent =
+      "Layanan login guru sedang tidak tersedia. Periksa status Supabase lalu coba lagi.";
+    message.className = "error";
+  });
 
 
   loginForm.addEventListener(
@@ -433,21 +438,33 @@
         );
 
 
-        if (
-          String(
-            error?.message || ""
-          ).includes(
-            "TEACHER_ACCESS_REQUIRED"
-          )
-        ) {
+        const errorMessage =
+          String(error?.message || "").toLowerCase();
+        const errorCode =
+          String(error?.code || "").toLowerCase();
+        const errorStatus = Number(error?.status || 0);
 
+        if (errorMessage.includes("teacher_access_required")) {
           message.textContent =
             "Akses ditolak. Akun ini tidak terdaftar sebagai guru MOL-NEXUS.";
-
-        } else {
-
+        } else if (
+          errorMessage.includes("teacher_check_unavailable") ||
+          errorCode === "unexpected_failure" ||
+          errorStatus >= 500 ||
+          errorMessage.includes("failed to fetch") ||
+          errorMessage.includes("network")
+        ) {
           message.textContent =
-            "Akses ditolak. Periksa kembali email dan password.";
+            "Server Supabase belum siap atau sedang bermasalah. Periksa status proyek lalu coba login kembali.";
+        } else if (
+          errorCode === "invalid_credentials" ||
+          errorMessage.includes("invalid login credentials")
+        ) {
+          message.textContent =
+            "Email atau password tidak cocok. Periksa kembali data login Anda.";
+        } else {
+          message.textContent =
+            "Login belum berhasil. Periksa koneksi dan coba kembali.";
         }
 
 
